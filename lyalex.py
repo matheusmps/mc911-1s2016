@@ -1,4 +1,5 @@
 import ply.lex as lex
+import sys
 
 # List of token name.
 
@@ -13,71 +14,50 @@ tokens = (
 
 # Defined token
 
-'COMMA', 'SMC', 'COLON', 'LPARENT', 'RPARENT', 'EQUAL', 'ISEQUAL', 'PEQUAL', 'TEQUAL', 'MEQUAL', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'GTHAN', 'LTHAN', 'GETHAN', 'LETHAN'
+'COMMA', 'SMC', 'COLON', 'LPAREN', 'RPAREN', 'EQUAL', 'ISEQUAL', 'PEQUAL', 'TEQUAL', 'MEQUAL', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'GTHAN', 'LTHAN', 'GETHAN', 'LETHAN', 'NUMBER'
 
 )
 
+# Regular expression rules for simple tokens
+t_PLUS    = r'\+'
+t_MINUS   = r'-'
+t_TIMES   = r'\*'
+t_DIVIDE  = r'/'
+t_LPAREN  = r'\('
+t_RPAREN  = r'\)'
 
+# A regular expression rule with some action code
+def t_NUMBER(t):
+    r'\d+'
+    t.value = int(t.value)    
+    return t
 
-ARRAY : 'array'
-BY : 'by'
-CHARS : 'chars'
-DCL : 'dcl'
-DO : 'do'
-DOWN : 'down'
-ELSE : 'else'
-ELSIF : 'elsif'
-END : 'end'
-EXIT : 'exit'
-FI : 'fi'
-FOR : 'for'
-IF : 'if'
-IN : 'in'
-LOC : 'loc'
-TYPE : 'type'
-OD : 'od'
-PROC : 'proc'
-REF : 'ref'
-RESULT : 'result'
-RETURN : 'return'
-RETURNS : 'returns'
-SYN : 'syn'
-THEN : 'then'
-TO : 'to'
-WHILE : 'while'
-BOOL : 'bool'
-CHAR : 'char'
-FALSE : 'false'
-INT : 'int'
-LENGTH : 'lenght'
-LOWER : 'lower'
-NULL : 'null'
-NUM : 'num' 
-PRED : 'pred'
-PRINT : 'print'
-READ : 'read'
-SUCC : 'succ'
-TRUE : 'true'
-UPPER : 'upper'
-COMMA : ','
-SMC : ';'
-COLON : ':'
-LPARENT : '('
-RPARENT : ')'
-EQUAL : '='
-ISEQUAL : '==' 
-PEQUAL : '+='
-TEQUAL : '*='
-MEQUAL : '-='
-PLUS : '+'
-MINUS : '-'
-TIMES : '*'
-DIVIDE : '/'
-GTHAN : '>'
-LTHAN : '<'
-GETHAN : '>='
-LETHAN : '<='
+# Define a rule so we can track line numbers
+def t_newline(t):
+    r'\n+'
+    t.lexer.lineno += len(t.value)
 
+# A string containing ignored characters (spaces and tabs)
+t_ignore  = ' \t'
 
+# Error handling rule
+def t_error(t):
+    print("Illegal character '%s'" % t.value[0])
+    t.lexer.skip(1)
 
+# Build the lexer
+lexer = lex.lex()
 
+# open file
+with open(sys.argv[1], 'r') as myfile:
+    data=myfile.read()
+
+# Give the lexer some input
+lexer.input(data)
+
+# Tokenize
+while True:
+    tok = lexer.token()
+    if not tok: 
+        break      # No more input
+    print(tok)
