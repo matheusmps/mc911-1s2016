@@ -3,20 +3,36 @@ import sys
 
 # List of token name.
 
-tokens = (
+##################
+### KEYWORKDS ####
+##################
 
-# Reserved Words
-'ARRAY', 'BY', 'CHARS', 'DCL', 'DO', 'DOWN', 'ELSE', 'ELSIF', 'END', 'EXIT', 'FI', 'FOR', 'IF', 'IN', 'LOC', 'TYPE', 'OD', 'PROC', 'REF', 'RESULT', 'RETURN', 'RETURNS', 'SYN', 'THEN', 'TO', 'WHILE',
+keywords = (
+	# Reserved Words
+	'ARRAY', 'BY', 'CHARS', 'DCL', 'DO', 'DOWN', 'ELSE', 'ELSIF', 'END', 'EXIT', 'FI', 'FOR', 'IF', 'IN', 
+	'LOC', 'TYPE', 'OD', 'PROC', 'REF', 'RESULT', 'RETURN', 'RETURNS', 'SYN', 'THEN', 'TO', 'WHILE',
 
-# Predefined words
+	# Predefined words
+	'BOOL', 'CHAR', 'FALSE', 'INT', 'LENGTH', 'LOWER', 'NULL', 'NUM','PRED', 'PRINT', 'READ', 'SUCC', 'TRUE', 'UPPER'
+)
 
-'BOOL', 'CHAR', 'FALSE', 'INT', 'LENGTH', 'LOWER', 'NULL', 'NUM','PRED', 'PRINT', 'READ', 'SUCC', 'TRUE', 'UPPER',
+# Defined tokens
+tokens = keywords + (
 
-# Defined token
+	# DELIMETERS
+	'COMMA', 'SMC', 'COLON', 'LPAREN', 'RPAREN', 'EQUAL', 
 
-'COMMA', 'SMC', 'COLON', 'LPAREN', 'RPAREN', 'EQUAL', 'ISEQUAL', 'PEQUAL', 'TEQUAL', 'MEQUAL', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'GTHAN', 'LTHAN', 'GETHAN', 'LETHAN', 'NUMBER'
+	# ASSIGNEMENT
+	'PEQUAL', 'TEQUAL', 'MEQUAL', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 
+	
+	# RELATIONAL
+	'ISEQUAL', 'GTHAN', 'LTHAN', 'GETHAN', 'LETHAN', 'NUMBER'
 
 )
+
+##############
+### RULES ####
+##############
 
 # Regular expression rules for simple tokens
 t_PLUS    = r'\+'
@@ -44,6 +60,10 @@ t_ignore  = ' \t'
 def t_error(t):
     print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
+
+########################
+### READ INPUT FILE ####
+########################
 
 # Build the lexer
 lexer = lex.lex()
