@@ -19,14 +19,31 @@ keywords = (
 # Defined tokens
 tokens = keywords + (
 
+	'ID', 'NUMBER',
+	
+	'INTCONST', 'FLOATCONST', 'STRINGCONST', 'CHARCONST',
+
 	# DELIMETERS
-	'COMMA', 'SMC', 'COLON', 'LPAREN', 'RPAREN', 'EQUAL', 
+	'COMMA', 'SMC', 'COLON', 'PERIOD',
+	'LPAREN', 'RPAREN', 
+	'LBRACKET', 'RBRACKET',
+	'LBRACE', 'RBRACE',
 
 	# ASSIGNEMENT
-	'PEQUAL', 'TEQUAL', 'MEQUAL', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 
+	'EQUALS', 'PLUSEQ', 'TIMESEQ', 'MINUSEQ', 'DIVEQ', 'MODEQ',
+	
+	# OPERATOR
+	'PLUS', 'MINUS', 'TIMES', 'DIV', 'MOD'
 	
 	# RELATIONAL
-	'ISEQUAL', 'GTHAN', 'LTHAN', 'GETHAN', 'LETHAN', 'NUMBER'
+	'NOTEQUAL', 'ISEQUAL', 'GT', 'GE', 'LT', 'LE', 
+	'AND', 'OR', 'NOT',
+	
+	# INCREMENT/DECREMENT
+	'PLUSPLUS', 'MINUSMINUS',
+	
+	# OTHER
+	'COMMENTLINE', 'COMMENTDELIMETER'
 
 )
 
@@ -38,7 +55,7 @@ tokens = keywords + (
 t_PLUS    = r'\+'
 t_MINUS   = r'-'
 t_TIMES   = r'\*'
-t_DIVIDE  = r'/'
+t_DIV     = r'/'
 t_LPAREN  = r'\('
 t_RPAREN  = r'\)'
 
