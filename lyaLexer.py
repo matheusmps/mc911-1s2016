@@ -3,24 +3,63 @@ import sys
 
 # List of token name.
 
-##################
-### KEYWORKDS ####
-##################
+#-----------------------------#
+#------ RESERVED WORDS -------#
+#-----------------------------#
 
-keywords = (
+reserved = {
 	# Reserved Words
-	'ARRAY', 'BY', 'CHARS', 'DCL', 'DO', 'DOWN', 'ELSE', 'ELSIF', 'END', 'EXIT', 'FI', 'FOR', 'IF', 'IN', 
-	'LOC', 'TYPE', 'OD', 'PROC', 'REF', 'RESULT', 'RETURN', 'RETURNS', 'SYN', 'THEN', 'TO', 'WHILE',
+	'array' : 'ARRAY',
+	'by' : 'BY',
+	'chars' : 'CHARS',
+	'dcl' : 'DCL',
+	'do' : 'DO',
+	'down' : 'DOWN',
+	'else' : 'ELSE',
+	'elseif' : 'ELSIF',
+	'end' : 'END',
+	'exit' : 'EXIT',
+	'fi' : 'FI',
+	'for' : 'FOR',
+	'if' : 'IF',
+	'in' : 'IN',
+	'loc' : 'LOC',
+	'type' : 'TYPE',
+	'od' : 'OD',
+	'proc' : 'PROC',
+	'ref' : 'REF',
+	'result' : 'RESULT',
+	'return' : 'RETURN',
+	'returns' : 'RETURNS',
+	'syn' : 'SYN',
+	'then' : 'THEN',
+	'to' : 'TO',
+	'while' : 'WHILE',
 
 	# Predefined words
-	'BOOL', 'CHAR', 'FALSE', 'INT', 'LENGTH', 'LOWER', 'NULL', 'NUM','PRED', 'PRINT', 'READ', 'SUCC', 'TRUE', 'UPPER'
-)
+	'bool' : 'BOOL',
+	'char' : 'CHAR',
+	'false' : 'FALSE',
+	'int' : 'INT',
+	'length' : 'LENGTH',
+	'lower' : 'LOWER',
+	'null' : 'NULL',
+	'num' : 'NUM',
+	'pred' : 'PRED',
+	'print' : 'PRINT',
+	'read' : 'READ',
+	'succ' : 'SUCC',
+	'true' : 'TRUE',
+	'upper' : 'UPPER'
+}
 
-# Defined tokens
-tokens = keywords + (
+#---------------------#
+#------ TOKENS -------#
+#---------------------#
+tokens = [
 
 	'ID',
-	
+
 	'INTCONST', 'FLOATCONST', 'STRINGCONST', 'CHARCONST',
 
 	# DELIMETERS
@@ -43,68 +82,13 @@ tokens = keywords + (
 	'PLUSPLUS', 'MINUSMINUS',
 	
 	# OTHER
-	'COMMENTLINE', 'COMMENTDELIMETER'
+	'COMMENTLINE', 'COMMENT'
+	
+] + list(reserved.values())
 
-)
-
-##############
-### RULES ####
-##############
-
-# KEYWORDS
-t_ARRAY = r'array'
-t_BY = r'by'
-t_CHARS = r'chars'
-t_DCL = r'dcl'
-t_DO = r'do'
-t_DOWN = r'down'
-t_ELSE = r'else'
-t_ELSIF = r'elsif'
-t_END = r'end'
-t_EXIT = r'exit'
-t_FI = r'fi'
-t_FOR = r'for'
-t_IF = r'if'
-t_IN = r'in'
-t_LOC = r'loc'
-t_TYPE = r'type'
-t_OD = r'od'
-t_PROC = r'proc'
-t_REF = r'ref'
-t_RESULT = r'result'
-t_RETURN = r'return'
-t_RETURNS = r'returns'
-t_SYN = r'syn'
-t_THEN = r'then'
-t_TO = r'to'
-t_WHILE = r'while'
-t_BOOL = r'bool'
-t_CHAR = r'char'
-t_FALSE = r'false'
-t_INT = r'int'
-t_LENGTH = r'lenght'
-t_LOWER = r'lower'
-t_NULL = r'null'
-t_NUM = r'num' 
-t_PRED = r'pred'
-t_PRINT = r'print'
-t_READ = r'read'
-t_SUCC = r'succ'
-t_TRUE = r'true'
-t_UPPER = r'upper'
-
-#  IMPLEMENT !!!!!!!
-
-#t_ID = r''
-
-def t_INTCONST(t):
-    r'\d+'
-    t.value = int(t.value)    
-    return t
-
-#t_FLOATCONST= r''
-#t_STRINGCONST= r''
-#t_CHARCONST= r''
+#--------------------#
+#------ RULES -------#
+#--------------------#
 
 t_COMMA = r','
 t_SMC = r';'
@@ -116,6 +100,7 @@ t_LBRACKET = r'\['
 t_RBRACKET = r'\]'
 
 # TALVEZ TENHA QUE MUDAR O BRACES
+# IMPLEMENTAR!!!
 t_LBRACE = r'\{'
 t_RBRACE = r'\}'
 
@@ -144,8 +129,26 @@ t_NOT = r'!'
 t_PLUSPLUS = r'\+\+'
 t_MINUSMINUS = r'--'	
 
-#t_COMMENT = r''
+t_COMMENT = r'/\*.*\*/'
 t_COMMENTLINE = r'\\\\'
+
+def t_INTCONST(t):
+    r'\d+'
+    t.value = int(t.value)    
+    return t
+    
+#def t_FLOATCONST(t):
+#	r'\d+\.\d+'
+#    t.value = float(t.value)
+#    return t
+    
+t_STRINGCONST = r'\".+\"'
+t_CHARCONST = r'\'.\''
+
+def t_ID(t):
+	r'[a-zA-z_][\w]*'
+	t.type = reserved.get(t.value, 'ID')
+	return t
 
 # Define a rule so we can track line numbers
 def t_newline(t):
@@ -160,9 +163,9 @@ def t_error(t):
     print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
-########################
-### READ INPUT FILE ####
-########################
+#------------------------#
+#------ READ FILE -------#
+#------------------------#
 
 # Build the lexer
 lexer = lex.lex()
