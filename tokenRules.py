@@ -80,7 +80,7 @@ tokens = [
 	'PLUSPLUS', 'MINUSMINUS',
 	
 	# OTHER
-	'COMMENTLINE', 'COMMENT'
+	'COMMENTLINE', 'COMMENT', 'STRCONC', 'ARROW'
 	
 ] + list(reserved.values())
 
@@ -113,6 +113,7 @@ t_PLUS    = r'\+'
 t_MINUS   = r'-'
 t_TIMES   = r'\*'
 t_DIV     = r'/'
+t_MOD 	  = r'%'
 
 t_NOTEQUAL = r'!='
 t_ISEQUAL = r'=='
@@ -129,6 +130,9 @@ t_MINUSMINUS = r'--'
 
 t_COMMENT = r'/\*.*\*/'
 t_COMMENTLINE = r'\\\\'
+
+t_STRCONC = r'&'
+t_ARROW = r'->'
 
 def t_INTCONST(t):
     r'\d+'

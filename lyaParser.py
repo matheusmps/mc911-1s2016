@@ -50,7 +50,7 @@ def p_statement (p):
 				 | procedure_statement
 				 | action_statement'''
 
-def p_declaration_statment (p):
+def p_declaration_statement (p):
 	'''declaration_statement : DCL declaration_list'''
 
 
@@ -143,7 +143,7 @@ def p_location (p):
 				| call_action'''
 
 def p_dereferenced_reference (p):
-	'''dereferenced_reference : location ->'''
+	'''dereferenced_reference : location ARROW'''
 
 # integer_expression as INTCONST token
 def p_string_element (p):
@@ -161,6 +161,195 @@ def p_expression_list (p):
 
 def p_array_slice (p):
 	'''array_slice : location LBRACKET expression COLON expression RBRACKET'''
+
+
+#####@@####### 16h
+
+
+def p_primitive_value (p):
+	'''primitive_calue  : literal
+						| value_array_element
+						| value_array_slice
+						| parenthesized_expression'''
+
+def p_literal (p):
+	'''literal  : INTCONST
+				| boolean_literal
+				| CHARCONST
+				| NULL
+				| STRINGCONST'''
+
+def p_boolean_literal (p):
+	'''boolean_literal  : FALSE
+						| TRUE'''
+
+def p_value_array_element (p):
+	'''value_array_element : primitive_value LBRACKET expression_list RBRACKET'''
+
+def p_value_array_slice (p):
+	'''value_array_slice : primitive_value LBRACKET LOWER COLON UPPER RBRACKET'''
+
+def p_parethesized_expression (p):
+	'''parenthesized_expression : LPAREN expression RPAREN'''
+
+def p_expression (p):
+	'''expression 	: operand0 
+					| conditional_expression'''
+
+def p_condicional_expression (p):
+	'''condicional_expression 	: IF boolean_expression then_expression else_expression FI
+								| : IF boolean_expression then_expression elsif_expression else_expression FI'''
+
+def p_boolean_expression (p):
+	'''boolean_expresion : expression'''
+
+def p_then_expression (p):
+	'''then_expression : THEN expression '''
+
+def p_else_expression (p):
+	'''else_expression : ELSE expression '''
+
+def p_elsif_expression (p):
+	'''elsif_expression : ELSIF boolean_expression then_expression
+						| elsif_expression ELSIF boolean_expression then_expression '''
+
+def p_operand0 (p):
+	'''operand0 : operand1
+				| operand0 operator1 operand1 '''
+
+def p_operator1 (p):
+	'''operator1 	: relational_operator
+					| IN'''
+
+def p_relational_operator (p):
+	'''relational_operator 	: AND
+							| OR
+							| ISEQUAL
+							| NOTEQUAL
+							| GT
+							| GE
+							| LT
+							| LE'''
+
+def p_operand1 (p):
+	'''operand1 : operand2
+				| operand1 operator2 operand2 '''
+
+def p_operator2 (p):
+	'''operator2 	: arithmetic_additive_operator
+					| STRCONC'''
+
+def p_arithmetic_additive_operator (p):
+	'''arithmetic_additive_operator : PLUS
+									| MINUS '''
+
+def p_operand2 (p):
+	'''operand2 : operand3
+				| operand2 arithmetic_multiplicative_operator operand3 '''
+
+def p_arithmetic_multiplicative_operator (p):
+	'''arithmetic_multiplicative_operator 	: TIMES
+											| DIV
+											| MOD'''
+
+def p_operand3 (p):
+	'''operand3 : operand4
+				| monadic_operator operand4
+				| INTCONST '''
+
+def p_monadic_operator (p):
+	'''monadic_operator : MINUS
+						| NOT'''
+
+def p_operand4 (p):
+	'''operand4 : location
+				| referenced_location
+				| primitive_value '''
+
+def p_referenced_location (p):
+	'''referenced_location : ARROW location '''
+
+def p_action_statement (p):
+	'''action_statement : action
+						| ID COLON action '''
+
+def p_action (p):
+	'''action 	: bracketed_action
+				| assignment_action
+				| call_action
+				| exit_action
+				| return_action
+				| result_action  '''
+
+def p_bracketed_action (p):
+	'''bracketed_action : if_action
+						| do_action '''
+
+def p_assignment_action (p):
+	'''assignment_action : location assigning_operator expression '''
+
+def p_assigning_operator (p):
+	'''assigning_operator 	: EQUALS
+							| closed_dyadic_operator EQUALS '''
+
+def p_closed_dyadic_operator (p):
+	'''closed_dyadic_operator 	: arithmetic_additive_operator
+								| arithmetic_multiplicative_operator
+								| STRCONC '''
+
+def p_if_action (p):
+	'''if_action 	: IF boolean_expression then_clause FI
+					| IF boolean_expression then_clause else_clause FI '''
+
+def p_then_clause (p):
+	'''then_clause 	: THEN
+					: THEN action_list '''
+
+def p_action_list(p):
+	'''action_list 	: action_statement
+					| action_statement action_list'''
+
+def p_else_clause (p):
+	'''else_clause 	: ELSE action_list
+					| ELSIF boolean_expression then_clause
+					| ELSIF boolean_expression then_clause else_clause '''
+
+def p_do_action (p):
+	'''do_action 	: DO action_list OD 
+					| DO control_part SMC action_list OD'''
+
+def p_control_part (p):
+	'''control_part : for_control
+					| for_control while_control
+					| while_control '''
+
+def p_for_control (p):
+	'''for_control 	: FOR iteration '''
+
+def p_iteration (p):
+	'''iteration 	: step_enumeration
+					| range_enumeration '''
+
+def p_step_enumeration (p):
+	'''step_enumeration : ID EQUAL expression TO expression
+						| ID EQUAL expression step_value TO expression
+						| ID EQUAL expression step_value DOWN TO expression
+						| ID EQUAL expression DOWN TO expression'''
+
+def p_step_value (p):
+	'''step_value : BY INTCONST '''
+
+def p_range_enumeration (p):
+	'''range_enumeration 	: ID IN  ID
+							| ID DOWN IN ID'''
+
+def p_while_control (p):
+	'''while_control : WHILE boolean_expression '''
+
+
+
+
+
 
 #########@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#############
 
