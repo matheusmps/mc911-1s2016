@@ -4,41 +4,6 @@ import ply.yacc as yacc
 # Get the token map from the lexer.  This is required.
 from calclex import tokens
 
-def p_negative(p):
-	'expression : MINUS expression'
-	p[0] = -p[2]
-
-def p_binary_operators(p):
-    '''expression : expression PLUS term
-				  | expression : expression MINUS term
-			term  : term TIMES factor
-				  | term DIVIDE factor'''
-    if p[2] == '+':
-    p[0] = p[1] + p[3]
-    elif p[2] == '-':
-    p[0] = p[1] - p[3]
-	elif p[2] == '*':
-	p[0] = p[1] * p[3]
-	elif p[2] == '/':
-	p[0] = p[1] / p[3]
-
-def p_expression_term(p):
-    'expression : term'
-    p[0] = p[1]
-    
-def p_term_factor(p):
-    'term : factor'
-    p[0] = p[1]
-
-def p_factor_num(p):
-    'factor : NUMBER'
-    p[0] = p[1]
-
-def p_factor_expr(p):
-    'factor : LPAREN expression RPAREN'
-    p[0] = p[2]
-
-
 def p_program (p): 
 	'''program  : statement
 				| statement statement'''
@@ -346,9 +311,83 @@ def p_range_enumeration (p):
 def p_while_control (p):
 	'''while_control : WHILE boolean_expression '''
 
+def p_call_action(p):
+	'''call_action 	: procedure_call
+					| builtin_call '''
 
+def p_procedure_call (p):
+	'''procedure_call 	: ID LPAREN RPAREN
+						| ID LPAREN parameter_list RPAREN '''
 
+def p_parameter_list(p):
+	'''parameter_list 	: expression
+						| expression COMMA parameter_list '''
 
+def p_exit_action(p):
+	'''exit_action : EXIT ID '''
+
+def p_return_action(p):
+	'''return_action 	: RETURN
+						| RETURN expression '''
+
+def p_result_action(p):
+	'''result_action : RESULT expression '''
+
+def p_builtin_call (p):
+	'''builtin_call : builtin_name LPAREN RPAREN
+					| builtin_name LPAREN parameter_list RPAREN '''
+
+def p_builtin_name (p):
+	'''builtin_name : NUM
+					| PRED
+					| SUCC
+					| UPPER
+					| LOWER
+					| LENGTH
+					| READ
+					| PRINT '''
+
+def p_procedure_statement (p):
+	'''procedure_statement : ID COLON procedure_definition SMC'''
+
+def p_procedure_definition (p):
+	'''procedure_definition : PROC LPAREN RPAREN SMC END 
+							| PROC LPAREN formal_parameter_list RPAREN SMC END
+							| PROC LPAREN formal_parameter_list RPAREN result_spec SMC END
+							| PROC LPAREN formal_parameter_list RPAREN result_spec SMC statement_list END
+							| PROC LPAREN formal_parameter_list RPAREN SMC statement_list END
+							| PROC LPAREN RPAREN result_spec SMC statement_list END
+							| PROC LPAREN RPAREN SMC statement_list END
+							| PROC LPAREN RPAREN result_spec SMC END'''
+
+def p_statement_list (p):
+	'''statement_list 	: statement
+						| statement statement_list'''
+
+def p_formal_parameter_list (p):
+	'''formal_parameter_list 	: formal_parameter
+								| formal_parameter COMMA formal_parameter_list '''
+
+def p_formal_parameter (p):
+	'''formal_parameter : id_list parameter_spec '''
+
+def p_parameter_spec (p):
+	'''parameter_spec  	: mode
+						| mode LOC '''
+
+def p_result_spec (p):
+	'''result_spec 	: RETURNS LPAREN mode RPAREN
+					| RETURNS LPAREN mode LOC RETURNS'''
+
+def p_comment (p):
+	'''comment 	: bracketed_comment
+				| line_end_comment '''
+
+def p_bracketed_comment (p):
+	'''bracketed_comment : COMMENT'''
+
+def p_line_end_comment (p):
+	'''line_end_comment : COMMENTLINE'''
 
 
 #########@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#############
