@@ -1,5 +1,5 @@
 import sys
-from lyaLexer import LyaLexer
+from parser import LyaParser
 
-lexer = LyaLexer()
-lexer.listTokens(sys.argv[1])
+parser = LyaParser()
+parser.testLexer(sys.argv[1])
