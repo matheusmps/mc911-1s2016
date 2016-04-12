@@ -2,10 +2,12 @@ import ply.lex as lex
 import sys
 
 class LyaLexer(object):
-	def __init__(self, lBraceFunc, rBraceFunc):
+	def __init__(self, error_func, lBraceFunc, rBraceFunc):
 		self.last_token = None
+		self.error_func = error_func
 		self.lBraceFunc = lBraceFunc
 		self.rBraceFunc = rBraceFunc
+		self.filename = ''
 
 	def reset(self):
 		self.lexer.lineno = 1
@@ -20,6 +22,11 @@ class LyaLexer(object):
 	def token(self):
 		self.last_token = self.lexer.token()
 		return self.last_token
+	
+	def find_tok_column(self, token):
+		""" Find the column of the token in its line."""
+		last_cr = self.lexer.lexdata.rfind('\n', 0, token.lexpos)
+		return token.lexpos - last_cr
 		
 	def listTokens(self, filePath):
 		""" Used only for tests. """
@@ -36,6 +43,14 @@ class LyaLexer(object):
 		with open(filePath, 'r') as myFile:
 			data = myFile.read()
 		return data
+	
+	def _error(self, msg, token):
+		location = self._make_tok_location(token)
+		self.error_func(msg, location[0], location[1])
+		self.lexer.skip(1)
+	
+	def _make_tok_location(self, token):
+		return (token.lineno, self.find_tok_column(token))
 
 	#-----------------------------#
 	#------ RESERVED WORDS -------#
@@ -180,8 +195,8 @@ class LyaLexer(object):
 		t.value = int(t.value)    
 		return t
 		
-	t_STRINGCONST = r'\".+\"'
-	t_CHARCONST = r'\'.\''
+	t_STRINGCONST = r'\".*\"'
+	t_CHARCONST = r'\'.*\''
 
 	# This code handles reserved words as well
 	# It reduces an expression to this rule and try to look for a reserved word.
@@ -203,6 +218,5 @@ class LyaLexer(object):
 
 	# Error handling rule
 	def t_error(self, t):
-		print("Illegal character '%s'" % t.value[0])
-		t.lexer.skip(1)
-
+		msg = "Illegal character %s" % repr(t.value[0])
+		self._error(msg, t)

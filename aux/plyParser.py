@@ -17,7 +17,9 @@ class ParseError(Exception): pass
 
 class PLYParser(object):
 	def _coord(self, lineno, column=None):
-		return Coord(file = self.lex.filename, line = lineno, column=column)
+		return Coord(file = self.lexer.filename, 
+			line = lineno, 
+			column=column)
 
 	def _parse_error(self, coord, msg):
-		raise ParseError("%s: %s" % (msg, coord))
+		raise ParseError("%s: %s" % (msg, repr(coord)))

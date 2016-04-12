@@ -2,7 +2,6 @@
 dcl m,n,s int;
 
 read(m,n){
-
 };
 
 s = 0;
