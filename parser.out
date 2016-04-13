@@ -2,82 +2,52 @@ Created by PLY version 3.8 (http://www.dabeaz.com/ply)
 
 Unused terminals:
 
-    OR
-    TO
-    LOWER
-    PRED
-    ELSE
-    RBRACE
-    EQUALS
     ARRAY
-    MINUSMINUS
-    CHARCONST
-    LBRACE
-    ARROW
-    UPPER
-    CHAR
+    ELSIF
     PROC
-    REF
-    DIVEQ
-    AND
-    PERIOD
-    DIV
-    MINUSEQ
-    RESULT
-    RETURN
-    NUM
+    BY
+    LOWER
+    RPAREN
+    LBRACE
+    LENGTH
     RBRACKET
+    WHILE
+    PLUSEQ
+    FOR
+    RBRACE
+    IF
     SYN
     SUCC
-    TIMES
-    PRINT
-    PLUSEQ
-    READ
-    GE
-    MOD
-    THEN
-    LENGTH
-    BOOL
-    NOTEQUAL
-    COMMENT
-    STRCONC
+    UPPER
+    TO
     LPAREN
-    RPAREN
-    BY
-    MINUS
-    TIMESEQ
-    EXIT
-    END
-    MODEQ
-    STRINGCONST
-    DO
-    LT
-    RETURNS
-    FOR
-    FALSE
-    TYPE
-    DOWN
-    ELSIF
-    FI
     CHARS
-    COMMENTLINE
-    IN
-    NOT
-    PLUS
-    ISEQUAL
-    NULL
-    TRUE
-    GT
-    WHILE
-    INT
-    COLON
-    LBRACKET
-    IF
-    LOC
-    INTCONST
+    PERIOD
+    TYPE
+    MINUSMINUS
+    READ
+    RETURNS
+    MODEQ
+    EXIT
+    NUM
     OD
+    END
+    PRED
+    THEN
+    PRINT
+    DO
+    DOWN
+    FI
+    ELSE
+    MINUSEQ
+    RETURN
+    LOC
+    REF
+    TIMESEQ
+    DIVEQ
+    RESULT
     PLUSPLUS
-    LE
+    LBRACKET
 
 Grammar
 
@@ -85,69 +55,131 @@ Rule 0     S' -> program
 Rule 1     program -> statement
 Rule 2     program -> statement statement
 Rule 3     statement -> declaration_statement
-Rule 4     declaration_statement -> DCL declaration_list SMC
-Rule 5     declaration_list -> declaration
-Rule 6     declaration_list -> declaration COMMA declaration_list
-Rule 7     declaration -> id_list
-Rule 8     id_list -> ID
-Rule 9     id_list -> id_list COMMA ID
+Rule 4     statement -> comment
+Rule 5     statement -> action_statement
+Rule 6     declaration_statement -> DCL declaration_list SMC
+Rule 7     declaration_list -> declaration
+Rule 8     declaration_list -> declaration COMMA declaration_list
+Rule 9     declaration -> id_list mode
+Rule 10    id_list -> ID
+Rule 11    id_list -> id_list COMMA ID
+Rule 12    mode -> ID
+Rule 13    mode -> discrete_mode
+Rule 14    discrete_mode -> INT
+Rule 15    discrete_mode -> BOOL
+Rule 16    discrete_mode -> CHAR
+Rule 17    action_statement -> action
+Rule 18    action_statement -> ID COLON action
+Rule 19    action -> assignment_action
+Rule 20    assignment_action -> location assigning_operator expression
+Rule 21    assigning_operator -> EQUALS
+Rule 22    assigning_operator -> closed_dyadic_operator EQUALS
+Rule 23    closed_dyadic_operator -> arithmetic_additive_operator
+Rule 24    closed_dyadic_operator -> arithmetic_multiplicative_operator
+Rule 25    closed_dyadic_operator -> STRCONC
+Rule 26    expression -> operand0
+Rule 27    operand0 -> operand1
+Rule 28    operand0 -> operand0 operator1 operand1
+Rule 29    operator1 -> relational_operator
+Rule 30    operator1 -> IN
+Rule 31    relational_operator -> AND
+Rule 32    relational_operator -> OR
+Rule 33    relational_operator -> ISEQUAL
+Rule 34    relational_operator -> NOTEQUAL
+Rule 35    relational_operator -> GT
+Rule 36    relational_operator -> GE
+Rule 37    relational_operator -> LT
+Rule 38    relational_operator -> LE
+Rule 39    operand1 -> operand2
+Rule 40    operand1 -> operand1 operator2 operand2
+Rule 41    operator2 -> arithmetic_additive_operator
+Rule 42    operator2 -> STRCONC
+Rule 43    arithmetic_additive_operator -> PLUS
+Rule 44    arithmetic_additive_operator -> MINUS
+Rule 45    operand2 -> operand3
+Rule 46    operand2 -> operand2 arithmetic_multiplicative_operator operand3
+Rule 47    arithmetic_multiplicative_operator -> TIMES
+Rule 48    arithmetic_multiplicative_operator -> DIV
+Rule 49    arithmetic_multiplicative_operator -> MOD
+Rule 50    operand3 -> operand4
+Rule 51    operand3 -> monadic_operator operand4
+Rule 52    operand3 -> INTCONST
+Rule 53    monadic_operator -> MINUS
+Rule 54    monadic_operator -> NOT
+Rule 55    operand4 -> primitive_value
+Rule 56    operand4 -> location
+Rule 57    operand4 -> referenced_location
+Rule 58    referenced_location -> ARROW location
+Rule 59    location -> ID
+Rule 60    primitive_value -> literal
+Rule 61    literal -> INTCONST
+Rule 62    literal -> boolean_literal
+Rule 63    literal -> CHARCONST
+Rule 64    literal -> NULL
+Rule 65    literal -> STRINGCONST
+Rule 66    boolean_literal -> FALSE
+Rule 67    boolean_literal -> TRUE
+Rule 68    comment -> bracketed_comment
+Rule 69    comment -> line_end_comment
+Rule 70    bracketed_comment -> COMMENT
+Rule 71    line_end_comment -> COMMENTLINE
 
 Terminals, with rules where they appear
 
-AND                  : 
+AND                  : 31
 ARRAY                : 
-ARROW                : 
-BOOL                 : 
+ARROW                : 58
+BOOL                 : 15
 BY                   : 
-CHAR                 : 
-CHARCONST            : 
+CHAR                 : 16
+CHARCONST            : 63
 CHARS                : 
-COLON                : 
-COMMA                : 6 9
-COMMENT              : 
-COMMENTLINE          : 
-DCL                  : 4
-DIV                  : 
+COLON                : 18
+COMMA                : 8 11
+COMMENT              : 70
+COMMENTLINE          : 71
+DCL                  : 6
+DIV                  : 48
 DIVEQ                : 
 DO                   : 
 DOWN                 : 
 ELSE                 : 
 ELSIF                : 
 END                  : 
-EQUALS               : 
+EQUALS               : 21 22
 EXIT                 : 
-FALSE                : 
+FALSE                : 66
 FI                   : 
 FOR                  : 
-GE                   : 
-GT                   : 
-ID                   : 8 9
+GE                   : 36
+GT                   : 35
+ID                   : 10 11 12 18 59
 IF                   : 
-IN                   : 
-INT                  : 
-INTCONST             : 
-ISEQUAL              : 
+IN                   : 30
+INT                  : 14
+INTCONST             : 52 61
+ISEQUAL              : 33
 LBRACE               : 
 LBRACKET             : 
-LE                   : 
+LE                   : 38
 LENGTH               : 
 LOC                  : 
 LOWER                : 
 LPAREN               : 
-LT                   : 
-MINUS                : 
+LT                   : 37
+MINUS                : 44 53
 MINUSEQ              : 
 MINUSMINUS           : 
-MOD                  : 
+MOD                  : 49
 MODEQ                : 
-NOT                  : 
-NOTEQUAL             : 
-NULL                 : 
+NOT                  : 54
+NOTEQUAL             : 34
+NULL                 : 64
 NUM                  : 
 OD                   : 
-OR                   : 
+OR                   : 32
 PERIOD               : 
-PLUS                 : 
+PLUS                 : 43
 PLUSEQ               : 
 PLUSPLUS             : 
 PRED                 : 
@@ -161,16 +193,16 @@ RESULT               :
 RETURN               : 
 RETURNS              : 
 RPAREN               : 
-SMC                  : 4
-STRCONC              : 
-STRINGCONST          : 
+SMC                  : 6
+STRCONC              : 25 42
+STRINGCONST          : 65
 SUCC                 : 
 SYN                  : 
 THEN                 : 
-TIMES                : 
+TIMES                : 47
 TIMESEQ              : 
 TO                   : 
-TRUE                 : 
+TRUE                 : 67
 TYPE                 : 
 UPPER                : 
 WHILE                : 
@@ -178,11 +210,38 @@ error                :
 
 Nonterminals, with rules where they appear
 
-declaration          : 5 6
-declaration_list     : 4 6
+action               : 17 18
+action_statement     : 5
+arithmetic_additive_operator : 23 41
+arithmetic_multiplicative_operator : 24 46
+assigning_operator   : 20
+assignment_action    : 19
+boolean_literal      : 62
+bracketed_comment    : 68
+closed_dyadic_operator : 22
+comment              : 4
+declaration          : 7 8
+declaration_list     : 6 8
 declaration_statement : 3
-id_list              : 7 9
+discrete_mode        : 13
+expression           : 20
+id_list              : 9 11
+line_end_comment     : 69
+literal              : 60
+location             : 20 56 58
+mode                 : 9
+monadic_operator     : 51
+operand0             : 26 28
+operand1             : 27 28 40
+operand2             : 39 40 46
+operand3             : 45 46
+operand4             : 50 51
+operator1            : 28
+operator2            : 40
+primitive_value      : 55
 program              : 0
+referenced_location  : 57
+relational_operator  : 29
 statement            : 1 2 2
 
 Parsing method: LALR
@@ -193,144 +252,1680 @@ state 0
     (1) program -> . statement
     (2) program -> . statement statement
     (3) statement -> . declaration_statement
-    (4) declaration_statement -> . DCL declaration_list SMC
+    (4) statement -> . comment
+    (5) statement -> . action_statement
+    (6) declaration_statement -> . DCL declaration_list SMC
+    (68) comment -> . bracketed_comment
+    (69) comment -> . line_end_comment
+    (17) action_statement -> . action
+    (18) action_statement -> . ID COLON action
+    (70) bracketed_comment -> . COMMENT
+    (71) line_end_comment -> . COMMENTLINE
+    (19) action -> . assignment_action
+    (20) assignment_action -> . location assigning_operator expression
+    (59) location -> . ID
 
-    DCL             shift and go to state 3
+    DCL             shift and go to state 5
+    ID              shift and go to state 4
+    COMMENT         shift and go to state 11
+    COMMENTLINE     shift and go to state 7
 
-    statement                      shift and go to state 1
-    declaration_statement          shift and go to state 2
-    program                        shift and go to state 4
+    line_end_comment               shift and go to state 8
+    comment                        shift and go to state 1
+    action                         shift and go to state 3
+    bracketed_comment              shift and go to state 6
+    declaration_statement          shift and go to state 14
+    location                       shift and go to state 2
+    statement                      shift and go to state 9
+    program                        shift and go to state 10
+    assignment_action              shift and go to state 12
+    action_statement               shift and go to state 13
 
 state 1
+
+    (4) statement -> comment .
+
+    DCL             reduce using rule 4 (statement -> comment .)
+    ID              reduce using rule 4 (statement -> comment .)
+    COMMENT         reduce using rule 4 (statement -> comment .)
+    COMMENTLINE     reduce using rule 4 (statement -> comment .)
+    $end            reduce using rule 4 (statement -> comment .)
+
+
+state 2
+
+    (20) assignment_action -> location . assigning_operator expression
+    (21) assigning_operator -> . EQUALS
+    (22) assigning_operator -> . closed_dyadic_operator EQUALS
+    (23) closed_dyadic_operator -> . arithmetic_additive_operator
+    (24) closed_dyadic_operator -> . arithmetic_multiplicative_operator
+    (25) closed_dyadic_operator -> . STRCONC
+    (43) arithmetic_additive_operator -> . PLUS
+    (44) arithmetic_additive_operator -> . MINUS
+    (47) arithmetic_multiplicative_operator -> . TIMES
+    (48) arithmetic_multiplicative_operator -> . DIV
+    (49) arithmetic_multiplicative_operator -> . MOD
+
+    EQUALS          shift and go to state 22
+    STRCONC         shift and go to state 20
+    PLUS            shift and go to state 19
+    MINUS           shift and go to state 18
+    TIMES           shift and go to state 15
+    DIV             shift and go to state 25
+    MOD             shift and go to state 24
+
+    assigning_operator             shift and go to state 23
+    closed_dyadic_operator         shift and go to state 16
+    arithmetic_additive_operator   shift and go to state 17
+    arithmetic_multiplicative_operator shift and go to state 21
+
+state 3
+
+    (17) action_statement -> action .
+
+    $end            reduce using rule 17 (action_statement -> action .)
+    DCL             reduce using rule 17 (action_statement -> action .)
+    ID              reduce using rule 17 (action_statement -> action .)
+    COMMENT         reduce using rule 17 (action_statement -> action .)
+    COMMENTLINE     reduce using rule 17 (action_statement -> action .)
+
+
+state 4
+
+    (18) action_statement -> ID . COLON action
+    (59) location -> ID .
+
+    COLON           shift and go to state 26
+    EQUALS          reduce using rule 59 (location -> ID .)
+    STRCONC         reduce using rule 59 (location -> ID .)
+    PLUS            reduce using rule 59 (location -> ID .)
+    MINUS           reduce using rule 59 (location -> ID .)
+    TIMES           reduce using rule 59 (location -> ID .)
+    DIV             reduce using rule 59 (location -> ID .)
+    MOD             reduce using rule 59 (location -> ID .)
+
+
+state 5
+
+    (6) declaration_statement -> DCL . declaration_list SMC
+    (7) declaration_list -> . declaration
+    (8) declaration_list -> . declaration COMMA declaration_list
+    (9) declaration -> . id_list mode
+    (10) id_list -> . ID
+    (11) id_list -> . id_list COMMA ID
+
+    ID              shift and go to state 30
+
+    id_list                        shift and go to state 27
+    declaration_list               shift and go to state 29
+    declaration                    shift and go to state 28
+
+state 6
+
+    (68) comment -> bracketed_comment .
+
+    DCL             reduce using rule 68 (comment -> bracketed_comment .)
+    ID              reduce using rule 68 (comment -> bracketed_comment .)
+    COMMENT         reduce using rule 68 (comment -> bracketed_comment .)
+    COMMENTLINE     reduce using rule 68 (comment -> bracketed_comment .)
+    $end            reduce using rule 68 (comment -> bracketed_comment .)
+
+
+state 7
+
+    (71) line_end_comment -> COMMENTLINE .
+
+    DCL             reduce using rule 71 (line_end_comment -> COMMENTLINE .)
+    ID              reduce using rule 71 (line_end_comment -> COMMENTLINE .)
+    COMMENT         reduce using rule 71 (line_end_comment -> COMMENTLINE .)
+    COMMENTLINE     reduce using rule 71 (line_end_comment -> COMMENTLINE .)
+    $end            reduce using rule 71 (line_end_comment -> COMMENTLINE .)
+
+
+state 8
+
+    (69) comment -> line_end_comment .
+
+    DCL             reduce using rule 69 (comment -> line_end_comment .)
+    ID              reduce using rule 69 (comment -> line_end_comment .)
+    COMMENT         reduce using rule 69 (comment -> line_end_comment .)
+    COMMENTLINE     reduce using rule 69 (comment -> line_end_comment .)
+    $end            reduce using rule 69 (comment -> line_end_comment .)
+
+
+state 9
 
     (1) program -> statement .
     (2) program -> statement . statement
     (3) statement -> . declaration_statement
-    (4) declaration_statement -> . DCL declaration_list SMC
+    (4) statement -> . comment
+    (5) statement -> . action_statement
+    (6) declaration_statement -> . DCL declaration_list SMC
+    (68) comment -> . bracketed_comment
+    (69) comment -> . line_end_comment
+    (17) action_statement -> . action
+    (18) action_statement -> . ID COLON action
+    (70) bracketed_comment -> . COMMENT
+    (71) line_end_comment -> . COMMENTLINE
+    (19) action -> . assignment_action
+    (20) assignment_action -> . location assigning_operator expression
+    (59) location -> . ID
 
     $end            reduce using rule 1 (program -> statement .)
-    DCL             shift and go to state 3
+    DCL             shift and go to state 5
+    ID              shift and go to state 4
+    COMMENT         shift and go to state 11
+    COMMENTLINE     shift and go to state 7
 
-    statement                      shift and go to state 5
-    declaration_statement          shift and go to state 2
+    line_end_comment               shift and go to state 8
+    comment                        shift and go to state 1
+    action                         shift and go to state 3
+    bracketed_comment              shift and go to state 6
+    declaration_statement          shift and go to state 14
+    location                       shift and go to state 2
+    statement                      shift and go to state 31
+    assignment_action              shift and go to state 12
+    action_statement               shift and go to state 13
 
-state 2
-
-    (3) statement -> declaration_statement .
-
-    $end            reduce using rule 3 (statement -> declaration_statement .)
-    DCL             reduce using rule 3 (statement -> declaration_statement .)
-
-
-state 3
-
-    (4) declaration_statement -> DCL . declaration_list SMC
-    (5) declaration_list -> . declaration
-    (6) declaration_list -> . declaration COMMA declaration_list
-    (7) declaration -> . id_list
-    (8) id_list -> . ID
-    (9) id_list -> . id_list COMMA ID
-
-    ID              shift and go to state 6
-
-    id_list                        shift and go to state 8
-    declaration                    shift and go to state 9
-    declaration_list               shift and go to state 7
-
-state 4
+state 10
 
     (0) S' -> program .
 
 
 
-state 5
+state 11
+
+    (70) bracketed_comment -> COMMENT .
+
+    DCL             reduce using rule 70 (bracketed_comment -> COMMENT .)
+    ID              reduce using rule 70 (bracketed_comment -> COMMENT .)
+    COMMENT         reduce using rule 70 (bracketed_comment -> COMMENT .)
+    COMMENTLINE     reduce using rule 70 (bracketed_comment -> COMMENT .)
+    $end            reduce using rule 70 (bracketed_comment -> COMMENT .)
+
+
+state 12
+
+    (19) action -> assignment_action .
+
+    DCL             reduce using rule 19 (action -> assignment_action .)
+    ID              reduce using rule 19 (action -> assignment_action .)
+    COMMENT         reduce using rule 19 (action -> assignment_action .)
+    COMMENTLINE     reduce using rule 19 (action -> assignment_action .)
+    $end            reduce using rule 19 (action -> assignment_action .)
+
+
+state 13
+
+    (5) statement -> action_statement .
+
+    DCL             reduce using rule 5 (statement -> action_statement .)
+    ID              reduce using rule 5 (statement -> action_statement .)
+    COMMENT         reduce using rule 5 (statement -> action_statement .)
+    COMMENTLINE     reduce using rule 5 (statement -> action_statement .)
+    $end            reduce using rule 5 (statement -> action_statement .)
+
+
+state 14
+
+    (3) statement -> declaration_statement .
+
+    DCL             reduce using rule 3 (statement -> declaration_statement .)
+    ID              reduce using rule 3 (statement -> declaration_statement .)
+    COMMENT         reduce using rule 3 (statement -> declaration_statement .)
+    COMMENTLINE     reduce using rule 3 (statement -> declaration_statement .)
+    $end            reduce using rule 3 (statement -> declaration_statement .)
+
+
+state 15
+
+    (47) arithmetic_multiplicative_operator -> TIMES .
+
+    INTCONST        reduce using rule 47 (arithmetic_multiplicative_operator -> TIMES .)
+    MINUS           reduce using rule 47 (arithmetic_multiplicative_operator -> TIMES .)
+    NOT             reduce using rule 47 (arithmetic_multiplicative_operator -> TIMES .)
+    ID              reduce using rule 47 (arithmetic_multiplicative_operator -> TIMES .)
+    ARROW           reduce using rule 47 (arithmetic_multiplicative_operator -> TIMES .)
+    CHARCONST       reduce using rule 47 (arithmetic_multiplicative_operator -> TIMES .)
+    NULL            reduce using rule 47 (arithmetic_multiplicative_operator -> TIMES .)
+    STRINGCONST     reduce using rule 47 (arithmetic_multiplicative_operator -> TIMES .)
+    FALSE           reduce using rule 47 (arithmetic_multiplicative_operator -> TIMES .)
+    TRUE            reduce using rule 47 (arithmetic_multiplicative_operator -> TIMES .)
+    EQUALS          reduce using rule 47 (arithmetic_multiplicative_operator -> TIMES .)
+
+
+state 16
+
+    (22) assigning_operator -> closed_dyadic_operator . EQUALS
+
+    EQUALS          shift and go to state 32
+
+
+state 17
+
+    (23) closed_dyadic_operator -> arithmetic_additive_operator .
+
+    EQUALS          reduce using rule 23 (closed_dyadic_operator -> arithmetic_additive_operator .)
+
+
+state 18
+
+    (44) arithmetic_additive_operator -> MINUS .
+
+    INTCONST        reduce using rule 44 (arithmetic_additive_operator -> MINUS .)
+    MINUS           reduce using rule 44 (arithmetic_additive_operator -> MINUS .)
+    NOT             reduce using rule 44 (arithmetic_additive_operator -> MINUS .)
+    ID              reduce using rule 44 (arithmetic_additive_operator -> MINUS .)
+    ARROW           reduce using rule 44 (arithmetic_additive_operator -> MINUS .)
+    CHARCONST       reduce using rule 44 (arithmetic_additive_operator -> MINUS .)
+    NULL            reduce using rule 44 (arithmetic_additive_operator -> MINUS .)
+    STRINGCONST     reduce using rule 44 (arithmetic_additive_operator -> MINUS .)
+    FALSE           reduce using rule 44 (arithmetic_additive_operator -> MINUS .)
+    TRUE            reduce using rule 44 (arithmetic_additive_operator -> MINUS .)
+    EQUALS          reduce using rule 44 (arithmetic_additive_operator -> MINUS .)
+
+
+state 19
+
+    (43) arithmetic_additive_operator -> PLUS .
+
+    INTCONST        reduce using rule 43 (arithmetic_additive_operator -> PLUS .)
+    MINUS           reduce using rule 43 (arithmetic_additive_operator -> PLUS .)
+    NOT             reduce using rule 43 (arithmetic_additive_operator -> PLUS .)
+    ID              reduce using rule 43 (arithmetic_additive_operator -> PLUS .)
+    ARROW           reduce using rule 43 (arithmetic_additive_operator -> PLUS .)
+    CHARCONST       reduce using rule 43 (arithmetic_additive_operator -> PLUS .)
+    NULL            reduce using rule 43 (arithmetic_additive_operator -> PLUS .)
+    STRINGCONST     reduce using rule 43 (arithmetic_additive_operator -> PLUS .)
+    FALSE           reduce using rule 43 (arithmetic_additive_operator -> PLUS .)
+    TRUE            reduce using rule 43 (arithmetic_additive_operator -> PLUS .)
+    EQUALS          reduce using rule 43 (arithmetic_additive_operator -> PLUS .)
+
+
+state 20
+
+    (25) closed_dyadic_operator -> STRCONC .
+
+    EQUALS          reduce using rule 25 (closed_dyadic_operator -> STRCONC .)
+
+
+state 21
+
+    (24) closed_dyadic_operator -> arithmetic_multiplicative_operator .
+
+    EQUALS          reduce using rule 24 (closed_dyadic_operator -> arithmetic_multiplicative_operator .)
+
+
+state 22
+
+    (21) assigning_operator -> EQUALS .
+
+    INTCONST        reduce using rule 21 (assigning_operator -> EQUALS .)
+    MINUS           reduce using rule 21 (assigning_operator -> EQUALS .)
+    NOT             reduce using rule 21 (assigning_operator -> EQUALS .)
+    ID              reduce using rule 21 (assigning_operator -> EQUALS .)
+    ARROW           reduce using rule 21 (assigning_operator -> EQUALS .)
+    CHARCONST       reduce using rule 21 (assigning_operator -> EQUALS .)
+    NULL            reduce using rule 21 (assigning_operator -> EQUALS .)
+    STRINGCONST     reduce using rule 21 (assigning_operator -> EQUALS .)
+    FALSE           reduce using rule 21 (assigning_operator -> EQUALS .)
+    TRUE            reduce using rule 21 (assigning_operator -> EQUALS .)
+
+
+state 23
+
+    (20) assignment_action -> location assigning_operator . expression
+    (26) expression -> . operand0
+    (27) operand0 -> . operand1
+    (28) operand0 -> . operand0 operator1 operand1
+    (39) operand1 -> . operand2
+    (40) operand1 -> . operand1 operator2 operand2
+    (45) operand2 -> . operand3
+    (46) operand2 -> . operand2 arithmetic_multiplicative_operator operand3
+    (50) operand3 -> . operand4
+    (51) operand3 -> . monadic_operator operand4
+    (52) operand3 -> . INTCONST
+    (55) operand4 -> . primitive_value
+    (56) operand4 -> . location
+    (57) operand4 -> . referenced_location
+    (53) monadic_operator -> . MINUS
+    (54) monadic_operator -> . NOT
+    (60) primitive_value -> . literal
+    (59) location -> . ID
+    (58) referenced_location -> . ARROW location
+    (61) literal -> . INTCONST
+    (62) literal -> . boolean_literal
+    (63) literal -> . CHARCONST
+    (64) literal -> . NULL
+    (65) literal -> . STRINGCONST
+    (66) boolean_literal -> . FALSE
+    (67) boolean_literal -> . TRUE
+
+    INTCONST        shift and go to state 33
+    MINUS           shift and go to state 36
+    NOT             shift and go to state 44
+    ID              shift and go to state 38
+    ARROW           shift and go to state 46
+    CHARCONST       shift and go to state 54
+    NULL            shift and go to state 35
+    STRINGCONST     shift and go to state 50
+    FALSE           shift and go to state 51
+    TRUE            shift and go to state 53
+
+    literal                        shift and go to state 34
+    monadic_operator               shift and go to state 45
+    referenced_location            shift and go to state 49
+    operand2                       shift and go to state 47
+    operand4                       shift and go to state 37
+    operand0                       shift and go to state 39
+    operand3                       shift and go to state 40
+    location                       shift and go to state 41
+    boolean_literal                shift and go to state 42
+    operand1                       shift and go to state 43
+    primitive_value                shift and go to state 52
+    expression                     shift and go to state 48
+
+state 24
+
+    (49) arithmetic_multiplicative_operator -> MOD .
+
+    INTCONST        reduce using rule 49 (arithmetic_multiplicative_operator -> MOD .)
+    MINUS           reduce using rule 49 (arithmetic_multiplicative_operator -> MOD .)
+    NOT             reduce using rule 49 (arithmetic_multiplicative_operator -> MOD .)
+    ID              reduce using rule 49 (arithmetic_multiplicative_operator -> MOD .)
+    ARROW           reduce using rule 49 (arithmetic_multiplicative_operator -> MOD .)
+    CHARCONST       reduce using rule 49 (arithmetic_multiplicative_operator -> MOD .)
+    NULL            reduce using rule 49 (arithmetic_multiplicative_operator -> MOD .)
+    STRINGCONST     reduce using rule 49 (arithmetic_multiplicative_operator -> MOD .)
+    FALSE           reduce using rule 49 (arithmetic_multiplicative_operator -> MOD .)
+    TRUE            reduce using rule 49 (arithmetic_multiplicative_operator -> MOD .)
+    EQUALS          reduce using rule 49 (arithmetic_multiplicative_operator -> MOD .)
+
+
+state 25
+
+    (48) arithmetic_multiplicative_operator -> DIV .
+
+    INTCONST        reduce using rule 48 (arithmetic_multiplicative_operator -> DIV .)
+    MINUS           reduce using rule 48 (arithmetic_multiplicative_operator -> DIV .)
+    NOT             reduce using rule 48 (arithmetic_multiplicative_operator -> DIV .)
+    ID              reduce using rule 48 (arithmetic_multiplicative_operator -> DIV .)
+    ARROW           reduce using rule 48 (arithmetic_multiplicative_operator -> DIV .)
+    CHARCONST       reduce using rule 48 (arithmetic_multiplicative_operator -> DIV .)
+    NULL            reduce using rule 48 (arithmetic_multiplicative_operator -> DIV .)
+    STRINGCONST     reduce using rule 48 (arithmetic_multiplicative_operator -> DIV .)
+    FALSE           reduce using rule 48 (arithmetic_multiplicative_operator -> DIV .)
+    TRUE            reduce using rule 48 (arithmetic_multiplicative_operator -> DIV .)
+    EQUALS          reduce using rule 48 (arithmetic_multiplicative_operator -> DIV .)
+
+
+state 26
+
+    (18) action_statement -> ID COLON . action
+    (19) action -> . assignment_action
+    (20) assignment_action -> . location assigning_operator expression
+    (59) location -> . ID
+
+    ID              shift and go to state 38
+
+    action                         shift and go to state 55
+    assignment_action              shift and go to state 12
+    location                       shift and go to state 2
+
+state 27
+
+    (9) declaration -> id_list . mode
+    (11) id_list -> id_list . COMMA ID
+    (12) mode -> . ID
+    (13) mode -> . discrete_mode
+    (14) discrete_mode -> . INT
+    (15) discrete_mode -> . BOOL
+    (16) discrete_mode -> . CHAR
+
+    COMMA           shift and go to state 59
+    ID              shift and go to state 61
+    INT             shift and go to state 62
+    BOOL            shift and go to state 58
+    CHAR            shift and go to state 57
+
+    discrete_mode                  shift and go to state 56
+    mode                           shift and go to state 60
+
+state 28
+
+    (7) declaration_list -> declaration .
+    (8) declaration_list -> declaration . COMMA declaration_list
+
+    SMC             reduce using rule 7 (declaration_list -> declaration .)
+    COMMA           shift and go to state 63
+
+
+state 29
+
+    (6) declaration_statement -> DCL declaration_list . SMC
+
+    SMC             shift and go to state 64
+
+
+state 30
+
+    (10) id_list -> ID .
+
+    COMMA           reduce using rule 10 (id_list -> ID .)
+    ID              reduce using rule 10 (id_list -> ID .)
+    INT             reduce using rule 10 (id_list -> ID .)
+    BOOL            reduce using rule 10 (id_list -> ID .)
+    CHAR            reduce using rule 10 (id_list -> ID .)
+
+
+state 31
 
     (2) program -> statement statement .
 
     $end            reduce using rule 2 (program -> statement statement .)
 
 
-state 6
+state 32
 
-    (8) id_list -> ID .
+    (22) assigning_operator -> closed_dyadic_operator EQUALS .
 
-    COMMA           reduce using rule 8 (id_list -> ID .)
-    SMC             reduce using rule 8 (id_list -> ID .)
-
-
-state 7
-
-    (4) declaration_statement -> DCL declaration_list . SMC
-
-    SMC             shift and go to state 10
-
-
-state 8
-
-    (7) declaration -> id_list .
-    (9) id_list -> id_list . COMMA ID
-
-  ! shift/reduce conflict for COMMA resolved as shift
-    SMC             reduce using rule 7 (declaration -> id_list .)
-    COMMA           shift and go to state 11
-
-  ! COMMA           [ reduce using rule 7 (declaration -> id_list .) ]
+    INTCONST        reduce using rule 22 (assigning_operator -> closed_dyadic_operator EQUALS .)
+    MINUS           reduce using rule 22 (assigning_operator -> closed_dyadic_operator EQUALS .)
+    NOT             reduce using rule 22 (assigning_operator -> closed_dyadic_operator EQUALS .)
+    ID              reduce using rule 22 (assigning_operator -> closed_dyadic_operator EQUALS .)
+    ARROW           reduce using rule 22 (assigning_operator -> closed_dyadic_operator EQUALS .)
+    CHARCONST       reduce using rule 22 (assigning_operator -> closed_dyadic_operator EQUALS .)
+    NULL            reduce using rule 22 (assigning_operator -> closed_dyadic_operator EQUALS .)
+    STRINGCONST     reduce using rule 22 (assigning_operator -> closed_dyadic_operator EQUALS .)
+    FALSE           reduce using rule 22 (assigning_operator -> closed_dyadic_operator EQUALS .)
+    TRUE            reduce using rule 22 (assigning_operator -> closed_dyadic_operator EQUALS .)
 
 
-state 9
+state 33
 
-    (5) declaration_list -> declaration .
-    (6) declaration_list -> declaration . COMMA declaration_list
+    (52) operand3 -> INTCONST .
+    (61) literal -> INTCONST .
 
-    SMC             reduce using rule 5 (declaration_list -> declaration .)
-    COMMA           shift and go to state 12
+  ! reduce/reduce conflict for TIMES resolved using rule 52 (operand3 -> INTCONST .)
+  ! reduce/reduce conflict for DIV resolved using rule 52 (operand3 -> INTCONST .)
+  ! reduce/reduce conflict for MOD resolved using rule 52 (operand3 -> INTCONST .)
+  ! reduce/reduce conflict for STRCONC resolved using rule 52 (operand3 -> INTCONST .)
+  ! reduce/reduce conflict for PLUS resolved using rule 52 (operand3 -> INTCONST .)
+  ! reduce/reduce conflict for MINUS resolved using rule 52 (operand3 -> INTCONST .)
+  ! reduce/reduce conflict for IN resolved using rule 52 (operand3 -> INTCONST .)
+  ! reduce/reduce conflict for AND resolved using rule 52 (operand3 -> INTCONST .)
+  ! reduce/reduce conflict for OR resolved using rule 52 (operand3 -> INTCONST .)
+  ! reduce/reduce conflict for ISEQUAL resolved using rule 52 (operand3 -> INTCONST .)
+  ! reduce/reduce conflict for NOTEQUAL resolved using rule 52 (operand3 -> INTCONST .)
+  ! reduce/reduce conflict for GT resolved using rule 52 (operand3 -> INTCONST .)
+  ! reduce/reduce conflict for GE resolved using rule 52 (operand3 -> INTCONST .)
+  ! reduce/reduce conflict for LT resolved using rule 52 (operand3 -> INTCONST .)
+  ! reduce/reduce conflict for LE resolved using rule 52 (operand3 -> INTCONST .)
+  ! reduce/reduce conflict for DCL resolved using rule 52 (operand3 -> INTCONST .)
+  ! reduce/reduce conflict for ID resolved using rule 52 (operand3 -> INTCONST .)
+  ! reduce/reduce conflict for COMMENT resolved using rule 52 (operand3 -> INTCONST .)
+  ! reduce/reduce conflict for COMMENTLINE resolved using rule 52 (operand3 -> INTCONST .)
+  ! reduce/reduce conflict for $end resolved using rule 52 (operand3 -> INTCONST .)
+    TIMES           reduce using rule 52 (operand3 -> INTCONST .)
+    DIV             reduce using rule 52 (operand3 -> INTCONST .)
+    MOD             reduce using rule 52 (operand3 -> INTCONST .)
+    STRCONC         reduce using rule 52 (operand3 -> INTCONST .)
+    PLUS            reduce using rule 52 (operand3 -> INTCONST .)
+    MINUS           reduce using rule 52 (operand3 -> INTCONST .)
+    IN              reduce using rule 52 (operand3 -> INTCONST .)
+    AND             reduce using rule 52 (operand3 -> INTCONST .)
+    OR              reduce using rule 52 (operand3 -> INTCONST .)
+    ISEQUAL         reduce using rule 52 (operand3 -> INTCONST .)
+    NOTEQUAL        reduce using rule 52 (operand3 -> INTCONST .)
+    GT              reduce using rule 52 (operand3 -> INTCONST .)
+    GE              reduce using rule 52 (operand3 -> INTCONST .)
+    LT              reduce using rule 52 (operand3 -> INTCONST .)
+    LE              reduce using rule 52 (operand3 -> INTCONST .)
+    DCL             reduce using rule 52 (operand3 -> INTCONST .)
+    ID              reduce using rule 52 (operand3 -> INTCONST .)
+    COMMENT         reduce using rule 52 (operand3 -> INTCONST .)
+    COMMENTLINE     reduce using rule 52 (operand3 -> INTCONST .)
+    $end            reduce using rule 52 (operand3 -> INTCONST .)
+
+  ! TIMES           [ reduce using rule 61 (literal -> INTCONST .) ]
+  ! DIV             [ reduce using rule 61 (literal -> INTCONST .) ]
+  ! MOD             [ reduce using rule 61 (literal -> INTCONST .) ]
+  ! STRCONC         [ reduce using rule 61 (literal -> INTCONST .) ]
+  ! PLUS            [ reduce using rule 61 (literal -> INTCONST .) ]
+  ! MINUS           [ reduce using rule 61 (literal -> INTCONST .) ]
+  ! IN              [ reduce using rule 61 (literal -> INTCONST .) ]
+  ! AND             [ reduce using rule 61 (literal -> INTCONST .) ]
+  ! OR              [ reduce using rule 61 (literal -> INTCONST .) ]
+  ! ISEQUAL         [ reduce using rule 61 (literal -> INTCONST .) ]
+  ! NOTEQUAL        [ reduce using rule 61 (literal -> INTCONST .) ]
+  ! GT              [ reduce using rule 61 (literal -> INTCONST .) ]
+  ! GE              [ reduce using rule 61 (literal -> INTCONST .) ]
+  ! LT              [ reduce using rule 61 (literal -> INTCONST .) ]
+  ! LE              [ reduce using rule 61 (literal -> INTCONST .) ]
+  ! DCL             [ reduce using rule 61 (literal -> INTCONST .) ]
+  ! ID              [ reduce using rule 61 (literal -> INTCONST .) ]
+  ! COMMENT         [ reduce using rule 61 (literal -> INTCONST .) ]
+  ! COMMENTLINE     [ reduce using rule 61 (literal -> INTCONST .) ]
+  ! $end            [ reduce using rule 61 (literal -> INTCONST .) ]
 
 
-state 10
+state 34
 
-    (4) declaration_statement -> DCL declaration_list SMC .
+    (60) primitive_value -> literal .
 
-    $end            reduce using rule 4 (declaration_statement -> DCL declaration_list SMC .)
-    DCL             reduce using rule 4 (declaration_statement -> DCL declaration_list SMC .)
-
-
-state 11
-
-    (9) id_list -> id_list COMMA . ID
-
-    ID              shift and go to state 13
-
-
-state 12
-
-    (6) declaration_list -> declaration COMMA . declaration_list
-    (5) declaration_list -> . declaration
-    (6) declaration_list -> . declaration COMMA declaration_list
-    (7) declaration -> . id_list
-    (8) id_list -> . ID
-    (9) id_list -> . id_list COMMA ID
-
-    ID              shift and go to state 6
-
-    id_list                        shift and go to state 8
-    declaration                    shift and go to state 9
-    declaration_list               shift and go to state 14
-
-state 13
-
-    (9) id_list -> id_list COMMA ID .
-
-    COMMA           reduce using rule 9 (id_list -> id_list COMMA ID .)
-    SMC             reduce using rule 9 (id_list -> id_list COMMA ID .)
+    TIMES           reduce using rule 60 (primitive_value -> literal .)
+    DIV             reduce using rule 60 (primitive_value -> literal .)
+    MOD             reduce using rule 60 (primitive_value -> literal .)
+    STRCONC         reduce using rule 60 (primitive_value -> literal .)
+    PLUS            reduce using rule 60 (primitive_value -> literal .)
+    MINUS           reduce using rule 60 (primitive_value -> literal .)
+    IN              reduce using rule 60 (primitive_value -> literal .)
+    AND             reduce using rule 60 (primitive_value -> literal .)
+    OR              reduce using rule 60 (primitive_value -> literal .)
+    ISEQUAL         reduce using rule 60 (primitive_value -> literal .)
+    NOTEQUAL        reduce using rule 60 (primitive_value -> literal .)
+    GT              reduce using rule 60 (primitive_value -> literal .)
+    GE              reduce using rule 60 (primitive_value -> literal .)
+    LT              reduce using rule 60 (primitive_value -> literal .)
+    LE              reduce using rule 60 (primitive_value -> literal .)
+    DCL             reduce using rule 60 (primitive_value -> literal .)
+    ID              reduce using rule 60 (primitive_value -> literal .)
+    COMMENT         reduce using rule 60 (primitive_value -> literal .)
+    COMMENTLINE     reduce using rule 60 (primitive_value -> literal .)
+    $end            reduce using rule 60 (primitive_value -> literal .)
 
 
-state 14
+state 35
 
-    (6) declaration_list -> declaration COMMA declaration_list .
+    (64) literal -> NULL .
 
-    SMC             reduce using rule 6 (declaration_list -> declaration COMMA declaration_list .)
+    TIMES           reduce using rule 64 (literal -> NULL .)
+    DIV             reduce using rule 64 (literal -> NULL .)
+    MOD             reduce using rule 64 (literal -> NULL .)
+    STRCONC         reduce using rule 64 (literal -> NULL .)
+    PLUS            reduce using rule 64 (literal -> NULL .)
+    MINUS           reduce using rule 64 (literal -> NULL .)
+    IN              reduce using rule 64 (literal -> NULL .)
+    AND             reduce using rule 64 (literal -> NULL .)
+    OR              reduce using rule 64 (literal -> NULL .)
+    ISEQUAL         reduce using rule 64 (literal -> NULL .)
+    NOTEQUAL        reduce using rule 64 (literal -> NULL .)
+    GT              reduce using rule 64 (literal -> NULL .)
+    GE              reduce using rule 64 (literal -> NULL .)
+    LT              reduce using rule 64 (literal -> NULL .)
+    LE              reduce using rule 64 (literal -> NULL .)
+    DCL             reduce using rule 64 (literal -> NULL .)
+    ID              reduce using rule 64 (literal -> NULL .)
+    COMMENT         reduce using rule 64 (literal -> NULL .)
+    COMMENTLINE     reduce using rule 64 (literal -> NULL .)
+    $end            reduce using rule 64 (literal -> NULL .)
+
+
+state 36
+
+    (53) monadic_operator -> MINUS .
+
+    ID              reduce using rule 53 (monadic_operator -> MINUS .)
+    ARROW           reduce using rule 53 (monadic_operator -> MINUS .)
+    INTCONST        reduce using rule 53 (monadic_operator -> MINUS .)
+    CHARCONST       reduce using rule 53 (monadic_operator -> MINUS .)
+    NULL            reduce using rule 53 (monadic_operator -> MINUS .)
+    STRINGCONST     reduce using rule 53 (monadic_operator -> MINUS .)
+    FALSE           reduce using rule 53 (monadic_operator -> MINUS .)
+    TRUE            reduce using rule 53 (monadic_operator -> MINUS .)
+
+
+state 37
+
+    (50) operand3 -> operand4 .
+
+    TIMES           reduce using rule 50 (operand3 -> operand4 .)
+    DIV             reduce using rule 50 (operand3 -> operand4 .)
+    MOD             reduce using rule 50 (operand3 -> operand4 .)
+    STRCONC         reduce using rule 50 (operand3 -> operand4 .)
+    PLUS            reduce using rule 50 (operand3 -> operand4 .)
+    MINUS           reduce using rule 50 (operand3 -> operand4 .)
+    IN              reduce using rule 50 (operand3 -> operand4 .)
+    AND             reduce using rule 50 (operand3 -> operand4 .)
+    OR              reduce using rule 50 (operand3 -> operand4 .)
+    ISEQUAL         reduce using rule 50 (operand3 -> operand4 .)
+    NOTEQUAL        reduce using rule 50 (operand3 -> operand4 .)
+    GT              reduce using rule 50 (operand3 -> operand4 .)
+    GE              reduce using rule 50 (operand3 -> operand4 .)
+    LT              reduce using rule 50 (operand3 -> operand4 .)
+    LE              reduce using rule 50 (operand3 -> operand4 .)
+    DCL             reduce using rule 50 (operand3 -> operand4 .)
+    ID              reduce using rule 50 (operand3 -> operand4 .)
+    COMMENT         reduce using rule 50 (operand3 -> operand4 .)
+    COMMENTLINE     reduce using rule 50 (operand3 -> operand4 .)
+    $end            reduce using rule 50 (operand3 -> operand4 .)
+
+
+state 38
+
+    (59) location -> ID .
+
+    TIMES           reduce using rule 59 (location -> ID .)
+    DIV             reduce using rule 59 (location -> ID .)
+    MOD             reduce using rule 59 (location -> ID .)
+    STRCONC         reduce using rule 59 (location -> ID .)
+    PLUS            reduce using rule 59 (location -> ID .)
+    MINUS           reduce using rule 59 (location -> ID .)
+    IN              reduce using rule 59 (location -> ID .)
+    AND             reduce using rule 59 (location -> ID .)
+    OR              reduce using rule 59 (location -> ID .)
+    ISEQUAL         reduce using rule 59 (location -> ID .)
+    NOTEQUAL        reduce using rule 59 (location -> ID .)
+    GT              reduce using rule 59 (location -> ID .)
+    GE              reduce using rule 59 (location -> ID .)
+    LT              reduce using rule 59 (location -> ID .)
+    LE              reduce using rule 59 (location -> ID .)
+    DCL             reduce using rule 59 (location -> ID .)
+    ID              reduce using rule 59 (location -> ID .)
+    COMMENT         reduce using rule 59 (location -> ID .)
+    COMMENTLINE     reduce using rule 59 (location -> ID .)
+    $end            reduce using rule 59 (location -> ID .)
+    EQUALS          reduce using rule 59 (location -> ID .)
+
+
+state 39
+
+    (26) expression -> operand0 .
+    (28) operand0 -> operand0 . operator1 operand1
+    (29) operator1 -> . relational_operator
+    (30) operator1 -> . IN
+    (31) relational_operator -> . AND
+    (32) relational_operator -> . OR
+    (33) relational_operator -> . ISEQUAL
+    (34) relational_operator -> . NOTEQUAL
+    (35) relational_operator -> . GT
+    (36) relational_operator -> . GE
+    (37) relational_operator -> . LT
+    (38) relational_operator -> . LE
+
+    DCL             reduce using rule 26 (expression -> operand0 .)
+    ID              reduce using rule 26 (expression -> operand0 .)
+    COMMENT         reduce using rule 26 (expression -> operand0 .)
+    COMMENTLINE     reduce using rule 26 (expression -> operand0 .)
+    $end            reduce using rule 26 (expression -> operand0 .)
+    IN              shift and go to state 67
+    AND             shift and go to state 72
+    OR              shift and go to state 66
+    ISEQUAL         shift and go to state 68
+    NOTEQUAL        shift and go to state 75
+    GT              shift and go to state 71
+    GE              shift and go to state 70
+    LT              shift and go to state 74
+    LE              shift and go to state 73
+
+    relational_operator            shift and go to state 65
+    operator1                      shift and go to state 69
+
+state 40
+
+    (45) operand2 -> operand3 .
+
+    TIMES           reduce using rule 45 (operand2 -> operand3 .)
+    DIV             reduce using rule 45 (operand2 -> operand3 .)
+    MOD             reduce using rule 45 (operand2 -> operand3 .)
+    STRCONC         reduce using rule 45 (operand2 -> operand3 .)
+    PLUS            reduce using rule 45 (operand2 -> operand3 .)
+    MINUS           reduce using rule 45 (operand2 -> operand3 .)
+    IN              reduce using rule 45 (operand2 -> operand3 .)
+    AND             reduce using rule 45 (operand2 -> operand3 .)
+    OR              reduce using rule 45 (operand2 -> operand3 .)
+    ISEQUAL         reduce using rule 45 (operand2 -> operand3 .)
+    NOTEQUAL        reduce using rule 45 (operand2 -> operand3 .)
+    GT              reduce using rule 45 (operand2 -> operand3 .)
+    GE              reduce using rule 45 (operand2 -> operand3 .)
+    LT              reduce using rule 45 (operand2 -> operand3 .)
+    LE              reduce using rule 45 (operand2 -> operand3 .)
+    DCL             reduce using rule 45 (operand2 -> operand3 .)
+    ID              reduce using rule 45 (operand2 -> operand3 .)
+    COMMENT         reduce using rule 45 (operand2 -> operand3 .)
+    COMMENTLINE     reduce using rule 45 (operand2 -> operand3 .)
+    $end            reduce using rule 45 (operand2 -> operand3 .)
+
+
+state 41
+
+    (56) operand4 -> location .
+
+    TIMES           reduce using rule 56 (operand4 -> location .)
+    DIV             reduce using rule 56 (operand4 -> location .)
+    MOD             reduce using rule 56 (operand4 -> location .)
+    STRCONC         reduce using rule 56 (operand4 -> location .)
+    PLUS            reduce using rule 56 (operand4 -> location .)
+    MINUS           reduce using rule 56 (operand4 -> location .)
+    IN              reduce using rule 56 (operand4 -> location .)
+    AND             reduce using rule 56 (operand4 -> location .)
+    OR              reduce using rule 56 (operand4 -> location .)
+    ISEQUAL         reduce using rule 56 (operand4 -> location .)
+    NOTEQUAL        reduce using rule 56 (operand4 -> location .)
+    GT              reduce using rule 56 (operand4 -> location .)
+    GE              reduce using rule 56 (operand4 -> location .)
+    LT              reduce using rule 56 (operand4 -> location .)
+    LE              reduce using rule 56 (operand4 -> location .)
+    DCL             reduce using rule 56 (operand4 -> location .)
+    ID              reduce using rule 56 (operand4 -> location .)
+    COMMENT         reduce using rule 56 (operand4 -> location .)
+    COMMENTLINE     reduce using rule 56 (operand4 -> location .)
+    $end            reduce using rule 56 (operand4 -> location .)
+
+
+state 42
+
+    (62) literal -> boolean_literal .
+
+    TIMES           reduce using rule 62 (literal -> boolean_literal .)
+    DIV             reduce using rule 62 (literal -> boolean_literal .)
+    MOD             reduce using rule 62 (literal -> boolean_literal .)
+    STRCONC         reduce using rule 62 (literal -> boolean_literal .)
+    PLUS            reduce using rule 62 (literal -> boolean_literal .)
+    MINUS           reduce using rule 62 (literal -> boolean_literal .)
+    IN              reduce using rule 62 (literal -> boolean_literal .)
+    AND             reduce using rule 62 (literal -> boolean_literal .)
+    OR              reduce using rule 62 (literal -> boolean_literal .)
+    ISEQUAL         reduce using rule 62 (literal -> boolean_literal .)
+    NOTEQUAL        reduce using rule 62 (literal -> boolean_literal .)
+    GT              reduce using rule 62 (literal -> boolean_literal .)
+    GE              reduce using rule 62 (literal -> boolean_literal .)
+    LT              reduce using rule 62 (literal -> boolean_literal .)
+    LE              reduce using rule 62 (literal -> boolean_literal .)
+    DCL             reduce using rule 62 (literal -> boolean_literal .)
+    ID              reduce using rule 62 (literal -> boolean_literal .)
+    COMMENT         reduce using rule 62 (literal -> boolean_literal .)
+    COMMENTLINE     reduce using rule 62 (literal -> boolean_literal .)
+    $end            reduce using rule 62 (literal -> boolean_literal .)
+
+
+state 43
+
+    (27) operand0 -> operand1 .
+    (40) operand1 -> operand1 . operator2 operand2
+    (41) operator2 -> . arithmetic_additive_operator
+    (42) operator2 -> . STRCONC
+    (43) arithmetic_additive_operator -> . PLUS
+    (44) arithmetic_additive_operator -> . MINUS
+
+    IN              reduce using rule 27 (operand0 -> operand1 .)
+    AND             reduce using rule 27 (operand0 -> operand1 .)
+    OR              reduce using rule 27 (operand0 -> operand1 .)
+    ISEQUAL         reduce using rule 27 (operand0 -> operand1 .)
+    NOTEQUAL        reduce using rule 27 (operand0 -> operand1 .)
+    GT              reduce using rule 27 (operand0 -> operand1 .)
+    GE              reduce using rule 27 (operand0 -> operand1 .)
+    LT              reduce using rule 27 (operand0 -> operand1 .)
+    LE              reduce using rule 27 (operand0 -> operand1 .)
+    DCL             reduce using rule 27 (operand0 -> operand1 .)
+    ID              reduce using rule 27 (operand0 -> operand1 .)
+    COMMENT         reduce using rule 27 (operand0 -> operand1 .)
+    COMMENTLINE     reduce using rule 27 (operand0 -> operand1 .)
+    $end            reduce using rule 27 (operand0 -> operand1 .)
+    STRCONC         shift and go to state 76
+    PLUS            shift and go to state 19
+    MINUS           shift and go to state 18
+
+    operator2                      shift and go to state 77
+    arithmetic_additive_operator   shift and go to state 78
+
+state 44
+
+    (54) monadic_operator -> NOT .
+
+    ID              reduce using rule 54 (monadic_operator -> NOT .)
+    ARROW           reduce using rule 54 (monadic_operator -> NOT .)
+    INTCONST        reduce using rule 54 (monadic_operator -> NOT .)
+    CHARCONST       reduce using rule 54 (monadic_operator -> NOT .)
+    NULL            reduce using rule 54 (monadic_operator -> NOT .)
+    STRINGCONST     reduce using rule 54 (monadic_operator -> NOT .)
+    FALSE           reduce using rule 54 (monadic_operator -> NOT .)
+    TRUE            reduce using rule 54 (monadic_operator -> NOT .)
+
+
+state 45
+
+    (51) operand3 -> monadic_operator . operand4
+    (55) operand4 -> . primitive_value
+    (56) operand4 -> . location
+    (57) operand4 -> . referenced_location
+    (60) primitive_value -> . literal
+    (59) location -> . ID
+    (58) referenced_location -> . ARROW location
+    (61) literal -> . INTCONST
+    (62) literal -> . boolean_literal
+    (63) literal -> . CHARCONST
+    (64) literal -> . NULL
+    (65) literal -> . STRINGCONST
+    (66) boolean_literal -> . FALSE
+    (67) boolean_literal -> . TRUE
+
+    ID              shift and go to state 38
+    ARROW           shift and go to state 46
+    INTCONST        shift and go to state 79
+    CHARCONST       shift and go to state 54
+    NULL            shift and go to state 35
+    STRINGCONST     shift and go to state 50
+    FALSE           shift and go to state 51
+    TRUE            shift and go to state 53
+
+    location                       shift and go to state 41
+    literal                        shift and go to state 34
+    referenced_location            shift and go to state 49
+    primitive_value                shift and go to state 52
+    operand4                       shift and go to state 80
+    boolean_literal                shift and go to state 42
+
+state 46
+
+    (58) referenced_location -> ARROW . location
+    (59) location -> . ID
+
+    ID              shift and go to state 38
+
+    location                       shift and go to state 81
+
+state 47
+
+    (39) operand1 -> operand2 .
+    (46) operand2 -> operand2 . arithmetic_multiplicative_operator operand3
+    (47) arithmetic_multiplicative_operator -> . TIMES
+    (48) arithmetic_multiplicative_operator -> . DIV
+    (49) arithmetic_multiplicative_operator -> . MOD
+
+    STRCONC         reduce using rule 39 (operand1 -> operand2 .)
+    PLUS            reduce using rule 39 (operand1 -> operand2 .)
+    MINUS           reduce using rule 39 (operand1 -> operand2 .)
+    IN              reduce using rule 39 (operand1 -> operand2 .)
+    AND             reduce using rule 39 (operand1 -> operand2 .)
+    OR              reduce using rule 39 (operand1 -> operand2 .)
+    ISEQUAL         reduce using rule 39 (operand1 -> operand2 .)
+    NOTEQUAL        reduce using rule 39 (operand1 -> operand2 .)
+    GT              reduce using rule 39 (operand1 -> operand2 .)
+    GE              reduce using rule 39 (operand1 -> operand2 .)
+    LT              reduce using rule 39 (operand1 -> operand2 .)
+    LE              reduce using rule 39 (operand1 -> operand2 .)
+    DCL             reduce using rule 39 (operand1 -> operand2 .)
+    ID              reduce using rule 39 (operand1 -> operand2 .)
+    COMMENT         reduce using rule 39 (operand1 -> operand2 .)
+    COMMENTLINE     reduce using rule 39 (operand1 -> operand2 .)
+    $end            reduce using rule 39 (operand1 -> operand2 .)
+    TIMES           shift and go to state 15
+    DIV             shift and go to state 25
+    MOD             shift and go to state 24
+
+    arithmetic_multiplicative_operator shift and go to state 82
+
+state 48
+
+    (20) assignment_action -> location assigning_operator expression .
+
+    $end            reduce using rule 20 (assignment_action -> location assigning_operator expression .)
+    DCL             reduce using rule 20 (assignment_action -> location assigning_operator expression .)
+    ID              reduce using rule 20 (assignment_action -> location assigning_operator expression .)
+    COMMENT         reduce using rule 20 (assignment_action -> location assigning_operator expression .)
+    COMMENTLINE     reduce using rule 20 (assignment_action -> location assigning_operator expression .)
+
+
+state 49
+
+    (57) operand4 -> referenced_location .
+
+    TIMES           reduce using rule 57 (operand4 -> referenced_location .)
+    DIV             reduce using rule 57 (operand4 -> referenced_location .)
+    MOD             reduce using rule 57 (operand4 -> referenced_location .)
+    STRCONC         reduce using rule 57 (operand4 -> referenced_location .)
+    PLUS            reduce using rule 57 (operand4 -> referenced_location .)
+    MINUS           reduce using rule 57 (operand4 -> referenced_location .)
+    IN              reduce using rule 57 (operand4 -> referenced_location .)
+    AND             reduce using rule 57 (operand4 -> referenced_location .)
+    OR              reduce using rule 57 (operand4 -> referenced_location .)
+    ISEQUAL         reduce using rule 57 (operand4 -> referenced_location .)
+    NOTEQUAL        reduce using rule 57 (operand4 -> referenced_location .)
+    GT              reduce using rule 57 (operand4 -> referenced_location .)
+    GE              reduce using rule 57 (operand4 -> referenced_location .)
+    LT              reduce using rule 57 (operand4 -> referenced_location .)
+    LE              reduce using rule 57 (operand4 -> referenced_location .)
+    DCL             reduce using rule 57 (operand4 -> referenced_location .)
+    ID              reduce using rule 57 (operand4 -> referenced_location .)
+    COMMENT         reduce using rule 57 (operand4 -> referenced_location .)
+    COMMENTLINE     reduce using rule 57 (operand4 -> referenced_location .)
+    $end            reduce using rule 57 (operand4 -> referenced_location .)
+
+
+state 50
+
+    (65) literal -> STRINGCONST .
+
+    TIMES           reduce using rule 65 (literal -> STRINGCONST .)
+    DIV             reduce using rule 65 (literal -> STRINGCONST .)
+    MOD             reduce using rule 65 (literal -> STRINGCONST .)
+    STRCONC         reduce using rule 65 (literal -> STRINGCONST .)
+    PLUS            reduce using rule 65 (literal -> STRINGCONST .)
+    MINUS           reduce using rule 65 (literal -> STRINGCONST .)
+    IN              reduce using rule 65 (literal -> STRINGCONST .)
+    AND             reduce using rule 65 (literal -> STRINGCONST .)
+    OR              reduce using rule 65 (literal -> STRINGCONST .)
+    ISEQUAL         reduce using rule 65 (literal -> STRINGCONST .)
+    NOTEQUAL        reduce using rule 65 (literal -> STRINGCONST .)
+    GT              reduce using rule 65 (literal -> STRINGCONST .)
+    GE              reduce using rule 65 (literal -> STRINGCONST .)
+    LT              reduce using rule 65 (literal -> STRINGCONST .)
+    LE              reduce using rule 65 (literal -> STRINGCONST .)
+    DCL             reduce using rule 65 (literal -> STRINGCONST .)
+    ID              reduce using rule 65 (literal -> STRINGCONST .)
+    COMMENT         reduce using rule 65 (literal -> STRINGCONST .)
+    COMMENTLINE     reduce using rule 65 (literal -> STRINGCONST .)
+    $end            reduce using rule 65 (literal -> STRINGCONST .)
+
+
+state 51
+
+    (66) boolean_literal -> FALSE .
+
+    TIMES           reduce using rule 66 (boolean_literal -> FALSE .)
+    DIV             reduce using rule 66 (boolean_literal -> FALSE .)
+    MOD             reduce using rule 66 (boolean_literal -> FALSE .)
+    STRCONC         reduce using rule 66 (boolean_literal -> FALSE .)
+    PLUS            reduce using rule 66 (boolean_literal -> FALSE .)
+    MINUS           reduce using rule 66 (boolean_literal -> FALSE .)
+    IN              reduce using rule 66 (boolean_literal -> FALSE .)
+    AND             reduce using rule 66 (boolean_literal -> FALSE .)
+    OR              reduce using rule 66 (boolean_literal -> FALSE .)
+    ISEQUAL         reduce using rule 66 (boolean_literal -> FALSE .)
+    NOTEQUAL        reduce using rule 66 (boolean_literal -> FALSE .)
+    GT              reduce using rule 66 (boolean_literal -> FALSE .)
+    GE              reduce using rule 66 (boolean_literal -> FALSE .)
+    LT              reduce using rule 66 (boolean_literal -> FALSE .)
+    LE              reduce using rule 66 (boolean_literal -> FALSE .)
+    DCL             reduce using rule 66 (boolean_literal -> FALSE .)
+    ID              reduce using rule 66 (boolean_literal -> FALSE .)
+    COMMENT         reduce using rule 66 (boolean_literal -> FALSE .)
+    COMMENTLINE     reduce using rule 66 (boolean_literal -> FALSE .)
+    $end            reduce using rule 66 (boolean_literal -> FALSE .)
+
+
+state 52
+
+    (55) operand4 -> primitive_value .
+
+    TIMES           reduce using rule 55 (operand4 -> primitive_value .)
+    DIV             reduce using rule 55 (operand4 -> primitive_value .)
+    MOD             reduce using rule 55 (operand4 -> primitive_value .)
+    STRCONC         reduce using rule 55 (operand4 -> primitive_value .)
+    PLUS            reduce using rule 55 (operand4 -> primitive_value .)
+    MINUS           reduce using rule 55 (operand4 -> primitive_value .)
+    IN              reduce using rule 55 (operand4 -> primitive_value .)
+    AND             reduce using rule 55 (operand4 -> primitive_value .)
+    OR              reduce using rule 55 (operand4 -> primitive_value .)
+    ISEQUAL         reduce using rule 55 (operand4 -> primitive_value .)
+    NOTEQUAL        reduce using rule 55 (operand4 -> primitive_value .)
+    GT              reduce using rule 55 (operand4 -> primitive_value .)
+    GE              reduce using rule 55 (operand4 -> primitive_value .)
+    LT              reduce using rule 55 (operand4 -> primitive_value .)
+    LE              reduce using rule 55 (operand4 -> primitive_value .)
+    DCL             reduce using rule 55 (operand4 -> primitive_value .)
+    ID              reduce using rule 55 (operand4 -> primitive_value .)
+    COMMENT         reduce using rule 55 (operand4 -> primitive_value .)
+    COMMENTLINE     reduce using rule 55 (operand4 -> primitive_value .)
+    $end            reduce using rule 55 (operand4 -> primitive_value .)
+
+
+state 53
+
+    (67) boolean_literal -> TRUE .
+
+    TIMES           reduce using rule 67 (boolean_literal -> TRUE .)
+    DIV             reduce using rule 67 (boolean_literal -> TRUE .)
+    MOD             reduce using rule 67 (boolean_literal -> TRUE .)
+    STRCONC         reduce using rule 67 (boolean_literal -> TRUE .)
+    PLUS            reduce using rule 67 (boolean_literal -> TRUE .)
+    MINUS           reduce using rule 67 (boolean_literal -> TRUE .)
+    IN              reduce using rule 67 (boolean_literal -> TRUE .)
+    AND             reduce using rule 67 (boolean_literal -> TRUE .)
+    OR              reduce using rule 67 (boolean_literal -> TRUE .)
+    ISEQUAL         reduce using rule 67 (boolean_literal -> TRUE .)
+    NOTEQUAL        reduce using rule 67 (boolean_literal -> TRUE .)
+    GT              reduce using rule 67 (boolean_literal -> TRUE .)
+    GE              reduce using rule 67 (boolean_literal -> TRUE .)
+    LT              reduce using rule 67 (boolean_literal -> TRUE .)
+    LE              reduce using rule 67 (boolean_literal -> TRUE .)
+    DCL             reduce using rule 67 (boolean_literal -> TRUE .)
+    ID              reduce using rule 67 (boolean_literal -> TRUE .)
+    COMMENT         reduce using rule 67 (boolean_literal -> TRUE .)
+    COMMENTLINE     reduce using rule 67 (boolean_literal -> TRUE .)
+    $end            reduce using rule 67 (boolean_literal -> TRUE .)
+
+
+state 54
+
+    (63) literal -> CHARCONST .
+
+    TIMES           reduce using rule 63 (literal -> CHARCONST .)
+    DIV             reduce using rule 63 (literal -> CHARCONST .)
+    MOD             reduce using rule 63 (literal -> CHARCONST .)
+    STRCONC         reduce using rule 63 (literal -> CHARCONST .)
+    PLUS            reduce using rule 63 (literal -> CHARCONST .)
+    MINUS           reduce using rule 63 (literal -> CHARCONST .)
+    IN              reduce using rule 63 (literal -> CHARCONST .)
+    AND             reduce using rule 63 (literal -> CHARCONST .)
+    OR              reduce using rule 63 (literal -> CHARCONST .)
+    ISEQUAL         reduce using rule 63 (literal -> CHARCONST .)
+    NOTEQUAL        reduce using rule 63 (literal -> CHARCONST .)
+    GT              reduce using rule 63 (literal -> CHARCONST .)
+    GE              reduce using rule 63 (literal -> CHARCONST .)
+    LT              reduce using rule 63 (literal -> CHARCONST .)
+    LE              reduce using rule 63 (literal -> CHARCONST .)
+    DCL             reduce using rule 63 (literal -> CHARCONST .)
+    ID              reduce using rule 63 (literal -> CHARCONST .)
+    COMMENT         reduce using rule 63 (literal -> CHARCONST .)
+    COMMENTLINE     reduce using rule 63 (literal -> CHARCONST .)
+    $end            reduce using rule 63 (literal -> CHARCONST .)
+
+
+state 55
+
+    (18) action_statement -> ID COLON action .
+
+    $end            reduce using rule 18 (action_statement -> ID COLON action .)
+    DCL             reduce using rule 18 (action_statement -> ID COLON action .)
+    ID              reduce using rule 18 (action_statement -> ID COLON action .)
+    COMMENT         reduce using rule 18 (action_statement -> ID COLON action .)
+    COMMENTLINE     reduce using rule 18 (action_statement -> ID COLON action .)
+
+
+state 56
+
+    (13) mode -> discrete_mode .
+
+    COMMA           reduce using rule 13 (mode -> discrete_mode .)
+    SMC             reduce using rule 13 (mode -> discrete_mode .)
+
+
+state 57
+
+    (16) discrete_mode -> CHAR .
+
+    COMMA           reduce using rule 16 (discrete_mode -> CHAR .)
+    SMC             reduce using rule 16 (discrete_mode -> CHAR .)
+
+
+state 58
+
+    (15) discrete_mode -> BOOL .
+
+    COMMA           reduce using rule 15 (discrete_mode -> BOOL .)
+    SMC             reduce using rule 15 (discrete_mode -> BOOL .)
+
+
+state 59
+
+    (11) id_list -> id_list COMMA . ID
+
+    ID              shift and go to state 83
+
+
+state 60
+
+    (9) declaration -> id_list mode .
+
+    COMMA           reduce using rule 9 (declaration -> id_list mode .)
+    SMC             reduce using rule 9 (declaration -> id_list mode .)
+
+
+state 61
+
+    (12) mode -> ID .
+
+    COMMA           reduce using rule 12 (mode -> ID .)
+    SMC             reduce using rule 12 (mode -> ID .)
+
+
+state 62
+
+    (14) discrete_mode -> INT .
+
+    COMMA           reduce using rule 14 (discrete_mode -> INT .)
+    SMC             reduce using rule 14 (discrete_mode -> INT .)
+
+
+state 63
+
+    (8) declaration_list -> declaration COMMA . declaration_list
+    (7) declaration_list -> . declaration
+    (8) declaration_list -> . declaration COMMA declaration_list
+    (9) declaration -> . id_list mode
+    (10) id_list -> . ID
+    (11) id_list -> . id_list COMMA ID
+
+    ID              shift and go to state 30
+
+    id_list                        shift and go to state 27
+    declaration_list               shift and go to state 84
+    declaration                    shift and go to state 28
+
+state 64
+
+    (6) declaration_statement -> DCL declaration_list SMC .
+
+    $end            reduce using rule 6 (declaration_statement -> DCL declaration_list SMC .)
+    DCL             reduce using rule 6 (declaration_statement -> DCL declaration_list SMC .)
+    ID              reduce using rule 6 (declaration_statement -> DCL declaration_list SMC .)
+    COMMENT         reduce using rule 6 (declaration_statement -> DCL declaration_list SMC .)
+    COMMENTLINE     reduce using rule 6 (declaration_statement -> DCL declaration_list SMC .)
+
+
+state 65
+
+    (29) operator1 -> relational_operator .
+
+    INTCONST        reduce using rule 29 (operator1 -> relational_operator .)
+    MINUS           reduce using rule 29 (operator1 -> relational_operator .)
+    NOT             reduce using rule 29 (operator1 -> relational_operator .)
+    ID              reduce using rule 29 (operator1 -> relational_operator .)
+    ARROW           reduce using rule 29 (operator1 -> relational_operator .)
+    CHARCONST       reduce using rule 29 (operator1 -> relational_operator .)
+    NULL            reduce using rule 29 (operator1 -> relational_operator .)
+    STRINGCONST     reduce using rule 29 (operator1 -> relational_operator .)
+    FALSE           reduce using rule 29 (operator1 -> relational_operator .)
+    TRUE            reduce using rule 29 (operator1 -> relational_operator .)
+
+
+state 66
+
+    (32) relational_operator -> OR .
+
+    INTCONST        reduce using rule 32 (relational_operator -> OR .)
+    MINUS           reduce using rule 32 (relational_operator -> OR .)
+    NOT             reduce using rule 32 (relational_operator -> OR .)
+    ID              reduce using rule 32 (relational_operator -> OR .)
+    ARROW           reduce using rule 32 (relational_operator -> OR .)
+    CHARCONST       reduce using rule 32 (relational_operator -> OR .)
+    NULL            reduce using rule 32 (relational_operator -> OR .)
+    STRINGCONST     reduce using rule 32 (relational_operator -> OR .)
+    FALSE           reduce using rule 32 (relational_operator -> OR .)
+    TRUE            reduce using rule 32 (relational_operator -> OR .)
+
+
+state 67
+
+    (30) operator1 -> IN .
+
+    INTCONST        reduce using rule 30 (operator1 -> IN .)
+    MINUS           reduce using rule 30 (operator1 -> IN .)
+    NOT             reduce using rule 30 (operator1 -> IN .)
+    ID              reduce using rule 30 (operator1 -> IN .)
+    ARROW           reduce using rule 30 (operator1 -> IN .)
+    CHARCONST       reduce using rule 30 (operator1 -> IN .)
+    NULL            reduce using rule 30 (operator1 -> IN .)
+    STRINGCONST     reduce using rule 30 (operator1 -> IN .)
+    FALSE           reduce using rule 30 (operator1 -> IN .)
+    TRUE            reduce using rule 30 (operator1 -> IN .)
+
+
+state 68
+
+    (33) relational_operator -> ISEQUAL .
+
+    INTCONST        reduce using rule 33 (relational_operator -> ISEQUAL .)
+    MINUS           reduce using rule 33 (relational_operator -> ISEQUAL .)
+    NOT             reduce using rule 33 (relational_operator -> ISEQUAL .)
+    ID              reduce using rule 33 (relational_operator -> ISEQUAL .)
+    ARROW           reduce using rule 33 (relational_operator -> ISEQUAL .)
+    CHARCONST       reduce using rule 33 (relational_operator -> ISEQUAL .)
+    NULL            reduce using rule 33 (relational_operator -> ISEQUAL .)
+    STRINGCONST     reduce using rule 33 (relational_operator -> ISEQUAL .)
+    FALSE           reduce using rule 33 (relational_operator -> ISEQUAL .)
+    TRUE            reduce using rule 33 (relational_operator -> ISEQUAL .)
+
+
+state 69
+
+    (28) operand0 -> operand0 operator1 . operand1
+    (39) operand1 -> . operand2
+    (40) operand1 -> . operand1 operator2 operand2
+    (45) operand2 -> . operand3
+    (46) operand2 -> . operand2 arithmetic_multiplicative_operator operand3
+    (50) operand3 -> . operand4
+    (51) operand3 -> . monadic_operator operand4
+    (52) operand3 -> . INTCONST
+    (55) operand4 -> . primitive_value
+    (56) operand4 -> . location
+    (57) operand4 -> . referenced_location
+    (53) monadic_operator -> . MINUS
+    (54) monadic_operator -> . NOT
+    (60) primitive_value -> . literal
+    (59) location -> . ID
+    (58) referenced_location -> . ARROW location
+    (61) literal -> . INTCONST
+    (62) literal -> . boolean_literal
+    (63) literal -> . CHARCONST
+    (64) literal -> . NULL
+    (65) literal -> . STRINGCONST
+    (66) boolean_literal -> . FALSE
+    (67) boolean_literal -> . TRUE
+
+    INTCONST        shift and go to state 33
+    MINUS           shift and go to state 36
+    NOT             shift and go to state 44
+    ID              shift and go to state 38
+    ARROW           shift and go to state 46
+    CHARCONST       shift and go to state 54
+    NULL            shift and go to state 35
+    STRINGCONST     shift and go to state 50
+    FALSE           shift and go to state 51
+    TRUE            shift and go to state 53
+
+    literal                        shift and go to state 34
+    monadic_operator               shift and go to state 45
+    operand2                       shift and go to state 47
+    operand4                       shift and go to state 37
+    operand3                       shift and go to state 40
+    location                       shift and go to state 41
+    boolean_literal                shift and go to state 42
+    referenced_location            shift and go to state 49
+    operand1                       shift and go to state 85
+    primitive_value                shift and go to state 52
+
+state 70
+
+    (36) relational_operator -> GE .
+
+    INTCONST        reduce using rule 36 (relational_operator -> GE .)
+    MINUS           reduce using rule 36 (relational_operator -> GE .)
+    NOT             reduce using rule 36 (relational_operator -> GE .)
+    ID              reduce using rule 36 (relational_operator -> GE .)
+    ARROW           reduce using rule 36 (relational_operator -> GE .)
+    CHARCONST       reduce using rule 36 (relational_operator -> GE .)
+    NULL            reduce using rule 36 (relational_operator -> GE .)
+    STRINGCONST     reduce using rule 36 (relational_operator -> GE .)
+    FALSE           reduce using rule 36 (relational_operator -> GE .)
+    TRUE            reduce using rule 36 (relational_operator -> GE .)
+
+
+state 71
+
+    (35) relational_operator -> GT .
+
+    INTCONST        reduce using rule 35 (relational_operator -> GT .)
+    MINUS           reduce using rule 35 (relational_operator -> GT .)
+    NOT             reduce using rule 35 (relational_operator -> GT .)
+    ID              reduce using rule 35 (relational_operator -> GT .)
+    ARROW           reduce using rule 35 (relational_operator -> GT .)
+    CHARCONST       reduce using rule 35 (relational_operator -> GT .)
+    NULL            reduce using rule 35 (relational_operator -> GT .)
+    STRINGCONST     reduce using rule 35 (relational_operator -> GT .)
+    FALSE           reduce using rule 35 (relational_operator -> GT .)
+    TRUE            reduce using rule 35 (relational_operator -> GT .)
+
+
+state 72
+
+    (31) relational_operator -> AND .
+
+    INTCONST        reduce using rule 31 (relational_operator -> AND .)
+    MINUS           reduce using rule 31 (relational_operator -> AND .)
+    NOT             reduce using rule 31 (relational_operator -> AND .)
+    ID              reduce using rule 31 (relational_operator -> AND .)
+    ARROW           reduce using rule 31 (relational_operator -> AND .)
+    CHARCONST       reduce using rule 31 (relational_operator -> AND .)
+    NULL            reduce using rule 31 (relational_operator -> AND .)
+    STRINGCONST     reduce using rule 31 (relational_operator -> AND .)
+    FALSE           reduce using rule 31 (relational_operator -> AND .)
+    TRUE            reduce using rule 31 (relational_operator -> AND .)
+
+
+state 73
+
+    (38) relational_operator -> LE .
+
+    INTCONST        reduce using rule 38 (relational_operator -> LE .)
+    MINUS           reduce using rule 38 (relational_operator -> LE .)
+    NOT             reduce using rule 38 (relational_operator -> LE .)
+    ID              reduce using rule 38 (relational_operator -> LE .)
+    ARROW           reduce using rule 38 (relational_operator -> LE .)
+    CHARCONST       reduce using rule 38 (relational_operator -> LE .)
+    NULL            reduce using rule 38 (relational_operator -> LE .)
+    STRINGCONST     reduce using rule 38 (relational_operator -> LE .)
+    FALSE           reduce using rule 38 (relational_operator -> LE .)
+    TRUE            reduce using rule 38 (relational_operator -> LE .)
+
+
+state 74
+
+    (37) relational_operator -> LT .
+
+    INTCONST        reduce using rule 37 (relational_operator -> LT .)
+    MINUS           reduce using rule 37 (relational_operator -> LT .)
+    NOT             reduce using rule 37 (relational_operator -> LT .)
+    ID              reduce using rule 37 (relational_operator -> LT .)
+    ARROW           reduce using rule 37 (relational_operator -> LT .)
+    CHARCONST       reduce using rule 37 (relational_operator -> LT .)
+    NULL            reduce using rule 37 (relational_operator -> LT .)
+    STRINGCONST     reduce using rule 37 (relational_operator -> LT .)
+    FALSE           reduce using rule 37 (relational_operator -> LT .)
+    TRUE            reduce using rule 37 (relational_operator -> LT .)
+
+
+state 75
+
+    (34) relational_operator -> NOTEQUAL .
+
+    INTCONST        reduce using rule 34 (relational_operator -> NOTEQUAL .)
+    MINUS           reduce using rule 34 (relational_operator -> NOTEQUAL .)
+    NOT             reduce using rule 34 (relational_operator -> NOTEQUAL .)
+    ID              reduce using rule 34 (relational_operator -> NOTEQUAL .)
+    ARROW           reduce using rule 34 (relational_operator -> NOTEQUAL .)
+    CHARCONST       reduce using rule 34 (relational_operator -> NOTEQUAL .)
+    NULL            reduce using rule 34 (relational_operator -> NOTEQUAL .)
+    STRINGCONST     reduce using rule 34 (relational_operator -> NOTEQUAL .)
+    FALSE           reduce using rule 34 (relational_operator -> NOTEQUAL .)
+    TRUE            reduce using rule 34 (relational_operator -> NOTEQUAL .)
+
+
+state 76
+
+    (42) operator2 -> STRCONC .
+
+    INTCONST        reduce using rule 42 (operator2 -> STRCONC .)
+    MINUS           reduce using rule 42 (operator2 -> STRCONC .)
+    NOT             reduce using rule 42 (operator2 -> STRCONC .)
+    ID              reduce using rule 42 (operator2 -> STRCONC .)
+    ARROW           reduce using rule 42 (operator2 -> STRCONC .)
+    CHARCONST       reduce using rule 42 (operator2 -> STRCONC .)
+    NULL            reduce using rule 42 (operator2 -> STRCONC .)
+    STRINGCONST     reduce using rule 42 (operator2 -> STRCONC .)
+    FALSE           reduce using rule 42 (operator2 -> STRCONC .)
+    TRUE            reduce using rule 42 (operator2 -> STRCONC .)
+
+
+state 77
+
+    (40) operand1 -> operand1 operator2 . operand2
+    (45) operand2 -> . operand3
+    (46) operand2 -> . operand2 arithmetic_multiplicative_operator operand3
+    (50) operand3 -> . operand4
+    (51) operand3 -> . monadic_operator operand4
+    (52) operand3 -> . INTCONST
+    (55) operand4 -> . primitive_value
+    (56) operand4 -> . location
+    (57) operand4 -> . referenced_location
+    (53) monadic_operator -> . MINUS
+    (54) monadic_operator -> . NOT
+    (60) primitive_value -> . literal
+    (59) location -> . ID
+    (58) referenced_location -> . ARROW location
+    (61) literal -> . INTCONST
+    (62) literal -> . boolean_literal
+    (63) literal -> . CHARCONST
+    (64) literal -> . NULL
+    (65) literal -> . STRINGCONST
+    (66) boolean_literal -> . FALSE
+    (67) boolean_literal -> . TRUE
+
+    INTCONST        shift and go to state 33
+    MINUS           shift and go to state 36
+    NOT             shift and go to state 44
+    ID              shift and go to state 38
+    ARROW           shift and go to state 46
+    CHARCONST       shift and go to state 54
+    NULL            shift and go to state 35
+    STRINGCONST     shift and go to state 50
+    FALSE           shift and go to state 51
+    TRUE            shift and go to state 53
+
+    literal                        shift and go to state 34
+    monadic_operator               shift and go to state 45
+    operand2                       shift and go to state 86
+    operand4                       shift and go to state 37
+    operand3                       shift and go to state 40
+    location                       shift and go to state 41
+    boolean_literal                shift and go to state 42
+    referenced_location            shift and go to state 49
+    primitive_value                shift and go to state 52
+
+state 78
+
+    (41) operator2 -> arithmetic_additive_operator .
+
+    INTCONST        reduce using rule 41 (operator2 -> arithmetic_additive_operator .)
+    MINUS           reduce using rule 41 (operator2 -> arithmetic_additive_operator .)
+    NOT             reduce using rule 41 (operator2 -> arithmetic_additive_operator .)
+    ID              reduce using rule 41 (operator2 -> arithmetic_additive_operator .)
+    ARROW           reduce using rule 41 (operator2 -> arithmetic_additive_operator .)
+    CHARCONST       reduce using rule 41 (operator2 -> arithmetic_additive_operator .)
+    NULL            reduce using rule 41 (operator2 -> arithmetic_additive_operator .)
+    STRINGCONST     reduce using rule 41 (operator2 -> arithmetic_additive_operator .)
+    FALSE           reduce using rule 41 (operator2 -> arithmetic_additive_operator .)
+    TRUE            reduce using rule 41 (operator2 -> arithmetic_additive_operator .)
+
+
+state 79
+
+    (61) literal -> INTCONST .
+
+    TIMES           reduce using rule 61 (literal -> INTCONST .)
+    DIV             reduce using rule 61 (literal -> INTCONST .)
+    MOD             reduce using rule 61 (literal -> INTCONST .)
+    STRCONC         reduce using rule 61 (literal -> INTCONST .)
+    PLUS            reduce using rule 61 (literal -> INTCONST .)
+    MINUS           reduce using rule 61 (literal -> INTCONST .)
+    IN              reduce using rule 61 (literal -> INTCONST .)
+    AND             reduce using rule 61 (literal -> INTCONST .)
+    OR              reduce using rule 61 (literal -> INTCONST .)
+    ISEQUAL         reduce using rule 61 (literal -> INTCONST .)
+    NOTEQUAL        reduce using rule 61 (literal -> INTCONST .)
+    GT              reduce using rule 61 (literal -> INTCONST .)
+    GE              reduce using rule 61 (literal -> INTCONST .)
+    LT              reduce using rule 61 (literal -> INTCONST .)
+    LE              reduce using rule 61 (literal -> INTCONST .)
+    DCL             reduce using rule 61 (literal -> INTCONST .)
+    ID              reduce using rule 61 (literal -> INTCONST .)
+    COMMENT         reduce using rule 61 (literal -> INTCONST .)
+    COMMENTLINE     reduce using rule 61 (literal -> INTCONST .)
+    $end            reduce using rule 61 (literal -> INTCONST .)
+
+
+state 80
+
+    (51) operand3 -> monadic_operator operand4 .
+
+    TIMES           reduce using rule 51 (operand3 -> monadic_operator operand4 .)
+    DIV             reduce using rule 51 (operand3 -> monadic_operator operand4 .)
+    MOD             reduce using rule 51 (operand3 -> monadic_operator operand4 .)
+    STRCONC         reduce using rule 51 (operand3 -> monadic_operator operand4 .)
+    PLUS            reduce using rule 51 (operand3 -> monadic_operator operand4 .)
+    MINUS           reduce using rule 51 (operand3 -> monadic_operator operand4 .)
+    IN              reduce using rule 51 (operand3 -> monadic_operator operand4 .)
+    AND             reduce using rule 51 (operand3 -> monadic_operator operand4 .)
+    OR              reduce using rule 51 (operand3 -> monadic_operator operand4 .)
+    ISEQUAL         reduce using rule 51 (operand3 -> monadic_operator operand4 .)
+    NOTEQUAL        reduce using rule 51 (operand3 -> monadic_operator operand4 .)
+    GT              reduce using rule 51 (operand3 -> monadic_operator operand4 .)
+    GE              reduce using rule 51 (operand3 -> monadic_operator operand4 .)
+    LT              reduce using rule 51 (operand3 -> monadic_operator operand4 .)
+    LE              reduce using rule 51 (operand3 -> monadic_operator operand4 .)
+    DCL             reduce using rule 51 (operand3 -> monadic_operator operand4 .)
+    ID              reduce using rule 51 (operand3 -> monadic_operator operand4 .)
+    COMMENT         reduce using rule 51 (operand3 -> monadic_operator operand4 .)
+    COMMENTLINE     reduce using rule 51 (operand3 -> monadic_operator operand4 .)
+    $end            reduce using rule 51 (operand3 -> monadic_operator operand4 .)
+
+
+state 81
+
+    (58) referenced_location -> ARROW location .
+
+    TIMES           reduce using rule 58 (referenced_location -> ARROW location .)
+    DIV             reduce using rule 58 (referenced_location -> ARROW location .)
+    MOD             reduce using rule 58 (referenced_location -> ARROW location .)
+    STRCONC         reduce using rule 58 (referenced_location -> ARROW location .)
+    PLUS            reduce using rule 58 (referenced_location -> ARROW location .)
+    MINUS           reduce using rule 58 (referenced_location -> ARROW location .)
+    IN              reduce using rule 58 (referenced_location -> ARROW location .)
+    AND             reduce using rule 58 (referenced_location -> ARROW location .)
+    OR              reduce using rule 58 (referenced_location -> ARROW location .)
+    ISEQUAL         reduce using rule 58 (referenced_location -> ARROW location .)
+    NOTEQUAL        reduce using rule 58 (referenced_location -> ARROW location .)
+    GT              reduce using rule 58 (referenced_location -> ARROW location .)
+    GE              reduce using rule 58 (referenced_location -> ARROW location .)
+    LT              reduce using rule 58 (referenced_location -> ARROW location .)
+    LE              reduce using rule 58 (referenced_location -> ARROW location .)
+    DCL             reduce using rule 58 (referenced_location -> ARROW location .)
+    ID              reduce using rule 58 (referenced_location -> ARROW location .)
+    COMMENT         reduce using rule 58 (referenced_location -> ARROW location .)
+    COMMENTLINE     reduce using rule 58 (referenced_location -> ARROW location .)
+    $end            reduce using rule 58 (referenced_location -> ARROW location .)
+
+
+state 82
+
+    (46) operand2 -> operand2 arithmetic_multiplicative_operator . operand3
+    (50) operand3 -> . operand4
+    (51) operand3 -> . monadic_operator operand4
+    (52) operand3 -> . INTCONST
+    (55) operand4 -> . primitive_value
+    (56) operand4 -> . location
+    (57) operand4 -> . referenced_location
+    (53) monadic_operator -> . MINUS
+    (54) monadic_operator -> . NOT
+    (60) primitive_value -> . literal
+    (59) location -> . ID
+    (58) referenced_location -> . ARROW location
+    (61) literal -> . INTCONST
+    (62) literal -> . boolean_literal
+    (63) literal -> . CHARCONST
+    (64) literal -> . NULL
+    (65) literal -> . STRINGCONST
+    (66) boolean_literal -> . FALSE
+    (67) boolean_literal -> . TRUE
+
+    INTCONST        shift and go to state 33
+    MINUS           shift and go to state 36
+    NOT             shift and go to state 44
+    ID              shift and go to state 38
+    ARROW           shift and go to state 46
+    CHARCONST       shift and go to state 54
+    NULL            shift and go to state 35
+    STRINGCONST     shift and go to state 50
+    FALSE           shift and go to state 51
+    TRUE            shift and go to state 53
+
+    operand3                       shift and go to state 87
+    location                       shift and go to state 41
+    literal                        shift and go to state 34
+    monadic_operator               shift and go to state 45
+    referenced_location            shift and go to state 49
+    primitive_value                shift and go to state 52
+    operand4                       shift and go to state 37
+    boolean_literal                shift and go to state 42
+
+state 83
+
+    (11) id_list -> id_list COMMA ID .
+
+    COMMA           reduce using rule 11 (id_list -> id_list COMMA ID .)
+    ID              reduce using rule 11 (id_list -> id_list COMMA ID .)
+    INT             reduce using rule 11 (id_list -> id_list COMMA ID .)
+    BOOL            reduce using rule 11 (id_list -> id_list COMMA ID .)
+    CHAR            reduce using rule 11 (id_list -> id_list COMMA ID .)
+
+
+state 84
+
+    (8) declaration_list -> declaration COMMA declaration_list .
+
+    SMC             reduce using rule 8 (declaration_list -> declaration COMMA declaration_list .)
+
+
+state 85
+
+    (28) operand0 -> operand0 operator1 operand1 .
+    (40) operand1 -> operand1 . operator2 operand2
+    (41) operator2 -> . arithmetic_additive_operator
+    (42) operator2 -> . STRCONC
+    (43) arithmetic_additive_operator -> . PLUS
+    (44) arithmetic_additive_operator -> . MINUS
+
+    IN              reduce using rule 28 (operand0 -> operand0 operator1 operand1 .)
+    AND             reduce using rule 28 (operand0 -> operand0 operator1 operand1 .)
+    OR              reduce using rule 28 (operand0 -> operand0 operator1 operand1 .)
+    ISEQUAL         reduce using rule 28 (operand0 -> operand0 operator1 operand1 .)
+    NOTEQUAL        reduce using rule 28 (operand0 -> operand0 operator1 operand1 .)
+    GT              reduce using rule 28 (operand0 -> operand0 operator1 operand1 .)
+    GE              reduce using rule 28 (operand0 -> operand0 operator1 operand1 .)
+    LT              reduce using rule 28 (operand0 -> operand0 operator1 operand1 .)
+    LE              reduce using rule 28 (operand0 -> operand0 operator1 operand1 .)
+    DCL             reduce using rule 28 (operand0 -> operand0 operator1 operand1 .)
+    ID              reduce using rule 28 (operand0 -> operand0 operator1 operand1 .)
+    COMMENT         reduce using rule 28 (operand0 -> operand0 operator1 operand1 .)
+    COMMENTLINE     reduce using rule 28 (operand0 -> operand0 operator1 operand1 .)
+    $end            reduce using rule 28 (operand0 -> operand0 operator1 operand1 .)
+    STRCONC         shift and go to state 76
+    PLUS            shift and go to state 19
+    MINUS           shift and go to state 18
+
+    arithmetic_additive_operator   shift and go to state 78
+    operator2                      shift and go to state 77
+
+state 86
+
+    (40) operand1 -> operand1 operator2 operand2 .
+    (46) operand2 -> operand2 . arithmetic_multiplicative_operator operand3
+    (47) arithmetic_multiplicative_operator -> . TIMES
+    (48) arithmetic_multiplicative_operator -> . DIV
+    (49) arithmetic_multiplicative_operator -> . MOD
+
+    STRCONC         reduce using rule 40 (operand1 -> operand1 operator2 operand2 .)
+    PLUS            reduce using rule 40 (operand1 -> operand1 operator2 operand2 .)
+    MINUS           reduce using rule 40 (operand1 -> operand1 operator2 operand2 .)
+    IN              reduce using rule 40 (operand1 -> operand1 operator2 operand2 .)
+    AND             reduce using rule 40 (operand1 -> operand1 operator2 operand2 .)
+    OR              reduce using rule 40 (operand1 -> operand1 operator2 operand2 .)
+    ISEQUAL         reduce using rule 40 (operand1 -> operand1 operator2 operand2 .)
+    NOTEQUAL        reduce using rule 40 (operand1 -> operand1 operator2 operand2 .)
+    GT              reduce using rule 40 (operand1 -> operand1 operator2 operand2 .)
+    GE              reduce using rule 40 (operand1 -> operand1 operator2 operand2 .)
+    LT              reduce using rule 40 (operand1 -> operand1 operator2 operand2 .)
+    LE              reduce using rule 40 (operand1 -> operand1 operator2 operand2 .)
+    DCL             reduce using rule 40 (operand1 -> operand1 operator2 operand2 .)
+    ID              reduce using rule 40 (operand1 -> operand1 operator2 operand2 .)
+    COMMENT         reduce using rule 40 (operand1 -> operand1 operator2 operand2 .)
+    COMMENTLINE     reduce using rule 40 (operand1 -> operand1 operator2 operand2 .)
+    $end            reduce using rule 40 (operand1 -> operand1 operator2 operand2 .)
+    TIMES           shift and go to state 15
+    DIV             shift and go to state 25
+    MOD             shift and go to state 24
+
+    arithmetic_multiplicative_operator shift and go to state 82
+
+state 87
+
+    (46) operand2 -> operand2 arithmetic_multiplicative_operator operand3 .
+
+    TIMES           reduce using rule 46 (operand2 -> operand2 arithmetic_multiplicative_operator operand3 .)
+    DIV             reduce using rule 46 (operand2 -> operand2 arithmetic_multiplicative_operator operand3 .)
+    MOD             reduce using rule 46 (operand2 -> operand2 arithmetic_multiplicative_operator operand3 .)
+    STRCONC         reduce using rule 46 (operand2 -> operand2 arithmetic_multiplicative_operator operand3 .)
+    PLUS            reduce using rule 46 (operand2 -> operand2 arithmetic_multiplicative_operator operand3 .)
+    MINUS           reduce using rule 46 (operand2 -> operand2 arithmetic_multiplicative_operator operand3 .)
+    IN              reduce using rule 46 (operand2 -> operand2 arithmetic_multiplicative_operator operand3 .)
+    AND             reduce using rule 46 (operand2 -> operand2 arithmetic_multiplicative_operator operand3 .)
+    OR              reduce using rule 46 (operand2 -> operand2 arithmetic_multiplicative_operator operand3 .)
+    ISEQUAL         reduce using rule 46 (operand2 -> operand2 arithmetic_multiplicative_operator operand3 .)
+    NOTEQUAL        reduce using rule 46 (operand2 -> operand2 arithmetic_multiplicative_operator operand3 .)
+    GT              reduce using rule 46 (operand2 -> operand2 arithmetic_multiplicative_operator operand3 .)
+    GE              reduce using rule 46 (operand2 -> operand2 arithmetic_multiplicative_operator operand3 .)
+    LT              reduce using rule 46 (operand2 -> operand2 arithmetic_multiplicative_operator operand3 .)
+    LE              reduce using rule 46 (operand2 -> operand2 arithmetic_multiplicative_operator operand3 .)
+    DCL             reduce using rule 46 (operand2 -> operand2 arithmetic_multiplicative_operator operand3 .)
+    ID              reduce using rule 46 (operand2 -> operand2 arithmetic_multiplicative_operator operand3 .)
+    COMMENT         reduce using rule 46 (operand2 -> operand2 arithmetic_multiplicative_operator operand3 .)
+    COMMENTLINE     reduce using rule 46 (operand2 -> operand2 arithmetic_multiplicative_operator operand3 .)
+    $end            reduce using rule 46 (operand2 -> operand2 arithmetic_multiplicative_operator operand3 .)
 
 WARNING: 
 WARNING: Conflicts:
 WARNING: 
-WARNING: shift/reduce conflict for COMMA in state 8 resolved as shift
+WARNING: reduce/reduce conflict in state 33 resolved using rule (operand3 -> INTCONST)
+WARNING: rejected rule (literal -> INTCONST) in state 33

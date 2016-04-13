@@ -4,36 +4,36 @@ import ply.yacc as yacc
 # Get the token map from the lexer.  This is required.
 from calclex import tokens
 
-def p_program (p): 
-	'''program  : statement
-				| statement statement'''
+#def p_program (p): 
+#	'''program  : statement
+#				| statement statement'''
 				
-def p_statement (p):
-	'''statement : declaration_statement
-				 | synonym_statement
-				 | newmode_statement
-				 | procedure_statement
-				 | action_statement'''
+#def p_statement (p):
+#	'''statement : declaration_statement
+#				 | synonym_statement
+#				 | newmode_statement
+#				 | procedure_statement
+#				 | action_statement
 
-def p_declaration_statement (p):
-	'''declaration_statement : DCL declaration_list'''
+#def p_declaration_statement (p):
+#	'''declaration_statement : DCL declaration_list'''
 
 
 # cuidado com os espacos entre as virgulas
-def p_declaration_list (p):
-	'''declaration_list : declaration
-						| declaration COMMA declaration_list'''
+#def p_declaration_list (p):
+#	'''declaration_list : declaration
+#						| declaration COMMA declaration_list'''
 
-def p_declaration (p):
-	'''declaration  : id_list mode
-					| id_list mode initialization'''	
+#def p_declaration (p):
+#	'''declaration  : id_list mode
+#					| id_list mode initialization
 	
-def p_initialization (p) :
-	'initialization : EQUAL expression'	
+#def p_initialization (p) :
+#	'initialization : EQUAL expression'	
 	
-def p_id_list (p):
-	'''id_list  : ID
-				| ID COMMA id_list'''
+#def p_id_list (p):
+#	'''id_list  : ID
+#				| ID COMMA id_list'''
 
 #############@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@##########
 
@@ -58,16 +58,16 @@ def p_newmode_list (p):
 def p_mode_definition (p):
 	'mode_definition : id_list EQUAL mode'
 
-def p_mode (p):
-	'''mode : ID
-			| discrete_mode
+#def p_mode (p):
+#	'''mode : ID
+#			| discrete_mode
 			| reference_mode
-			| composite_mode'''
+			| composite_mode
 
-def p_discrete_mode (p):
-	'''discrete_mode : INT
-					 | BOOL
-					 | CHAR
+#def p_discrete_mode (p):
+#	'''discrete_mode : INT
+#					 | BOOL
+#					 | CHAR
 					 | discrete_range_mode'''
 
 def p_discrete_range_mode (p):
@@ -98,8 +98,8 @@ def p_index_mode (p):
 	'''index_mode 	: descrete_mode
 					| literal_range'''
 
-def p_location (p):
-	'''location : location_name
+#def p_location (p):
+#	'''location : location_name
 				| dereferenced_reference
 				| string_element
 				| string_slice
@@ -131,8 +131,8 @@ def p_array_slice (p):
 #####@@####### 16h
 
 
-def p_primitive_value (p):
-	'''primitive_calue  : literal
+#def p_primitive_value (p):
+#	'''primitive_calue  : literal
 						| value_array_element
 						| value_array_slice
 						| parenthesized_expression'''
@@ -157,8 +157,8 @@ def p_value_array_slice (p):
 def p_parethesized_expression (p):
 	'''parenthesized_expression : LPAREN expression RPAREN'''
 
-def p_expression (p):
-	'''expression 	: operand0 
+#def p_expression (p):
+#	'''expression 	: operand0 
 					| conditional_expression'''
 
 def p_condicional_expression (p):
@@ -178,89 +178,89 @@ def p_elsif_expression (p):
 	'''elsif_expression : ELSIF boolean_expression then_expression
 						| elsif_expression ELSIF boolean_expression then_expression '''
 
-def p_operand0 (p):
-	'''operand0 : operand1
-				| operand0 operator1 operand1 '''
+#def p_operand0 (p):
+#	'''operand0 : operand1
+#				| operand0 operator1 operand1 '''
 
-def p_operator1 (p):
-	'''operator1 	: relational_operator
-					| IN'''
+#def p_operator1 (p):
+#	'''operator1 	: relational_operator
+#					| IN'''
 
-def p_relational_operator (p):
-	'''relational_operator 	: AND
-							| OR
-							| ISEQUAL
-							| NOTEQUAL
-							| GT
-							| GE
-							| LT
-							| LE'''
+#def p_relational_operator (p):
+#	'''relational_operator 	: AND
+#							| OR
+#							| ISEQUAL
+#							| NOTEQUAL
+#							| GT
+#							| GE
+#							| LT
+#							| LE'''
 
-def p_operand1 (p):
-	'''operand1 : operand2
-				| operand1 operator2 operand2 '''
+#def p_operand1 (p):
+#	'''operand1 : operand2
+#				| operand1 operator2 operand2 '''
 
-def p_operator2 (p):
-	'''operator2 	: arithmetic_additive_operator
-					| STRCONC'''
+#def p_operator2 (p):
+#	'''operator2 	: arithmetic_additive_operator
+#					| STRCONC'''
 
-def p_arithmetic_additive_operator (p):
-	'''arithmetic_additive_operator : PLUS
-									| MINUS '''
+#def p_arithmetic_additive_operator (p):
+#	'''arithmetic_additive_operator : PLUS
+#									| MINUS '''
 
-def p_operand2 (p):
-	'''operand2 : operand3
-				| operand2 arithmetic_multiplicative_operator operand3 '''
+#def p_operand2 (p):
+#	'''operand2 : operand3
+#				| operand2 arithmetic_multiplicative_operator operand3 '''
 
-def p_arithmetic_multiplicative_operator (p):
-	'''arithmetic_multiplicative_operator 	: TIMES
-											| DIV
-											| MOD'''
+#def p_arithmetic_multiplicative_operator (p):
+#	'''arithmetic_multiplicative_operator 	: TIMES
+#											| DIV
+#											| MOD'''
 
-def p_operand3 (p):
-	'''operand3 : operand4
-				| monadic_operator operand4
-				| INTCONST '''
+#def p_operand3 (p):
+#	'''operand3 : operand4
+#				| monadic_operator operand4
+#				| INTCONST '''
 
-def p_monadic_operator (p):
-	'''monadic_operator : MINUS
-						| NOT'''
+#def p_monadic_operator (p):
+#	'''monadic_operator : MINUS
+#						| NOT'''
 
-def p_operand4 (p):
-	'''operand4 : location
-				| referenced_location
-				| primitive_value '''
+#def p_operand4 (p):
+#	'''operand4 : location
+#				| referenced_location
+#				| primitive_value '''
 
-def p_referenced_location (p):
-	'''referenced_location : ARROW location '''
+#def p_referenced_location (p):
+#	'''referenced_location : ARROW location '''
 
-def p_action_statement (p):
-	'''action_statement : action
-						| ID COLON action '''
+#def p_action_statement (p):
+#	'''action_statement : action
+#						| ID COLON action '''
 
-def p_action (p):
-	'''action 	: bracketed_action
-				| assignment_action
-				| call_action
-				| exit_action
-				| return_action
-				| result_action  '''
+#def p_action (p):
+#	'''action 	: bracketed_action
+#				| assignment_action
+#				| call_action
+#				| exit_action
+#				| return_action
+#				| result_action  '''
 
 def p_bracketed_action (p):
 	'''bracketed_action : if_action
 						| do_action '''
 
-def p_assignment_action (p):
-	'''assignment_action : location assigning_operator expression '''
+#def p_assignment_action (p):
+#	'''assignment_action : location assigning_operator expression '''
 
-def p_assigning_operator (p):
-	'''assigning_operator 	: EQUALS
-							| closed_dyadic_operator EQUALS '''
+#def p_assigning_operator (p):
+#	'''assigning_operator 	: EQUALS
+#							| closed_dyadic_operator EQUALS '''
 
-def p_closed_dyadic_operator (p):
-	'''closed_dyadic_operator 	: arithmetic_additive_operator
-								| arithmetic_multiplicative_operator
-								| STRCONC '''
+#def p_closed_dyadic_operator (p):
+#	'''closed_dyadic_operator 	: arithmetic_additive_operator
+#								| arithmetic_multiplicative_operator
+#								| STRCONC '''
 
 def p_if_action (p):
 	'''if_action 	: IF boolean_expression then_clause FI
@@ -379,15 +379,15 @@ def p_result_spec (p):
 	'''result_spec 	: RETURNS LPAREN mode RPAREN
 					| RETURNS LPAREN mode LOC RETURNS'''
 
-def p_comment (p):
-	'''comment 	: bracketed_comment
-				| line_end_comment '''
+#def p_comment (p):
+#	'''comment 	: bracketed_comment
+#				| line_end_comment '''
 
-def p_bracketed_comment (p):
-	'''bracketed_comment : COMMENT'''
+#def p_bracketed_comment (p):
+#	'''bracketed_comment : COMMENT'''
 
-def p_line_end_comment (p):
-	'''line_end_comment : COMMENTLINE'''
+#def p_line_end_comment (p):
+#	'''line_end_comment : COMMENTLINE'''
 
 
 #########@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#############

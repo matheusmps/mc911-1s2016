@@ -1,1 +1,3 @@
-dcl a;
+/* example1: */
+dcl m,n,s int;
+
