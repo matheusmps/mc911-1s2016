@@ -181,8 +181,8 @@ class LyaLexer(object):
 	t_PLUSPLUS = r'\+\+'
 	t_MINUSMINUS = r'--'	
 
-	t_COMMENT = r'/\*.*\*/'
-	t_COMMENTLINE = r'\\\\'
+	t_ignore_COMMENT = r'/\*.*\*/'
+	t_ignore_COMMENTLINE = r'\\\\'
 
 	t_STRCONC = r'&'
 	t_ARROW = r'->'

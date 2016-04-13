@@ -1,5 +1,10 @@
 import sys
-from lyaParser import LyaParser
+from lyaParserNew import LyaParser
 
 p = LyaParser()
-p.parse_file(sys.argv[1])
+tree = p.parse_file(sys.argv[1])
+
+print()
+print()
+print()
+tree.show()

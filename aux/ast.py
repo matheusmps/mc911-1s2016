@@ -8,72 +8,67 @@ class NodeAst(object):
 	arguments and assigns them to the appropriate fields.  Any
 	additional arguments specified as keywords are also assigned.
 	"""
+	__slots__ = ()
 	
-	_fields = []
+	attr_names = ()
 	
-	def __init__(self,*args,**kwargs):
-		assert len(args) == len(self._fields)
-		for name,value in zip(self._fields,args):
-			setattr(self,name,value)
-		# Assign additional keyword arguments if supplied
-		for name,value in kwargs.items():
-			setattr(self,name,value)
-			
 	def children(self):
 		""" A sequence of all children that are Nodes"""
-		pass
+		return tuple([])
 	
-	def show(self, buf=sys.stdout, offset=0, attrnames=False, nodenames=False, showcoord=False, _my_node_name=None):
-		""" Pretty print the Node and all its attributes and
-			children (recursively) to a buffer.
-			buf:
-				Open IO buffer into which the Node is printed.
-			offset:
-				Initial offset (amount of leading spaces)
-			attrnames:
-				True if you want to see the attribute names in
-				name=value pairs. False to only see the values.
-			nodenames:
-				True if you want to see the actual node names
-				within their parents.
-			showcoord:
-				Do you want the coordinates of each Node to be
-				displayed.
-		"""
+	def show(self, buf=sys.stdout, offset=0, _my_node_name=None):
+		
 		lead = ' ' * offset
-		if nodenames and _my_node_name is not None:
+		if _my_node_name is not None:
 			buf.write(lead + self.__class__.__name__+ ' <' + _my_node_name + '>: ')
 		else:
 			buf.write(lead + self.__class__.__name__+ ': ')
 
-		if self.fields:
-			if attrnames:
-				nvlist = [(n, getattr(self,n)) for n in self.fields]
-				attrstr = ', '.join('%s=%s' % nv for nv in nvlist)
-			else:
-				vlist = [getattr(self, n) for n in self.fields]
-				attrstr = ', '.join('%s' % v for v in vlist)
+		if self.attr_names:
+			nvlist = [(n, getattr(self,n)) for n in self.attr_names]
+			attrstr = ', '.join('%s=%s' % nv for nv in nvlist)
 			buf.write(attrstr)
 
-		if showcoord:
-			buf.write(' (at %s)' % self.coord)
+        #if showcoord:
+        #    buf.write(' (at %s)' % self.coord)
 		buf.write('\n')
 
 		for (child_name, child) in self.children():
 			child.show(
 				buf,
 				offset=offset + 2,
-				attrnames=attrnames,
-				nodenames=nodenames,
-				showcoord=showcoord,
 				_my_node_name=child_name)
 
 class Program(NodeAst):
-	_fields = ['statements']
+	__slots__ = ('statements')
 	
-class Delaration(NodeAst):
-	_fields = ['type']
+	def __init__(self, statements):
+		self.statements = statements
+	
+	def children(self):
+		nodelist = []
+		for i, child in enumerate(self.statements or []):
+			nodelist.append(("statement[%d]" % i, child))
+		return tuple(nodelist)
 
-class 
-
- 
+class DeclStmt(NodeAst):
+	__slots__ = ('decls')
+	
+	def __init__(self, decls):
+		self.decls = decls
+	
+	def children(self):
+		nodelist = []
+		for i, child in enumerate(self.decls or []):
+			nodelist.append(("decls[%d]" % i, child))
+		return tuple(nodelist)
+	
+class Declaration(NodeAst):
+	__slots__ = ('idList', 'mode', 'init')
+	
+	def __init__(self, idList, mode, init):
+		self.idList = idList
+		self.mode = mode
+		self.init = init
+	
+	attr_names = ('idList', 'mode', 'init')
