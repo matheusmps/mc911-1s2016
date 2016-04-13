@@ -5,9 +5,9 @@ _tabversion = '3.8'
 
 _lr_method = 'LALR'
 
-_lr_signature = '8A14F25996F816BD5C0B67B2D01D5A1B'
+_lr_signature = '88C40565060193E13673C771572FBBE8'
     
-_lr_action_items = {'DCL':([0,3,4,6,11,18,],[1,-5,1,-3,-4,-6,]),'ID':([1,13,17,],[7,19,7,]),'$end':([0,2,3,4,5,6,11,18,],[-21,-2,-5,-1,0,-3,-4,-6,]),'SMC':([9,10,12,14,15,16,21,22,23,],[-7,18,-15,-14,-10,-13,-9,-8,-20,]),'COMMA':([7,8,9,10,12,14,15,16,19,21,22,23,],[-11,13,-7,17,-15,-14,-10,-13,-12,-9,-8,-20,]),'CHAR':([7,8,19,],[-11,12,-12,]),'BOOL':([7,8,19,],[-11,14,-12,]),'INT':([7,8,19,],[-11,16,-12,]),'INTCONST':([20,],[23,]),'EQUALS':([12,14,15,16,],[-15,-14,20,-13,]),}
+_lr_action_items = {'COMMA':([8,9,10,11,13,14,15,16,19,20,22,23,],[12,17,-7,-11,-15,-14,-10,-13,-12,-9,-8,-20,]),'CHAR':([8,11,19,],[13,-11,-12,]),'ID':([4,12,17,],[11,19,11,]),'$end':([0,1,2,3,5,6,7,18,],[-21,0,-1,-5,-2,-3,-4,-6,]),'SMC':([9,10,13,14,15,16,20,22,23,],[18,-7,-15,-14,-10,-13,-9,-8,-20,]),'INTCONST':([21,],[23,]),'DCL':([0,2,3,6,7,18,],[4,4,-5,-3,-4,-6,]),'BOOL':([8,11,19,],[14,-11,-12,]),'EQUALS':([13,14,15,16,],[-15,-14,21,-13,]),'INT':([8,11,19,],[16,-11,-12,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -16,7 +16,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'declaration_list':([1,],[10,]),'empty':([0,],[2,]),'declaration_statement':([0,4,],[3,3,]),'statement_list':([0,],[4,]),'id_list':([1,17,],[8,8,]),'declaration':([1,17,],[9,22,]),'initialization':([15,],[21,]),'program':([0,],[5,]),'mode':([8,],[15,]),'statement':([0,4,],[6,11,]),}
+_lr_goto_items = {'program':([0,],[1,]),'statement_list':([0,],[2,]),'declaration_list':([4,],[9,]),'declaration':([4,17,],[10,22,]),'initialization':([15,],[20,]),'declaration_statement':([0,2,],[3,3,]),'id_list':([4,17,],[8,8,]),'empty':([0,],[5,]),'mode':([8,],[15,]),'statement':([0,2,],[6,7,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -26,25 +26,25 @@ for _k, _v in _lr_goto_items.items():
 del _lr_goto_items
 _lr_productions = [
   ("S' -> program","S'",1,None,None,None),
-  ('program -> statement_list','program',1,'p_program','lyaParserNew.py',79),
-  ('program -> empty','program',1,'p_program','lyaParserNew.py',80),
-  ('statement_list -> statement','statement_list',1,'p_statement_list1','lyaParserNew.py',87),
-  ('statement_list -> statement_list statement','statement_list',2,'p_statement_list2','lyaParserNew.py',91),
-  ('statement -> declaration_statement','statement',1,'p_statement','lyaParserNew.py',95),
-  ('declaration_statement -> DCL declaration_list SMC','declaration_statement',3,'p_declaration_statement','lyaParserNew.py',103),
-  ('declaration_list -> declaration','declaration_list',1,'p_declaration_list','lyaParserNew.py',108),
-  ('declaration_list -> declaration_list COMMA declaration','declaration_list',3,'p_declaration_list','lyaParserNew.py',109),
-  ('declaration -> id_list mode initialization','declaration',3,'p_declaration2','lyaParserNew.py',116),
-  ('declaration -> id_list mode','declaration',2,'p_declaration1','lyaParserNew.py',120),
-  ('id_list -> ID','id_list',1,'p_id_list','lyaParserNew.py',124),
-  ('id_list -> id_list COMMA ID','id_list',3,'p_id_list','lyaParserNew.py',125),
-  ('mode -> INT','mode',1,'p_mode','lyaParserNew.py',132),
-  ('mode -> BOOL','mode',1,'p_mode','lyaParserNew.py',133),
-  ('mode -> CHAR','mode',1,'p_mode','lyaParserNew.py',134),
-  ('mode_name -> ID','mode_name',1,'p_mode_name','lyaParserNew.py',138),
-  ('discrete_mode -> INT','discrete_mode',1,'p_discrete_mode','lyaParserNew.py',142),
-  ('discrete_mode -> BOOL','discrete_mode',1,'p_discrete_mode','lyaParserNew.py',143),
-  ('discrete_mode -> CHAR','discrete_mode',1,'p_discrete_mode','lyaParserNew.py',144),
-  ('initialization -> EQUALS INTCONST','initialization',2,'p_initialization','lyaParserNew.py',148),
-  ('empty -> <empty>','empty',0,'p_empty','lyaParserNew.py',154),
+  ('program -> statement_list','program',1,'p_program','lyaParserNew.py',82),
+  ('program -> empty','program',1,'p_program','lyaParserNew.py',83),
+  ('statement_list -> statement','statement_list',1,'p_statement_list1','lyaParserNew.py',90),
+  ('statement_list -> statement_list statement','statement_list',2,'p_statement_list1','lyaParserNew.py',91),
+  ('statement -> declaration_statement','statement',1,'p_statement','lyaParserNew.py',98),
+  ('declaration_statement -> DCL declaration_list SMC','declaration_statement',3,'p_declaration_statement','lyaParserNew.py',106),
+  ('declaration_list -> declaration','declaration_list',1,'p_declaration_list','lyaParserNew.py',110),
+  ('declaration_list -> declaration_list COMMA declaration','declaration_list',3,'p_declaration_list','lyaParserNew.py',111),
+  ('declaration -> id_list mode initialization','declaration',3,'p_declaration1','lyaParserNew.py',118),
+  ('declaration -> id_list mode','declaration',2,'p_declaration2','lyaParserNew.py',122),
+  ('id_list -> ID','id_list',1,'p_id_list','lyaParserNew.py',126),
+  ('id_list -> id_list COMMA ID','id_list',3,'p_id_list','lyaParserNew.py',127),
+  ('mode -> INT','mode',1,'p_mode','lyaParserNew.py',134),
+  ('mode -> BOOL','mode',1,'p_mode','lyaParserNew.py',135),
+  ('mode -> CHAR','mode',1,'p_mode','lyaParserNew.py',136),
+  ('mode_name -> ID','mode_name',1,'p_mode_name','lyaParserNew.py',140),
+  ('discrete_mode -> INT','discrete_mode',1,'p_discrete_mode','lyaParserNew.py',144),
+  ('discrete_mode -> BOOL','discrete_mode',1,'p_discrete_mode','lyaParserNew.py',145),
+  ('discrete_mode -> CHAR','discrete_mode',1,'p_discrete_mode','lyaParserNew.py',146),
+  ('initialization -> EQUALS INTCONST','initialization',2,'p_initialization','lyaParserNew.py',150),
+  ('empty -> <empty>','empty',0,'p_empty','lyaParserNew.py',156),
 ]

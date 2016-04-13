@@ -26,8 +26,11 @@ class LyaParser(PLYParser):
 	def initParser(self):
 		self._scope_stack = [dict()]
 		
-	def parse_file(self, filePath):
-		return self.parse(self._readFile(filePath), filePath, 1)
+	def parse_file(self, filePath, debuglevel=0):
+		return self.parse(
+			self._readFile(filePath), 
+			filename=filePath, 
+			debuglevel=debuglevel)
 		
 	def parse(self, text, filename='', debuglevel=0):
 		self.lexer.reset(filename)
@@ -84,13 +87,13 @@ class LyaParser(PLYParser):
 			p[0] = ast.Program(p[1])
 	
 	def p_statement_list1(self, p):
-		'''statement_list : statement'''
-		p[0] = [p[1]]
+		'''statement_list : statement
+						  | statement_list statement'''
+		if(len(p) == 3):
+			p[0] = p[1] + [p[2]]
+		else:
+			p[0] = [p[1]]
 
-	def p_statement_list2(self, p):
-		'''statement_list : statement_list statement'''
-		p[0] = p[1] + [p[2]]
-		
 	def p_statement(self, p):
 		'''statement : declaration_statement'''
 					#| action_statement
@@ -103,7 +106,6 @@ class LyaParser(PLYParser):
 		'''declaration_statement : DCL declaration_list SMC'''
 		p[0] = ast.DeclStmt(p[2])
 
-	# cuidado com os espacos entre as virgulas
 	def p_declaration_list(self, p):
 		'''declaration_list : declaration
 							| declaration_list COMMA declaration'''
@@ -112,11 +114,11 @@ class LyaParser(PLYParser):
 		else:
 			p[0] = [p[1]]
 		
-	def p_declaration2(self, p):
+	def p_declaration1(self, p):
 		'''declaration : id_list mode initialization'''
 		p[0] = ast.Declaration(p[1], p[2], p[3])
 
-	def p_declaration1(self, p):
+	def p_declaration2(self, p):
 		'''declaration : id_list mode '''
 		p[0] = ast.Declaration(p[1], p[2], None)
 
@@ -143,7 +145,7 @@ class LyaParser(PLYParser):
 						 | BOOL
 						 | CHAR'''
 		p[0] = p[1]
-						 
+		
 	def p_initialization(self, p):
 		'''initialization : EQUALS INTCONST'''
 		p[0] = p[2]

@@ -2,77 +2,77 @@ Created by PLY version 3.8 (http://www.dabeaz.com/ply)
 
 Unused terminals:
 
-    ARROW
-    COMMENTLINE
-    NUM
-    READ
-    DIV
-    MINUSMINUS
     PRINT
-    PRED
+    PLUSEQ
     SUCC
-    COLON
-    EXIT
-    AND
-    SYN
-    TRUE
-    GE
-    DIVEQ
-    PLUSPLUS
-    NOTEQUAL
-    RBRACKET
-    PLUS
-    LOWER
-    RETURN
+    UPPER
+    MINUS
+    CHARCONST
+    TYPE
     COMMENT
+    NOTEQUAL
+    LE
+    TO
+    STRINGCONST
+    LPAREN
+    READ
+    RETURN
+    MOD
+    GE
+    TIMESEQ
+    LENGTH
+    RBRACKET
+    REF
+    PLUSPLUS
+    MODEQ
+    DIV
+    TRUE
+    OD
+    CHARS
+    IN
+    LOC
+    GT
+    ELSIF
+    WHILE
+    MINUSEQ
     PROC
     RESULT
-    DO
-    NOT
-    RPAREN
-    GT
-    LE
-    FOR
-    ISEQUAL
-    REF
-    ELSIF
+    EXIT
     END
-    TYPE
-    RETURNS
-    FALSE
-    LOC
-    MOD
-    PLUSEQ
-    DOWN
-    LBRACE
-    LPAREN
-    ARRAY
-    LBRACKET
-    CHARCONST
-    LT
-    BY
-    TO
-    FI
-    IF
+    FOR
     TIMES
-    ELSE
-    THEN
-    MINUS
+    ARRAY
     NULL
-    MODEQ
+    DIVEQ
+    COLON
+    ISEQUAL
+    THEN
+    IF
+    COMMENTLINE
+    LOWER
     PERIOD
+    NUM
+    ELSE
+    DO
     STRCONC
-    STRINGCONST
+    DOWN
+    SYN
+    FALSE
+    LBRACE
+    PRED
     OR
-    WHILE
-    OD
-    LENGTH
+    LT
+    FI
+    RETURNS
+    AND
+    PLUS
     RBRACE
-    CHARS
-    UPPER
-    TIMESEQ
-    IN
-    MINUSEQ
+    MINUSMINUS
+    ARROW
+    RPAREN
+    BY
+    NOT
+    LBRACKET
 
 Grammar
 
@@ -212,36 +212,32 @@ state 0
     (6) declaration_statement -> . DCL declaration_list SMC
 
     $end            reduce using rule 21 (empty -> .)
-    DCL             shift and go to state 1
+    DCL             shift and go to state 4
 
-    empty                          shift and go to state 2
+    program                        shift and go to state 1
+    statement_list                 shift and go to state 2
     declaration_statement          shift and go to state 3
-    statement_list                 shift and go to state 4
-    program                        shift and go to state 5
+    empty                          shift and go to state 5
     statement                      shift and go to state 6
 
 state 1
 
-    (6) declaration_statement -> DCL . declaration_list SMC
-    (7) declaration_list -> . declaration
-    (8) declaration_list -> . declaration_list COMMA declaration
-    (9) declaration -> . id_list mode initialization
-    (10) declaration -> . id_list mode
-    (11) id_list -> . ID
-    (12) id_list -> . id_list COMMA ID
+    (0) S' -> program .
 
-    ID              shift and go to state 7
 
-    declaration                    shift and go to state 9
-    declaration_list               shift and go to state 10
-    id_list                        shift and go to state 8
 
 state 2
 
-    (2) program -> empty .
+    (1) program -> statement_list .
+    (4) statement_list -> statement_list . statement
+    (5) statement -> . declaration_statement
+    (6) declaration_statement -> . DCL declaration_list SMC
 
-    $end            reduce using rule 2 (program -> empty .)
+    $end            reduce using rule 1 (program -> statement_list .)
+    DCL             shift and go to state 4
 
+    declaration_statement          shift and go to state 3
+    statement                      shift and go to state 7
 
 state 3
 
@@ -253,21 +249,25 @@ state 3
 
 state 4
 
-    (1) program -> statement_list .
-    (4) statement_list -> statement_list . statement
-    (5) statement -> . declaration_statement
-    (6) declaration_statement -> . DCL declaration_list SMC
+    (6) declaration_statement -> DCL . declaration_list SMC
+    (7) declaration_list -> . declaration
+    (8) declaration_list -> . declaration_list COMMA declaration
+    (9) declaration -> . id_list mode initialization
+    (10) declaration -> . id_list mode
+    (11) id_list -> . ID
+    (12) id_list -> . id_list COMMA ID
 
-    $end            reduce using rule 1 (program -> statement_list .)
-    DCL             shift and go to state 1
+    ID              shift and go to state 11
 
-    declaration_statement          shift and go to state 3
-    statement                      shift and go to state 11
+    declaration                    shift and go to state 10
+    id_list                        shift and go to state 8
+    declaration_list               shift and go to state 9
 
 state 5
 
-    (0) S' -> program .
+    (2) program -> empty .
 
+    $end            reduce using rule 2 (program -> empty .)
 
 
 state 6
@@ -280,12 +280,10 @@ state 6
 
 state 7
 
-    (11) id_list -> ID .
+    (4) statement_list -> statement_list statement .
 
-    COMMA           reduce using rule 11 (id_list -> ID .)
-    INT             reduce using rule 11 (id_list -> ID .)
-    BOOL            reduce using rule 11 (id_list -> ID .)
-    CHAR            reduce using rule 11 (id_list -> ID .)
+    DCL             reduce using rule 4 (statement_list -> statement_list statement .)
+    $end            reduce using rule 4 (statement_list -> statement_list statement .)
 
 
 state 8
@@ -297,22 +295,14 @@ state 8
     (14) mode -> . BOOL
     (15) mode -> . CHAR
 
-    COMMA           shift and go to state 13
+    COMMA           shift and go to state 12
     INT             shift and go to state 16
     BOOL            shift and go to state 14
-    CHAR            shift and go to state 12
+    CHAR            shift and go to state 13
 
     mode                           shift and go to state 15
 
 state 9
-
-    (7) declaration_list -> declaration .
-
-    SMC             reduce using rule 7 (declaration_list -> declaration .)
-    COMMA           reduce using rule 7 (declaration_list -> declaration .)
-
-
-state 10
 
     (6) declaration_statement -> DCL declaration_list . SMC
     (8) declaration_list -> declaration_list . COMMA declaration
@@ -321,28 +311,38 @@ state 10
     COMMA           shift and go to state 17
 
 
+state 10
+
+    (7) declaration_list -> declaration .
+
+    SMC             reduce using rule 7 (declaration_list -> declaration .)
+    COMMA           reduce using rule 7 (declaration_list -> declaration .)
+
+
 state 11
 
-    (4) statement_list -> statement_list statement .
+    (11) id_list -> ID .
 
-    DCL             reduce using rule 4 (statement_list -> statement_list statement .)
-    $end            reduce using rule 4 (statement_list -> statement_list statement .)
+    COMMA           reduce using rule 11 (id_list -> ID .)
+    INT             reduce using rule 11 (id_list -> ID .)
+    BOOL            reduce using rule 11 (id_list -> ID .)
+    CHAR            reduce using rule 11 (id_list -> ID .)
 
 
 state 12
+
+    (12) id_list -> id_list COMMA . ID
+
+    ID              shift and go to state 19
+
+
+state 13
 
     (15) mode -> CHAR .
 
     EQUALS          reduce using rule 15 (mode -> CHAR .)
     SMC             reduce using rule 15 (mode -> CHAR .)
     COMMA           reduce using rule 15 (mode -> CHAR .)
-
-
-state 13
-
-    (12) id_list -> id_list COMMA . ID
-
-    ID              shift and go to state 19
 
 
 state 14
@@ -362,9 +362,9 @@ state 15
 
     SMC             reduce using rule 10 (declaration -> id_list mode .)
     COMMA           reduce using rule 10 (declaration -> id_list mode .)
-    EQUALS          shift and go to state 20
+    EQUALS          shift and go to state 21
 
-    initialization                 shift and go to state 21
+    initialization                 shift and go to state 20
 
 state 16
 
@@ -383,7 +383,7 @@ state 17
     (11) id_list -> . ID
     (12) id_list -> . id_list COMMA ID
 
-    ID              shift and go to state 7
+    ID              shift and go to state 11
 
     declaration                    shift and go to state 22
     id_list                        shift and go to state 8
@@ -408,17 +408,17 @@ state 19
 
 state 20
 
-    (20) initialization -> EQUALS . INTCONST
-
-    INTCONST        shift and go to state 23
-
-
-state 21
-
     (9) declaration -> id_list mode initialization .
 
     SMC             reduce using rule 9 (declaration -> id_list mode initialization .)
     COMMA           reduce using rule 9 (declaration -> id_list mode initialization .)
+
+
+state 21
+
+    (20) initialization -> EQUALS . INTCONST
+
+    INTCONST        shift and go to state 23
 
 
 state 22
