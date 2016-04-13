@@ -1,5 +1,6 @@
 import ply.lex as lex
 import sys
+from aux.readFileHelper import FileHelper
 
 class LyaLexer(object):
 	def __init__(self, error_func, lBraceFunc, rBraceFunc):
@@ -9,7 +10,8 @@ class LyaLexer(object):
 		self.rBraceFunc = rBraceFunc
 		self.filename = ''
 
-	def reset(self):
+	def reset(self, filename=''):
+		self.filename = filename
 		self.lexer.lineno = 1
 		self.last_token = None
 	
@@ -28,9 +30,9 @@ class LyaLexer(object):
 		last_cr = self.lexer.lexdata.rfind('\n', 0, token.lexpos)
 		return token.lexpos - last_cr
 		
-	def listTokens(self, filePath):
+	def listTokens(self, data):
 		""" Used only for tests. """
-		self.input(self._readFile(filePath))
+		self.input(data)
 		while True:
 			tok = self.token()
 			if not tok: 
@@ -38,11 +40,6 @@ class LyaLexer(object):
 			print(tok)
 	
 	### PRIVATE ###
-	
-	def _readFile(self, filePath):
-		with open(filePath, 'r') as myFile:
-			data = myFile.read()
-		return data
 	
 	def _error(self, msg, token):
 		location = self._make_tok_location(token)
