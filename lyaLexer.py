@@ -198,7 +198,7 @@ class LyaLexer(object):
 	# This code handles reserved words as well
 	# It reduces an expression to this rule and try to look for a reserved word.
 	def t_ID(self, t):
-		r'[a-zA-z_][\w]*'
+		r'[a-zA-Z_][a-zA-Z_0-9]*'
 		
 		# Check for reserved words
 		# 'ID' is the default value if it does not find t.value in the reserved words list.
