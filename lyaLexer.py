@@ -135,6 +135,9 @@ class LyaLexer(object):
 	#--------------------#
 	#------ RULES -------#
 	#--------------------#
+	
+	t_ignore_COMMENT = r'/\*.*\*/'
+	t_ignore_COMMENTLINE = r'//.*'
 
 	t_COMMA = r','
 	t_SMC = r';'
@@ -179,10 +182,7 @@ class LyaLexer(object):
 	t_NOT = r'!'
 
 	t_PLUSPLUS = r'\+\+'
-	t_MINUSMINUS = r'--'	
-
-	t_ignore_COMMENT = r'/\*.*\*/'
-	t_ignore_COMMENTLINE = r'\\\\'
+	t_MINUSMINUS = r'--'
 
 	t_STRCONC = r'&'
 	t_ARROW = r'->'
