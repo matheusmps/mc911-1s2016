@@ -20,22 +20,23 @@ class NodeAst(object):
 		
 		lead = ' ' * offset
 		if _my_node_name is not None:
-			buf.write(lead + self.__class__.__name__+ ' <' + _my_node_name + '>: ')
+			buf.write(lead + ' <' + _my_node_name + '>: ' + self.__class__.__name__ + ' => ')
 		else:
-			buf.write(lead + self.__class__.__name__+ ': ')
+			buf.write(lead + self.__class__.__name__+ ' => ')
 
 		if self.attr_names:
 			nvlist = [(n, getattr(self,n)) for n in self.attr_names]
-			attrstr = ', '.join('%s=%s' % nv for nv in nvlist)
+			attrstr = ', '.join('%s = \'%s\' ' % nv for nv in nvlist)
 			buf.write(attrstr)
 
 		buf.write('\n')
 
-		for child in self.children():
+		for (child, child_name) in self.children():
 			#buf.write('\n')
 			child.show(
 				buf,
-				offset=offset + 2)
+				offset=offset + 2,
+				_my_node_name=child_name)
 
 class Program(NodeAst):
 	__slots__ = ('statements')
@@ -45,7 +46,7 @@ class Program(NodeAst):
 	
 	def children(self):
 		nodelist = []
-		for child in (self.statements or []): nodelist.append(child)
+		for child in (self.statements or []): nodelist.append((child, "stmt"))
 		return nodelist
 
 class DeclStmt(NodeAst):
@@ -56,7 +57,7 @@ class DeclStmt(NodeAst):
 	
 	def children(self):
 		nodelist = []
-		for child in (self.decls or []): nodelist.append(child)
+		for child in (self.decls or []): nodelist.append((child, "decls"))
 		return nodelist
 
 class Declaration(NodeAst):
@@ -69,8 +70,8 @@ class Declaration(NodeAst):
 		
 	def children(self):
 		nodelist = []
-		if self.mode is not None: nodelist.append(self.mode)
-		if self.init is not None: nodelist.append(self.init)
+		if self.mode is not None: nodelist.append((self.mode, "mode"))
+		if self.init is not None: nodelist.append((self.init, "initialization"))
 		return nodelist
 	
 	attr_names = ('idList',)
@@ -99,7 +100,7 @@ class ReferenceMode(NodeAst):
 		
 	def children(self):
 		nodelist = []
-		if self.mode is not None: nodelist.append(self.mode)
+		if self.mode is not None: nodelist.append((self.mode, "mode"))
 		return nodelist
 
 class DiscreteRangeMode(NodeAst):
@@ -111,8 +112,8 @@ class DiscreteRangeMode(NodeAst):
 	
 	def children(self):
 		nodelist = []
-		if self.mode is not None: nodelist.append(self.mode)
-		if self.literalRange is not None: nodelist.append(self.literalRange)
+		if self.mode is not None: nodelist.append((self.mode, "mode"))
+		if self.literalRange is not None: nodelist.append((self.literalRange, "range"))
 		return nodelist
 
 class LiteralRange(NodeAst):
@@ -124,8 +125,8 @@ class LiteralRange(NodeAst):
 	
 	def children(self):
 		nodelist = []
-		if self.lowerBound is not None: nodelist.append(self.lowerBound)
-		if self.upperBound is not None: nodelist.append(self.upperBound)
+		if self.lowerBound is not None: nodelist.append((self.lowerBound, "lowerBound"))
+		if self.upperBound is not None: nodelist.append((self.upperBound, "upperBound"))
 		return nodelist
 
 class StringMode(NodeAst):
@@ -144,7 +145,7 @@ class IndexMode(NodeAst):
 		
 	def children(self):
 		nodelist = []
-		for child in (self.index_mode_list or []): nodelist.append(child)
+		for child in (self.index_mode_list or []): nodelist.append((child, "index_mode_list"))
 		return nodelist
 
 class ArrayMode(NodeAst):
@@ -156,8 +157,8 @@ class ArrayMode(NodeAst):
 		
 	def children(self):
 		nodelist = []
-		if self.index_mode is not None: nodelist.append(self.index_mode)
-		if self.element_node is not None: nodelist.append(self.element_node)
+		if self.index_mode is not None: nodelist.append((self.index_mode, "index_mode"))
+		if self.element_node is not None: nodelist.append((self.element_node, "element_mode"))
 		return nodelist
 
 class ModeDef(NodeAst):
@@ -169,7 +170,7 @@ class ModeDef(NodeAst):
 		
 	def children(self):
 		nodelist = []
-		if self.mode is not None: nodelist.append(self.mode)
+		if self.mode is not None: nodelist.append((self.mode, "mode"))
 		return nodelist
 	
 	attr_names = ('idList',)
@@ -182,7 +183,7 @@ class NewModeStmt(NodeAst):
 	
 	def children(self):
 		nodelist = []
-		for child in (self.modeList or []): nodelist.append(child)
+		for child in (self.modeList or []): nodelist.append((child, "mode_list"))
 		return nodelist
 
 class SynStmt(NodeAst):
@@ -193,7 +194,7 @@ class SynStmt(NodeAst):
 	
 	def children(self):
 		nodelist = []
-		for child in (self.synList or []): nodelist.append(child)
+		for child in (self.synList or []): nodelist.append((child, "syn_list"))
 		return nodelist
 
 class SynDef(NodeAst):
@@ -208,8 +209,8 @@ class SynDef(NodeAst):
 		
 	def children(self):
 		nodelist = []
-		if self.mode is not None: nodelist.append(self.mode)
-		if self.expression is not None: nodelist.append(self.expression)
+		if self.mode is not None: nodelist.append((self.mode, "mode"))
+		if self.expression is not None: nodelist.append((self.expression, "expression"))
 		return nodelist
 		
 
@@ -229,40 +230,52 @@ class Location(NodeAst):
 	def __init__(self, idName):
 		self.idName = idName
 
+class ReferencedLocation(NodeAst):
+	__slots__ = ('location')
+	
+	def __init__(self, location):
+		self.location = location
+		
+	def children(self):
+		nodelist = []
+		if self.location is not None: nodelist.append((self.location, "location"))
+		return nodelist
+
 class DereferencedLocation(NodeAst):
-	__slots__ = ('idName')
+	__slots__ = ('location')
 	
-	attr_names = ('idName',)
-	
-	def __init__(self, idName):
-		self.idName = idName
+	def __init__(self, location):
+		self.location = location
+		
+	def children(self):
+		nodelist = []
+		if self.location is not None: nodelist.append((self.location, "location"))
+		return nodelist
 
 class StringElement(NodeAst):
 	__slots__ = ('idName', 'start_element')
 	
-	attr_names = ('idName',)
-	
 	def __init__(self, idName, start_element):
 		self.idName = idName
-		start_element = start_element
+		self.start_element = start_element
 	
 	def children(self):
 		nodelist = []
-		if self.start_element is not None: nodelist.append(self.start_element)
+		if self.idName is not None: nodelist.append((self.idName, "id"))
+		if self.start_element is not None: nodelist.append((self.start_element, "start_element"))
 		return nodelist
 
 class StringSlice(NodeAst):
-	__slots__ = ('idName', 'left', 'right')
+	__slots__ = ('idName', 'literalRange')
 	
-	def __init__(self, idName, left, right):
+	def __init__(self, idName, literalRange):
 		self.idName = idName
-		self.left = left
-		self.right = right
+		self.literalRange = literalRange
 	
 	def children(self):
 		nodelist = []
-		if self.left is not None: nodelist.append(self.left)
-		if self.right is not None: nodelist.append(self.right)
+		if self.idName is not None: nodelist.append((self.idName, "id"))
+		if self.literalRange is not None: nodelist.append((self.literalRange, "range"))
 		return nodelist
 
 class ArrayElement(NodeAst):
@@ -274,8 +287,8 @@ class ArrayElement(NodeAst):
 		
 	def children(self):
 		nodelist = []
-		if self.array_location is not None: nodelist.append(self.array_location)
-		for child in (self.expressions or []): nodelist.append(child)
+		if self.array_location is not None: nodelist.append((self.array_location, "array_location"))
+		for child in (self.expressions or []): nodelist.append((child, "expressions"))
 		return nodelist
 
 class ArraySlice(NodeAst):
@@ -287,7 +300,108 @@ class ArraySlice(NodeAst):
 		
 	def children(self):
 		nodelist = []
-		if self.array_location is not None: nodelist.append(self.array_location)
-		if self.literalRange is not None: nodelist.append(self.literalRange)
+		if self.array_location is not None: nodelist.append((self.array_location, "array_location"))
+		if self.literalRange is not None: nodelist.append((self.literalRange, "range"))
 		return nodelist
 
+class Assignment(NodeAst):
+	__slots__ = ('location', 'assign_op', 'expression')
+	
+	def __init__(self, location, assign_op, expression):
+		self.location = location
+		self.assign_op = assign_op
+		self.expression = expression
+	
+	attr_names = ('assign_op', )
+	
+	def children(self):
+		nodelist = []
+		if self.location is not None: nodelist.append((self.location, "location"))
+		if self.expression is not None: nodelist.append((self.expression, "expression"))
+		return nodelist
+
+class Expression(NodeAst):
+	__slots__ = ('operand1', 'operator', 'operand2')
+	
+	def __init__(self, operand1, operator, operand2):
+		self.operand1 = operand1
+		self.operator = operator
+		self.operand2 = operand2
+	
+	attr_names = ('operator',)
+	
+	def children(self):
+		nodelist = []
+		if self.operand1 is not None: nodelist.append((self.operand1, "operand1"))
+		if self.operand2 is not None: nodelist.append((self.operand2, "operand2"))
+		return nodelist
+
+class ParenthesizedExpression(NodeAst):
+	__slots__ = ('expression')
+	
+	def __init__(self, operand1, operator, operand2):
+		self.expression = expression
+	
+	def children(self):
+		nodelist = []
+		if self.expression is not None: nodelist.append((self.expression, "expressions"))
+		return nodelist
+
+
+class IntConst(NodeAst):
+	__slots__ = ('val')
+	attr_names = ('val',)
+	
+	def __init__(self, val):
+		self.val = val
+
+class CharConst(NodeAst):
+	__slots__ = ('val')
+	attr_names = ('val',)
+	
+	def __init__(self, val):
+		self.val = val
+
+class Boolean(NodeAst):
+	__slots__ = ('val')
+	attr_names = ('val',)
+	
+	def __init__(self, val):
+		self.val = val
+
+class StrConst(NodeAst):
+	__slots__ = ('val')
+	attr_names = ('val',)
+	
+	def __init__(self, val):
+		self.val = val
+
+class EmptyConst(NodeAst):
+	__slots__ = ()
+	attr_names = ()
+
+class ValueArrayElement(NodeAst):
+	__slots__ = ('primitiveValue', 'expressions')
+	
+	def __init__(self, primitiveValue, expressions):
+		self.primitiveValue = primitiveValue
+		self.expressions = expressions
+		
+	def children(self):
+		nodelist = []
+		if self.primitiveValue is not None: nodelist.append((self.primitiveValue, "primitiveValue"))
+		for child in (self.expressions or []): nodelist.append((child, "expressions"))
+		return nodelist
+
+class ValueArraySlice(NodeAst):
+	__slots__ = ('primitiveValue', 'literalRange')
+	
+	def __init__(self, primitiveValue, literalRange):
+		self.primitiveValue = primitiveValue
+		self.literalRange = literalRange
+		
+	def children(self):
+		nodelist = []
+		if self.primitiveValue is not None: nodelist.append((self.primitiveValue, "primitiveValue"))
+		if self.literalRange is not None: nodelist.append((self.literalRange, "range"))
+		return nodelist

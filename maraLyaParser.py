@@ -77,11 +77,11 @@ class LyaParser(PLYParser):
 		return self.lexer.last_token
 
 	######################--   RULES  --######################
-	
-	##################################
-	##### PROGRAM AND STATEMENTS #####
-	##################################
-	
+
+
+	############ PROGRAM AND STATEMENTS ############
+
+
 	def p_program(self, p): 
 		'''program  : statement_list
 					| empty'''
@@ -89,7 +89,7 @@ class LyaParser(PLYParser):
 			p[0] = ast.Program([])
 		else:
 			p[0] = ast.Program(p[1])
-	
+
 	def p_statement_list1(self, p):
 		'''statement_list : statement
 						  | statement_list statement'''
@@ -101,15 +101,15 @@ class LyaParser(PLYParser):
 	def p_statement(self, p):
 		'''statement : declaration_statement
 					| newmode_statement
-					| synonym_statement'''
-					#| action_statement
+					| synonym_statement
+					| action_statement'''
 					#| procedure_statement
 		p[0] = p[1]
-	
-	#######################
-	##### DECLARATION #####
-	#######################
-	
+
+
+	############ DECLARATION STATEMENT ############
+
+
 	def p_declaration_statement(self, p):
 		'''declaration_statement : DCL declaration_list SMC'''
 		p[0] = ast.DeclStmt(p[2])
@@ -121,7 +121,7 @@ class LyaParser(PLYParser):
 			p[0] = p[1] + [p[3]]
 		else:
 			p[0] = [p[1]]
-		
+
 	def p_declaration1(self, p):
 		'''declaration : id_list mode initialization'''
 		p[0] = ast.Declaration(p[1], p[2], p[3])
@@ -137,38 +137,42 @@ class LyaParser(PLYParser):
 			p[0] = p[1] + [p[3]]
 		else:
 			p[0] = [p[1]]
-			
-	################
-	##### MODE #####
-	################
-	
+
+	def p_initialization(self, p):
+		'''initialization : EQUALS expression'''
+		p[0] = p[2]
+
+
+	############ MODE ############
+
+
 	def p_mode(self, p):
 		'''mode : mode_name
 				| discrete_mode
 				| reference_mode
 				| composite_mode'''
 		p[0] = p[1]
-	
+
 	def p_mode_name(self, p):
 		'''mode_name : ID'''
 		p[0] = ast.Mode(p[1])
-		
+
 	def p_discrete_mode(self, p):
 		'''discrete_mode : basic_mode
 						 | discrete_range_mode'''
 		p[0] = p[1]
-        
+
 	def p_basic_mode(self, p):
 		'''basic_mode : INT
 					  | BOOL
 					  | CHAR'''
 		p[0] = ast.DiscreteMode(p[1])
-		
+
 	def p_discrete_range_mode(self, p):
 		'''discrete_range_mode : discrete_mode_name LPAREN literal_range RPAREN
 							   | basic_mode LPAREN literal_range RPAREN'''
 		p[0] = ast.DiscreteRangeMode(p[1], p[3])
-		
+
 	def p_discrete_mode_name(self, p):
 		'''discrete_mode_name : ID'''
 		p[0] = ast.Mode(p[1])
@@ -176,29 +180,37 @@ class LyaParser(PLYParser):
 	def p_litereal_range(self, p):
 		'''literal_range : lower_bound COLON upper_bound'''
 		p[0] = ast.LiteralRange(p[1], p[3])
-		
+
+	def p_lower_bound(self, p):
+		'''lower_bound : expression'''
+		p[0] = p[1]
+
+	def p_upper_bound(self, p):
+		'''upper_bound : expression'''
+		p[0] = p[1]
+
 	def p_reference_mode(self, p):
 		'''reference_mode : REF mode'''
 		p[0] = ast.ReferenceMode(p[2])
-	
+
 	def p_composite_mode(self, p):
 		'''composite_mode : string_mode
 						  | array_mode'''
 		p[0] = p[1]
-	
+
 	def p_string_mode(self, p):
 		'''string_mode : CHARS LBRACKET string_length RBRACKET'''
 		p[0] = ast.StringMode(p[3])
-	
+
 	def p_string_length(self,p):
 		'''string_length : INTCONST'''
 		p[0] = p[1]
-	
+
 	def p_array_mode(self, p):
 		'''array_mode : ARRAY LBRACKET index_mode_list RBRACKET element_node'''
 		index_mode = ast.IndexMode(p[3])
 		p[0] = ast.ArrayMode(index_mode, p[5])
-	
+
 	def p_index_mode_list(self, p):
 		'''index_mode_list : index_mode
 						   | index_mode_list COMMA index_mode'''
@@ -206,24 +218,24 @@ class LyaParser(PLYParser):
 			p[0] = p[1] + [p[3]]
 		else:
 			p[0] = [p[1]]
-	
+
 	def p_index_mode(self, p):
 		'''index_mode : discrete_mode
 					  | literal_range'''
 		p[0] = p[1]
-		
+
 	def p_element_node(self, p):
 		'''element_node : mode'''
 		p[0] = p[1]
-	
-	####################
-	##### NEW MODE #####
-	####################
-	
+
+
+	############ NEW MODE STATEMENT ############
+
+
 	def p_newmode_statement(self, p):
 		'''newmode_statement : TYPE newmode_list SMC'''
 		p[0] = ast.NewModeStmt(p[2])
-	
+
 	def p_newmode_list(self, p):
 		'''newmode_list : mode_definition
 						| newmode_list COMMA mode_definition'''
@@ -231,19 +243,19 @@ class LyaParser(PLYParser):
 			p[0] = p[1] + [p[3]]
 		else:
 			p[0] = [p[1]]
-	
+
 	def p_mode_definition(self, p):
 		'''mode_definition : id_list EQUALS mode'''
 		p[0] = ast.ModeDef(p[1], p[3])
-	
+
 	def p_synonym_statement(self, p):
 		'''synonym_statement : SYN syn_list SMC'''
 		p[0] = ast.SynStmt(p[2])
-	
-	###################
-	##### SYNONYM #####
-	###################
-	
+
+
+	############ SYNONYM STATEMENT ############
+
+
 	def p_syn_list(self, p):
 		'''syn_list : syn_definition
 					| syn_list COMMA syn_definition'''
@@ -251,77 +263,118 @@ class LyaParser(PLYParser):
 			p[0] = p[1] + [p[3]]
 		else:
 			p[0] = [p[1]]
-			
+
 	def p_syn_definition(self, p):
 		'''syn_definition : id_list EQUALS constant_expression'''
 		p[0] = ast.SynDef(p[1], None, p[3])
-	
+
 	def p_syn_definition2(self, p):
 		'''syn_definition : id_list mode EQUALS constant_expression'''
 		p[0] = ast.SynDef(p[1], p[2], p[4])
 
-	####################
-
-
-
-	####### TEST #######
-
-
-
-	####################
-
-
-
-	####################
-	##### LOCATION #####
-	####################
-	
-	def p_location(self, p):
-		'''location : location_name
-					| dereferenced_reference
-					| string_element
-					| string_slice
-					| array_element
-					| array_slice'''
-					#| call_action
+	def p_constant_expression(self, p):
+		'''constant_expression : expression'''
 		p[0] = p[1]
-	
-	def p_location_name(self, p):
-		'''location_name : ID'''
-		p[0] = ast.Location(p[1])
-	
-	def p_dereferenced_reference(self, p):
-		'''dereferenced_reference : location ARROW'''
-		p[0] = ast.DereferencedLocation(p[1])
-	
-	def p_string_element(self, p):
-		'''string_element : string_location LBRACKET start_element RBRACKET'''
-		p[0] = ast.StringElement(p[1], p[3])
-	
-	def p_string_location(self, p):
-		'''string_location : ID'''
+
+
+	############ PRIMITIVE VALUES ############
+
+
+	def p_primitive_value (self, p):
+		'''primitive_value  : literal
+							| value_array_element
+							| value_array_slice
+							| parenthesized_expression'''
 		p[0] = p[1]
-	
-	def p_start_element(self, p):
-		'''start_element : integer_expression'''
+
+	def p_literal (self, p):
+		'''literal  : integer_literal
+					| boolean_literal
+					| char_literal
+					| empty_literal
+					| string_literal'''
 		p[0] = p[1]
-	
-	def p_string_slice(self, p):
-		'''string_slice : string_location LBRACKET left_element COLON right_element RBRACKET'''
-		p[0] = ast.StringSlice(p[1], p[3], p[5])
-	
-	def p_left_element(self, p):
-		'''left_element : integer_expression'''
+
+	def p_integer_literal (self, p):
+		'''integer_literal : INTCONST '''
+		p[0] = ast.IntConst(p[1])
+
+	def p_boolean_literal (self, p):
+		'''boolean_literal  : FALSE
+							| TRUE'''
+		p[0] = ast.Boolean(p[1])
+
+	def p_char_literal (self, p):
+		'''char_literal : CHARCONST '''
+		p[0] = ast.CharConst(p[1])
+
+	def p_string_literal (self, p):
+		'''string_literal : STRINGCONST '''
+		p[0] = ast.StrConst(p[1])
+
+	def p_empty_literal (self, p):
+		'''empty_literal : NULL '''
+		p[0] = ast.EmptyConst()
+
+	def p_value_array_element(self, p):
+		'''value_array_element : array_primitive_value LBRACKET expression_list RBRACKET'''
+		p[0] = ast.ValueArrayElement(p[1], p[3])
+
+	def p_value_array_slice(self, p):
+		'''value_array_slice : array_primitive_value LBRACKET literal_range RBRACKET'''
+		p[0] = ast.ValueArraySlice(p[1], p[3])
+
+	def p_array_primitive_value(self, p):
+		'''array_primitive_value : primitive_value'''
 		p[0] = p[1]
-	
-	def p_right_element(self, p):
-		'''right_element : integer_expression'''
+
+	def p_parenthesized_expression(self, p):
+		'''parenthesized_expression : LPAREN expression RPAREN'''
+		p[0] = p[2]
+
+
+	############ ACTION STATEMENT ############
+
+
+	def p_action_statement (self, p):
+		'''action_statement : action SMC'''
+#							| ID COLON action SMC '''
+#		if(len(p) == 5):
+#			p[0] = [p[1]] + p[3] #ESTA ERRADO
+#		else:
 		p[0] = p[1]
-		
-	def p_array_element(self, p):
-		'''array_element : array_location LBRACKET expression_list RBRACKET'''
-		p[0] = ast.ArrayElement(p[1], p[3])
-		
+
+	def p_action (self, p):
+		'''action 	: assignment_action'''
+#					| bracketed_action'''
+#					| call_action
+#					| exit_action
+#					| return_action
+#					| result_action  '''
+		p[0] = p[1]
+
+
+	############ ASSIGNEMENT ACTION ############
+
+
+	def p_assignment_action (self, p):
+		'''assignment_action : location assigning_operator expression '''
+		p[0] = ast.Assignment(p[1], p[2], p[3])
+
+	def p_assigning_operator (self, p):
+		'''assigning_operator 	: EQUALS
+								| closed_dyadic_operator EQUALS '''
+		if(len(p) == 3):
+			p[0] = p[1] + p[2] 
+		else:
+			p[0] = p[1]
+
+	def p_closed_dyadic_operator (self, p):
+		'''closed_dyadic_operator	: arithmetic_additive_operator
+									| arithmetic_multiplicative_operator
+									| string_concatenation_operator '''
+		p[0] = p[1]
+
 	def p_expression_list(self, p):
 		'''expression_list : expression
 						   | expression_list COMMA expression'''
@@ -329,45 +382,144 @@ class LyaParser(PLYParser):
 			p[0] = p[1] + [p[3]]
 		else:
 			p[0] = [p[1]]
-			
-	def p_expression(self, p):
-		'''expression : integer_expression'''
+
+	def p_expression (self, p):
+		'''expression 	: operand0 '''
+#						| conditional_expression'''
 		p[0] = p[1]
-		
+
+	def p_operand0 (self, p):
+		'''operand0 : operand1
+					| operand0 operator1 operand1 '''
+		if(len(p) == 4):
+			p[0] = ast.Expression(p[1], p[2], p[3])
+		else:
+			p[0] = p[1]
+
+	def p_operator1 (self, p):
+		'''operator1 	: relational_operator
+						| membership_operator'''
+		p[0] = p[1]
+
+	def p_membership_operator (self,p):
+		'''membership_operator : IN'''
+		p[0] = p[1]
+
+	def p_relational_operator (self, p):
+		'''relational_operator 	: AND
+								| OR
+								| ISEQUAL
+								| NOTEQUAL
+								| GT
+								| GE
+								| LT
+								| LE'''
+		p[0] = p[1]	
+
+	def p_operand1 (self, p):
+		'''operand1 : operand2
+					| operand1 operator2 operand2 '''
+		if(len(p) == 4):
+			p[0] = ast.Expression(p[1], p[2], p[3])
+		else:
+			p[0] = p[1]
+
+	def p_operator2 (self, p):
+		'''operator2 	: arithmetic_additive_operator
+						| string_concatenation_operator'''
+		p[0] = p[1]
+
+	def p_arithmetic_additive_operator (self, p):
+		'''arithmetic_additive_operator : PLUS
+										| MINUS '''
+		p[0] = p[1]
+
+	def p_string_concatenation_operator (self, p):
+		'''string_concatenation_operator : STRCONC'''
+		p[0] = p[1]
+
+	def p_operand2 (self, p):
+		'''operand2 : operand3
+					| operand2 arithmetic_multiplicative_operator operand3 '''
+		if(len(p) == 4):
+			p[0]= ast.Expression(p[1], p[2], p[3])
+		else:
+			p[0] = p[1]
+
+	def p_arithmetic_multiplicative_operator (self, p):
+		'''arithmetic_multiplicative_operator 	: TIMES
+												| DIV
+												| MOD'''
+		p[0] = p[1]
+
+	def p_operand3 (self, p):
+		'''operand3 : operand4
+					| monadic_operator operand4'''
+		if(len(p) == 3):
+			p[0] = ast.Expression(p[2], p[1], None)
+		else:
+			p[0] = p[1]
+
+	def p_monadic_operator (self, p):
+		'''monadic_operator : MINUS
+							| NOT'''
+		p[0] = p[1]
+
+	def p_operand4 (self, p):
+		'''operand4 : primitive_value
+					| location
+					| referenced_location'''
+		p[0] = p[1]
+
+
+	############ LOCATION ############
+
+
+	def p_referenced_location (self, p):
+		'''referenced_location : ARROW location '''
+		p[0] = ast.ReferencedLocation(p[2])
+
+	def p_location(self, p):
+		'''location : location_name
+					| string_reference
+					| dereferenced_reference
+					| array_element
+					| array_slice'''
+					#| call_action
+		p[0] = p[1]
+
+	def p_location_name(self, p):
+		'''location_name : ID'''
+		p[0] = ast.Location(p[1])
+
+	def p_string_reference(self, p):
+		'''string_reference : location_name LBRACKET integer_expression RBRACKET'''
+		p[0] = ast.StringElement(p[1], p[3])
+
+	def p_string_reference2(self, p):
+		'''string_reference : location_name LBRACKET literal_range RBRACKET'''
+		p[0] = ast.StringSlice(p[1], p[3])
+
+	def p_dereferenced_reference(self, p):
+		'''dereferenced_reference : location ARROW'''
+		p[0] = ast.DereferencedLocation(p[1])
+
+	def p_array_element(self, p):
+		'''array_element : location LBRACKET expression_list RBRACKET'''
+		p[0] = ast.ArrayElement(p[1], p[3])
+
 	def p_array_slice(self, p):
-		'''array_slice : array_location LBRACKET literal_range RBRACKET'''
+		'''array_slice : location LBRACKET literal_range RBRACKET'''
 		p[0] = ast.ArraySlice(p[1], p[3])
-	
-	def p_array_location(self, p):
-		'''array_location : location'''
-		p[0] = p[1]
+
 
     ########################### TODO:
-    
-    #change to expression
-	def p_lower_bound(self, p):
-		'''lower_bound : INTCONST'''
-		p[0] = ast.IntConst(p[1])
-    
-    #change to expression
-	def p_upper_bound(self, p):
-		'''upper_bound : INTCONST'''
-		p[0] = ast.IntConst(p[1])
 
-    #change to expression
-	def p_initialization(self, p):
-		'''initialization : EQUALS INTCONST'''
-		p[0] = ast.IntConst(p[1])
 
-    #change to expression
-	def p_constant_expression(self, p):
-		'''constant_expression : INTCONST'''
-		p[0] = ast.IntConst(p[1])
-    
     #create integer_expression
 	def p_integer_expression(self, p):
-		'''integer_expression : INTCONST'''
-		p[0] = ast.IntConst(p[1])
+		'''integer_expression : expression'''
+		p[0] = p[1]
 
 
 	### Others

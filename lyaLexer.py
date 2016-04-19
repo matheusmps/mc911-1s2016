@@ -159,8 +159,8 @@ class LyaLexer(object):
 		return t
 
 	t_EQUALS = r'='
-	t_PLUSEQ = r'\+='
-	t_TIMESEQ = r'\*='
+	#t_PLUSEQ = r'\+='
+	#t_TIMESEQ = r'\*='
 	t_MINUSEQ = r'-='
 	t_DIVEQ = r'/='
 	t_MODEQ = r'%='
