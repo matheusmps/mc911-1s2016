@@ -7,8 +7,8 @@ if(len(sys.argv) > 2):
 else:
 	tree = p.parse_file(sys.argv[1])
 
-print()
-print()
+print("")
+print("")
 print("--- TREE ---")
-print()
+print("")
 tree.show()

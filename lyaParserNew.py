@@ -92,7 +92,7 @@ class LyaParser(PLYParser):
 		if(len(p) == 3):
 			p[0] = p[1] + [p[2]]
 		else:
-			p[0] = [p[1]]
+			p[0] = [ p[1] ]
 
 	def p_statement(self, p):
 		'''statement : declaration_statement'''
@@ -131,27 +131,56 @@ class LyaParser(PLYParser):
 			p[0] = [p[1]]
 	
 	def p_mode(self, p):
-		'''mode : INT
-				| BOOL
-				| CHAR'''
+		'''mode : mode_name
+				| discrete_mode'''
+				#| reference_mode
+				#| composite_mode
 		p[0] = p[1]
 	
 	def p_mode_name(self, p):
 		'''mode_name : ID'''
+		p[0] = ast.Mode(p[1])
+		
+	def p_discrete_mode(self, p):
+		'''discrete_mode : basic_mode
+						 | discrete_range_mode'''
 		p[0] = p[1]
         
-	def p_discrete_mode(self, p):
-		'''discrete_mode : INT
+	def p_basic_mode(self, p):
+		'''basic_mode : INT
 						 | BOOL
 						 | CHAR'''
-		p[0] = p[1]
+		p[0] = ast.DiscreteMode(p[1])
 		
+	def p_discrete_range_mode(self, p):
+		'''discrete_range_mode : discrete_mode_name LPAREN literal_range RPAREN
+							   | basic_mode LPAREN literal_range RPAREN'''
+		p[0] = ast.DiscreteRangeMode(p[1], p[3])
+		
+	def p_discrete_mode_name(self, p):
+		'''discrete_mode_name : ID'''
+		p[0] = ast.Mode(p[1])
+
+	def p_litereal_range(self, p):
+		'''literal_range : lower_bound COLON upper_bound'''
+		p[0] = ast.LiteralRange(p[1], p[3])
+        
+    ########################### TODO:
+        
+	def p_lower_bound(self, p):
+		'''lower_bound : INTCONST'''
+		p[0] = p[1]
+    
+	def p_upper_bound(self, p):
+		'''upper_bound : INTCONST'''
+		p[0] = p[1]
+
 	def p_initialization(self, p):
 		'''initialization : EQUALS INTCONST'''
 		p[0] = p[2]
-	
+
 	### Others
-	
+
 	def p_empty(self, p):
 		'empty : '
 		p[0] = None

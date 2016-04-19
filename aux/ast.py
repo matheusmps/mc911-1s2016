@@ -29,15 +29,13 @@ class NodeAst(object):
 			attrstr = ', '.join('%s=%s' % nv for nv in nvlist)
 			buf.write(attrstr)
 
-        #if showcoord:
-        #    buf.write(' (at %s)' % self.coord)
 		buf.write('\n')
 
-		for (child_name, child) in self.children():
+		for child in self.children():
+			buf.write('\n')
 			child.show(
 				buf,
-				offset=offset + 2,
-				_my_node_name=child_name)
+				offset=offset + 2)
 
 class Program(NodeAst):
 	__slots__ = ('statements')
@@ -48,7 +46,7 @@ class Program(NodeAst):
 	def children(self):
 		nodelist = []
 		for i, child in enumerate(self.statements or []):
-			nodelist.append(("statement[%d]" % i, child))
+			nodelist.append(child)
 		return tuple(nodelist)
 
 class DeclStmt(NodeAst):
@@ -60,7 +58,7 @@ class DeclStmt(NodeAst):
 	def children(self):
 		nodelist = []
 		for i, child in enumerate(self.decls or []):
-			nodelist.append(("decls[%d]" % i, child))
+			nodelist.append(child)
 		return tuple(nodelist)
 	
 class Declaration(NodeAst):
@@ -70,5 +68,48 @@ class Declaration(NodeAst):
 		self.idList = idList
 		self.mode = mode
 		self.init = init
+		
+	def children(self):
+		nodelist = []
+		if self.mode is not None: nodelist.append(self.mode)
+		return tuple(nodelist)
 	
-	attr_names = ('idList', 'mode', 'init')
+	attr_names = ('idList', 'init')
+	
+class Mode(NodeAst):
+	__slots__ = ('modeName')
+	
+	def __init__(self, modeName):
+		self.modeName = modeName
+		
+	attr_names = ('modeName', )
+	
+class DiscreteMode(NodeAst):
+	__slots__ = ('modeName')
+	
+	def __init__(self, modeName):
+		self.modeName = modeName
+		
+	attr_names = ('modeName', )
+	
+class DiscreteRangeMode(NodeAst):
+	__slots__ = ('mode', 'literalRange')
+	
+	def __init__(self, mode, literalRange):
+		self.mode = mode
+		self.literalRange = literalRange
+	
+	def children(self):
+		nodelist = []
+		if self.mode is not None: nodelist.append(self.mode)
+		if self.literalRange is not None: nodelist.append(self.literalRange)
+		return tuple(nodelist)
+	
+class LiteralRange(NodeAst):
+	__slots__ = ('lowerBound', 'upperBound')
+	
+	def __init__(self, lowerBound, upperBound):
+		self.lowerBound = lowerBound
+		self.upperBound = upperBound
+	
+	attr_names = ('lowerBound', 'upperBound')

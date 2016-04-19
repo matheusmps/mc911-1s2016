@@ -5,9 +5,9 @@ _tabversion = '3.8'
 
 _lr_method = 'LALR'
 
-_lr_signature = '88C40565060193E13673C771572FBBE8'
+_lr_signature = 'B959DCAA3F2AEDD79EAB60793760FAE6'
     
-_lr_action_items = {'COMMA':([8,9,10,11,13,14,15,16,19,20,22,23,],[12,17,-7,-11,-15,-14,-10,-13,-12,-9,-8,-20,]),'CHAR':([8,11,19,],[13,-11,-12,]),'ID':([4,12,17,],[11,19,11,]),'$end':([0,1,2,3,5,6,7,18,],[-21,0,-1,-5,-2,-3,-4,-6,]),'SMC':([9,10,13,14,15,16,20,22,23,],[18,-7,-15,-14,-10,-13,-9,-8,-20,]),'INTCONST':([21,],[23,]),'DCL':([0,2,3,6,7,18,],[4,4,-5,-3,-4,-6,]),'BOOL':([8,11,19,],[14,-11,-12,]),'EQUALS':([13,14,15,16,],[-15,-14,21,-13,]),'INT':([8,11,19,],[16,-11,-12,]),}
+_lr_action_items = {'DCL':([0,3,4,5,11,13,],[1,-3,-5,1,-4,-6,]),'RPAREN':([33,34,39,40,],[37,38,-26,-24,]),'INT':([8,10,28,],[22,-11,-12,]),'EQUALS':([14,15,16,19,20,21,22,23,24,37,38,],[-16,-17,-20,30,-14,-19,-18,-13,-15,-22,-21,]),'CHAR':([8,10,28,],[16,-11,-12,]),'COLON':([31,32,],[36,-25,]),'COMMA':([7,8,9,10,14,15,16,19,20,21,22,23,24,25,28,29,35,37,38,],[12,18,-7,-11,-16,-17,-20,-10,-14,-19,-18,-13,-15,-8,-12,-9,-27,-22,-21,]),'LPAREN':([14,16,17,21,22,24,],[26,-20,27,-19,-18,-23,]),'INTCONST':([26,27,30,36,],[32,32,35,39,]),'BOOL':([8,10,28,],[21,-11,-12,]),'SMC':([7,9,14,15,16,19,20,21,22,23,24,25,29,35,37,38,],[13,-7,-16,-17,-20,-10,-14,-19,-18,-13,-15,-8,-9,-27,-22,-21,]),'ID':([1,8,10,12,18,28,],[10,24,-11,10,28,-12,]),'$end':([0,2,3,4,5,6,11,13,],[-28,0,-3,-5,-1,-2,-4,-6,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -16,7 +16,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'program':([0,],[1,]),'statement_list':([0,],[2,]),'declaration_list':([4,],[9,]),'declaration':([4,17,],[10,22,]),'initialization':([15,],[20,]),'declaration_statement':([0,2,],[3,3,]),'id_list':([4,17,],[8,8,]),'empty':([0,],[5,]),'mode':([8,],[15,]),'statement':([0,2,],[6,7,]),}
+_lr_goto_items = {'upper_bound':([36,],[40,]),'basic_mode':([8,],[14,]),'discrete_range_mode':([8,],[15,]),'lower_bound':([26,27,],[31,31,]),'initialization':([19,],[29,]),'declaration':([1,12,],[9,25,]),'discrete_mode_name':([8,],[17,]),'declaration_list':([1,],[7,]),'id_list':([1,12,],[8,8,]),'program':([0,],[2,]),'mode':([8,],[19,]),'statement':([0,5,],[3,11,]),'declaration_statement':([0,5,],[4,4,]),'statement_list':([0,],[5,]),'discrete_mode':([8,],[20,]),'mode_name':([8,],[23,]),'literal_range':([26,27,],[33,34,]),'empty':([0,],[6,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -38,13 +38,20 @@ _lr_productions = [
   ('declaration -> id_list mode','declaration',2,'p_declaration2','lyaParserNew.py',122),
   ('id_list -> ID','id_list',1,'p_id_list','lyaParserNew.py',126),
   ('id_list -> id_list COMMA ID','id_list',3,'p_id_list','lyaParserNew.py',127),
-  ('mode -> INT','mode',1,'p_mode','lyaParserNew.py',134),
-  ('mode -> BOOL','mode',1,'p_mode','lyaParserNew.py',135),
-  ('mode -> CHAR','mode',1,'p_mode','lyaParserNew.py',136),
-  ('mode_name -> ID','mode_name',1,'p_mode_name','lyaParserNew.py',140),
-  ('discrete_mode -> INT','discrete_mode',1,'p_discrete_mode','lyaParserNew.py',144),
-  ('discrete_mode -> BOOL','discrete_mode',1,'p_discrete_mode','lyaParserNew.py',145),
-  ('discrete_mode -> CHAR','discrete_mode',1,'p_discrete_mode','lyaParserNew.py',146),
-  ('initialization -> EQUALS INTCONST','initialization',2,'p_initialization','lyaParserNew.py',150),
-  ('empty -> <empty>','empty',0,'p_empty','lyaParserNew.py',156),
+  ('mode -> mode_name','mode',1,'p_mode','lyaParserNew.py',134),
+  ('mode -> discrete_mode','mode',1,'p_mode','lyaParserNew.py',135),
+  ('mode_name -> ID','mode_name',1,'p_mode_name','lyaParserNew.py',141),
+  ('discrete_mode -> basic_mode','discrete_mode',1,'p_discrete_mode','lyaParserNew.py',145),
+  ('discrete_mode -> discrete_range_mode','discrete_mode',1,'p_discrete_mode','lyaParserNew.py',146),
+  ('basic_mode -> INT','basic_mode',1,'p_basic_mode','lyaParserNew.py',150),
+  ('basic_mode -> BOOL','basic_mode',1,'p_basic_mode','lyaParserNew.py',151),
+  ('basic_mode -> CHAR','basic_mode',1,'p_basic_mode','lyaParserNew.py',152),
+  ('discrete_range_mode -> discrete_mode_name LPAREN literal_range RPAREN','discrete_range_mode',4,'p_discrete_range_mode','lyaParserNew.py',156),
+  ('discrete_range_mode -> basic_mode LPAREN literal_range RPAREN','discrete_range_mode',4,'p_discrete_range_mode','lyaParserNew.py',157),
+  ('discrete_mode_name -> ID','discrete_mode_name',1,'p_discrete_mode_name','lyaParserNew.py',161),
+  ('literal_range -> lower_bound COLON upper_bound','literal_range',3,'p_litereal_range','lyaParserNew.py',165),
+  ('lower_bound -> INTCONST','lower_bound',1,'p_lower_bound','lyaParserNew.py',169),
+  ('upper_bound -> INTCONST','upper_bound',1,'p_upper_bound','lyaParserNew.py',173),
+  ('initialization -> EQUALS INTCONST','initialization',2,'p_initialization','lyaParserNew.py',179),
+  ('empty -> <empty>','empty',0,'p_empty','lyaParserNew.py',185),
 ]
