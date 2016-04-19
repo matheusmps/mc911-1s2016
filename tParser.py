@@ -1,5 +1,5 @@
 import sys
-from lyaParserNew import LyaParser
+from lyaParser import LyaParser
 
 p = LyaParser()
 if(len(sys.argv) > 2):

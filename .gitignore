@@ -3,3 +3,4 @@
 parsertab.py
 parser.out
 __pycache__
+ply/**
