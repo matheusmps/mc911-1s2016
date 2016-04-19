@@ -1,0 +1,4 @@
+/* example1: */
+//test2
+type stack = array [1:20] int; syn top = 10;
+
