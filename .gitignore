@@ -1,2 +1,5 @@
 *.*~
-
+*.pyc
+parsertab.py
+parser.out
+__pycache__

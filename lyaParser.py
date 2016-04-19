@@ -2,6 +2,7 @@ from ply import yacc
 from lyaLexer import LyaLexer 
 from aux.plyParser import PLYParser, Coord, ParseError
 from aux.readFileHelper import FileHelper
+import aux.ast as ast
 
 class LyaParser(PLYParser):
 	
@@ -25,8 +26,11 @@ class LyaParser(PLYParser):
 	def initParser(self):
 		self._scope_stack = [dict()]
 		
-	def parse_file(self, filePath):
-		self.parse(self._readFile(filePath), filePath)
+	def parse_file(self, filePath, debuglevel=0):
+		return self.parse(
+			self._readFile(filePath), 
+			filename=filePath, 
+			debuglevel=debuglevel)
 		
 	def parse(self, text, filename='', debuglevel=0):
 		self.lexer.reset(filename)
@@ -75,154 +79,108 @@ class LyaParser(PLYParser):
 	######################--   RULES  --######################
 	
 	def p_program(self, p): 
-		'''program  : statement
-					| statement statement'''
-					
-		
+		'''program  : statement_list
+					| empty'''
+		if p[1] is None:
+			p[0] = ast.Program([])
+		else:
+			p[0] = ast.Program(p[1])
+	
+	def p_statement_list1(self, p):
+		'''statement_list : statement
+						  | statement_list statement'''
+		if(len(p) == 3):
+			p[0] = p[1] + [p[2]]
+		else:
+			p[0] = [ p[1] ]
+
 	def p_statement(self, p):
-		'''statement : declaration_statement
-					| comment
-					| action_statement'''
+		'''statement : declaration_statement'''
+					#| action_statement
 					#| synonym_statement
 					#| newmode_statement
 					#| procedure_statement
-
+		p[0] = p[1]
+	
 	def p_declaration_statement(self, p):
 		'''declaration_statement : DCL declaration_list SMC'''
+		p[0] = ast.DeclStmt(p[2])
 
-	# cuidado com os espacos entre as virgulas
 	def p_declaration_list(self, p):
 		'''declaration_list : declaration
-							| declaration COMMA declaration_list'''
+							| declaration_list COMMA declaration'''
+		if(len(p) == 4):
+			p[0] = p[1] + [p[3]]
+		else:
+			p[0] = [p[1]]
+		
+	def p_declaration1(self, p):
+		'''declaration : id_list mode initialization'''
+		p[0] = ast.Declaration(p[1], p[2], p[3])
 
-	def p_declaration(self, p):
-		'''declaration  : id_list mode'''
+	def p_declaration2(self, p):
+		'''declaration : id_list mode '''
+		p[0] = ast.Declaration(p[1], p[2], None)
 
 	def p_id_list(self, p):
 		'''id_list  : ID
 					| id_list COMMA ID'''
-
-	def p_mode (self, p):
-		'''mode : ID
+		if(len(p) == 4):
+			p[0] = p[1] + [p[3]]
+		else:
+			p[0] = [p[1]]
+	
+	def p_mode(self, p):
+		'''mode : mode_name
 				| discrete_mode'''
+				#| reference_mode
+				#| composite_mode
+		p[0] = p[1]
+	
+	def p_mode_name(self, p):
+		'''mode_name : ID'''
+		p[0] = ast.Mode(p[1])
+		
+	def p_discrete_mode(self, p):
+		'''discrete_mode : basic_mode
+						 | discrete_range_mode'''
+		p[0] = p[1]
         
-	def p_discrete_mode (self, p):
-		'''discrete_mode : INT
-						| BOOL
-						| CHAR'''
-#### Funcionando ate aqui
+	def p_basic_mode(self, p):
+		'''basic_mode : INT
+						 | BOOL
+						 | CHAR'''
+		p[0] = ast.DiscreteMode(p[1])
+		
+	def p_discrete_range_mode(self, p):
+		'''discrete_range_mode : discrete_mode_name LPAREN literal_range RPAREN
+							   | basic_mode LPAREN literal_range RPAREN'''
+		p[0] = ast.DiscreteRangeMode(p[1], p[3])
+		
+	def p_discrete_mode_name(self, p):
+		'''discrete_mode_name : ID'''
+		p[0] = ast.Mode(p[1])
 
-#	def p_initialization (self, p) :
-#		'''initialization : EQUAL INTCONST SMC'''
+	def p_litereal_range(self, p):
+		'''literal_range : lower_bound COLON upper_bound'''
+		p[0] = ast.LiteralRange(p[1], p[3])
+        
+    ########################### TODO:
+        
+	def p_lower_bound(self, p):
+		'''lower_bound : INTCONST'''
+		p[0] = p[1]
+    
+	def p_upper_bound(self, p):
+		'''upper_bound : INTCONST'''
+		p[0] = p[1]
 
-	def p_action_statement (self, p):
-		'''action_statement : action
-							| ID COLON action '''
+	def p_initialization(self, p):
+		'''initialization : EQUALS INTCONST'''
+		p[0] = p[2]
 
-	def p_action (self, p):
-		'''action 	: assignment_action'''
-#					| bracketed_action
-#					| call_action
-#					| exit_action
-#					| return_action
-#					| result_action  '''
+	### Others
 
-	def p_assignment_action (self, p):
-		'''assignment_action : location assigning_operator expression '''
-
-	def p_assigning_operator (self, p):
-		'''assigning_operator 	: EQUALS
-							| closed_dyadic_operator EQUALS '''
-
-	def p_closed_dyadic_operator (self, p):
-		'''closed_dyadic_operator 	: arithmetic_additive_operator
-									| arithmetic_multiplicative_operator
-									| STRCONC '''
-
-	def p_expression (self, p):
-		'''expression 	: operand0'''
-
-	def p_operand0 (self, p):
-		'''operand0 : operand1
-					| operand0 operator1 operand1 '''
-
-	def p_operator1 (self, p):
-		'''operator1 	: relational_operator
-						| IN'''
-
-	def p_relational_operator (self, p):
-		'''relational_operator 	: AND
-								| OR
-								| ISEQUAL
-								| NOTEQUAL
-								| GT
-								| GE
-								| LT
-								| LE'''
-
-	def p_operand1 (self, p):
-		'''operand1 : operand2
-					| operand1 operator2 operand2 '''
-
-	def p_operator2 (self, p):
-		'''operator2 	: arithmetic_additive_operator
-						| STRCONC'''
-
-	def p_arithmetic_additive_operator (self, p):
-		'''arithmetic_additive_operator : PLUS
-										| MINUS '''
-
-	def p_operand2 (self, p):
-		'''operand2 : operand3
-					| operand2 arithmetic_multiplicative_operator operand3 '''
-
-	def p_arithmetic_multiplicative_operator (self, p):
-		'''arithmetic_multiplicative_operator 	: TIMES
-												| DIV
-												| MOD'''
-
-	def p_operand3 (self, p):
-		'''operand3 : operand4
-					| monadic_operator operand4
-					| INTCONST '''
-
-	def p_monadic_operator (self, p):
-		'''monadic_operator : MINUS
-							| NOT'''
-
-	def p_operand4 (self, p):
-		'''operand4 : primitive_value
-					| location 
-					| referenced_location'''
-
-
-	def p_referenced_location (self, p):
-		'''referenced_location : ARROW location '''
-
-	def p_location (self, p):
-		'''location : ID'''
-
-	def p_primitive_value (self, p):
-		'''primitive_value  : literal'''
-
-	def p_literal (self, p):
-		'''literal  : INTCONST
-					| boolean_literal
-					| CHARCONST
-					| NULL
-					| STRINGCONST'''
-
-	def p_boolean_literal (self, p):
-		'''boolean_literal  : FALSE
-							| TRUE'''
-
-#### Comments
-	def p_comment (self, p):
-		'''comment 	: bracketed_comment
-					| line_end_comment '''
-
-	def p_bracketed_comment (self, p):
-		'''bracketed_comment : COMMENT'''
-
-	def p_line_end_comment (self, p):
-		'''line_end_comment : COMMENTLINE'''
+	def p_empty(self, p):
+		'empty : '
+		p[0] = None
