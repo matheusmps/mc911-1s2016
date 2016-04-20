@@ -35,8 +35,7 @@ class NodeAst(object):
 			#buf.write('\n')
 			child.show(
 				buf,
-				offset=offset + 2,
-				_my_node_name=child_name)
+				offset=offset + 4)
 
 class Program(NodeAst):
 	__slots__ = ('statements')
@@ -556,7 +555,146 @@ class While(NodeAst):
 		if self.bool_expr is not None: nodelist.append((self.bool_expr, "bool_expr"))
 		return nodelist
 
+class ProcedureStmnt(NodeAst):
+	__slots__ = ('label', 'procedure_definition')
+	
+	def __init__(self, label, procedure_definition):
+		self.label = label
+		self.procedure_definition = procedure_definition
+		
+	def children(self):
+		nodelist = []
+		if self.label is not None: nodelist.append((self.label, "label"))
+		if self.procedure_definition is not None: nodelist.append((self.procedure_definition, "procedure_definition"))
+		return nodelist
+
+class ProcedureDef(NodeAst):
+	__slots__ = ('formal_parameter_list', 'result_spec', 'statement_list')
+	
+	def __init__(self, formal_parameter_list, result_spec, statement_list):
+		self.formal_parameter_list = formal_parameter_list
+		self.result_spec = result_spec
+		self.statement_list = statement_list
+		
+	def children(self):
+		nodelist = []
+		for child in (self.formal_parameter_list or []): nodelist.append((child, "formal_parameter_list"))
+		if self.result_spec is not None: nodelist.append((self.result_spec, "result_spec"))
+		for child in (self.statement_list or []): nodelist.append((child, "statement_list"))
+		return nodelist
+		
+class FormalParameter(NodeAst):
+	__slots__ = ('idList', 'parameter_specs')
+	
+	def __init__(self, idList, parameter_specs):
+		self.idList = idList
+		self.parameter_specs = parameter_specs
+		
+	def children(self):
+		nodelist = []
+		if self.parameter_specs is not None: nodelist.append((self.parameter_specs, "parameter_specs"))
+		return nodelist
+		
+	attr_names = ('idList',)
+
+class ParameterSpecs(NodeAst):
+	__slots__ = ('mode', 'attr')
+	
+	def __init__(self, mode, attr):
+		self.mode = mode
+		self.attr = attr
+		
+	attr_names = ('attr',)
+		
+	def children(self):
+		nodelist = []
+		if self.mode is not None: nodelist.append((self.mode, "mode"))
+		return nodelist
+	
+class ResultSpecs(NodeAst):
+	__slots__ = ('mode', 'attr')
+	
+	def __init__(self, mode, attr):
+		self.mode = mode
+		self.attr = attr
+		
+	def children(self):
+		nodelist = []
+		if self.mode is not None: nodelist.append((self.mode, "mode"))
+		return nodelist
+
+	attr_names = ('attr',)
+
+class ProcedureCall(NodeAst):
+	__slots__ = ('name', 'params')
+	
+	def __init__(self, name, params):
+		self.name = name
+		self.params = params
+
+	def children(self):
+		nodelist = []
+		if self.name is not None: nodelist.append((self.name, "name"))
+		for child in (self.params or []): nodelist.append((child, "params"))
+		return nodelist
+
+class Parameter(NodeAst):
+	__slots__ = ('expr')
+	
+	def __init__(self, expr):
+		self.expr = expr
+
+	def children(self):
+		nodelist = []
+		if self.expr is not None: nodelist.append((self.expr, "expr"))
+		return nodelist
 
 
+class ExitAction(NodeAst):
+	__slots__ = ('label')
+	
+	def __init__(self, name):
+		self.name = name
+
+	def children(self):
+		nodelist = []
+		if self.name is not None: nodelist.append((self.name, "name"))
+		return nodelist
 
 
+class ReturnAction(NodeAst):
+	__slots__ = ('result')
+	
+	def __init__(self, result):
+		self.result = result
+
+	def children(self):
+		nodelist = []
+		if self.result is not None: nodelist.append((self.result, "result"))
+		return nodelist
+
+
+class ResultAction(NodeAst):
+	__slots__ = ('result')
+	
+	def __init__(self, result):
+		self.result = result
+
+	def children(self):
+		nodelist = []
+		if self.result is not None: nodelist.append((self.result, "result"))
+		return nodelist
+
+class BuiltinCall(NodeAst):
+	__slots__ = ('name', 'params')
+	
+	attr_names = ('name', )
+	
+	def __init__(self, name, params):
+		self.name = name
+		self.params = params
+
+	def children(self):
+		nodelist = []
+		for child in (self.params or []): nodelist.append((child, "params"))
+		return nodelist

@@ -161,9 +161,9 @@ class LyaLexer(object):
 	t_EQUALS = r'='
 	#t_PLUSEQ = r'\+='
 	#t_TIMESEQ = r'\*='
-	t_MINUSEQ = r'-='
-	t_DIVEQ = r'/='
-	t_MODEQ = r'%='
+	#t_MINUSEQ = r'-='
+	#t_DIVEQ = r'/='
+	#t_MODEQ = r'%='
 
 	t_PLUS    = r'\+'
 	t_MINUS   = r'-'
@@ -192,8 +192,8 @@ class LyaLexer(object):
 		t.value = int(t.value)    
 		return t
 		
-	t_STRINGCONST = r'\".*\"'
-	t_CHARCONST = r'\'.*\''
+	t_STRINGCONST = r'\"[^\"]*\"'
+	t_CHARCONST = r'\'.\''
 
 	# This code handles reserved words as well
 	# It reduces an expression to this rule and try to look for a reserved word.

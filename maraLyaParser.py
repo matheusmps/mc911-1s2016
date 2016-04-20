@@ -102,8 +102,8 @@ class LyaParser(PLYParser):
 		'''statement : declaration_statement
 					| newmode_statement
 					| synonym_statement
-					| action_statement'''
-					#| procedure_statement
+					| action_statement
+					| procedure_statement'''
 		p[0] = p[1]
 
 
@@ -350,11 +350,11 @@ class LyaParser(PLYParser):
 
 	def p_action (self, p):
 		'''action 	: assignment_action
-					| bracketed_action'''
-#					| call_action
-#					| exit_action
-#					| return_action
-#					| result_action  '''
+					| bracketed_action
+					| call_action
+					| exit_action
+					| return_action
+					| result_action '''
 		p[0] = p[1]
 
 
@@ -522,8 +522,8 @@ class LyaParser(PLYParser):
 					| string_reference
 					| dereferenced_reference
 					| array_element
-					| array_slice'''
-					#| call_action
+					| array_slice
+					| call_action'''
 		p[0] = p[1]
 
 	def p_location_name(self, p):
@@ -693,6 +693,152 @@ class LyaParser(PLYParser):
 	def p_while_control(self, p):
 		'''while_control : WHILE boolean_expression'''
 		p[0] = ast.While(p[2])
+
+
+	############ PROCEDURE STATEMENT ############
+
+
+	def p_procedure_statement(self, p):
+		'''procedure_statement : label COLON procedure_definition SMC'''
+		p[0] = ast.ProcedureStmnt(p[1], p[3])
+
+	def p_procedure_definition1 (self, p):
+		'''procedure_definition : PROC LPAREN RPAREN SMC END
+								| PROC LPAREN formal_parameter_list RPAREN SMC statement_list END
+								| PROC LPAREN RPAREN SMC statement_list END'''
+		if(len(p) == 6):
+			p[0] = ast.ProcedureDef(None, None, None)
+		elif(len(p) == 8):
+			p[0] = ast.ProcedureDef(p[3], None, p[6])
+		else:
+			p[0] = ast.ProcedureDef(None, None, p[5])
+
+	def p_procedure_definition2 (self, p):
+		'''procedure_definition : PROC LPAREN formal_parameter_list RPAREN SMC END
+								| PROC LPAREN formal_parameter_list RPAREN result_spec SMC END
+								| PROC LPAREN formal_parameter_list RPAREN result_spec SMC statement_list END'''
+		if(len(p) == 9):
+			p[0] = ast.ProcedureDef(p[3], p[5], p[7])
+		elif(len(p) == 8):
+			p[0] = ast.ProcedureDef(p[3], p[5], None)
+		else:
+			p[0] = ast.ProcedureDef(p[3], None, None)
+
+	def p_procedure_definition3 (self, p):
+		'''procedure_definition : PROC LPAREN RPAREN result_spec SMC statement_list
+								| PROC LPAREN RPAREN result_spec SMC '''
+		if(len(p) == 7):
+			p[0] = ast.ProcedureDef(None, p[4], p[6])
+		else:
+			p[0] = ast.ProcedureDef(None, p[4], None)
+
+	def p_formal_parameter_list (self, p):
+		'''formal_parameter_list 	: formal_parameter
+									| formal_parameter COMMA formal_parameter_list '''
+		if(len(p) == 4):
+			p[0] = [p[1]] + p[3]
+		else:
+			p[0] = [p[1]]
+
+	def p_formal_parameter (self, p):
+		'''formal_parameter : id_list parameter_spec '''
+		p[0] = ast.FormalParameter(p[1], p[2])
+
+	def p_parameter_spec (self, p):
+		'''parameter_spec 	: mode
+							| mode parameter_attribute'''
+		if(len(p) == 3):
+			p[0] = ast.ParameterSpecs(p[1], p[2])
+		else:
+			p[0] = ast.ParameterSpecs(p[1], None)
+
+	def p_parameter_attribute (self, p):
+		'''parameter_attribute : LOC'''
+		p[0] = p[1]
+
+	def p_result_spec (self, p):
+		'''result_spec 	: RETURNS LPAREN mode RPAREN
+						| RETURNS LPAREN mode result_attribute RPAREN'''
+		if(len(p) == 6):
+			p[0] = ast.ResultSpecs(p[3], p[4])
+		else:
+			p[0] = ast.ResultSpecs(p[3], None)
+
+	def p_result_attribute (self,p):
+		'''result_attribute : LOC'''
+		p[0] = p[1]
+
+
+	############ CALL ACTION #############
+
+
+	def p_call_action (self,p):
+		'''call_action	: procedure_call
+						| builtin_call'''
+		p[0] = p[1]
+
+	def p_procedure_call (self, p):
+		'''procedure_call : procedure_name LPAREN RPAREN
+						  | procedure_name LPAREN parameter_list RPAREN '''
+		if(len(p) == 5):
+			p[0] = ast.ProcedureCall(p[1], p[3])
+		else:
+			p[0] = ast.ProcedureCall(p[1], None)
+
+	def p_parameter_list(self, p):
+		'''parameter_list : parameter
+						  | parameter COMMA parameter_list '''
+		if(len(p) == 4):
+			p[0] = [p[1]] + p[3]
+		else:
+			p[0] = [p[1]]
+
+	def p_parameter(self, p):
+		'''parameter : expression'''
+		p[0] = p[1]
+
+	def p_procedure_name(self, p):
+		'''procedure_name : ID'''
+		p[0] = ast.Location(p[1])
+
+	def p_exit_action(self, p):
+		'''exit_action	: EXIT label'''
+		p[0] = ast.ExitAction(p[2])
+
+	def p_return_action(self, p):
+		'''return_action 	: RETURN
+							| RETURN result'''
+		if(len(p) == 3):
+			p[0] = ast.ReturnAction(p[2])
+		else:
+			p[0] = ast.ReturnAction(None)
+
+	def p_result_action(self, p):
+		'''result_action : RESULT result'''
+		p[0] = ast.ResultAction(p[2])
+
+	def p_result (self, p):
+		'''result : expression'''
+		p[0] = p[1]
+
+	def p_builtin_call(self, p):
+		'''builtin_call : builtin_name LPAREN RPAREN 
+						| builtin_name LPAREN parameter_list RPAREN'''
+		if(len(p) == 5):
+			p[0] = ast.BuiltinCall(p[1],p[3])
+		else:
+			p[0] = ast.BuiltinCall(p[1],p[3])
+
+	def p_builtin_name(self, p):
+		'''builtin_name : NUM
+						| PRED
+						| SUCC
+						| UPPER
+						| LOWER
+						| LENGTH
+						| READ
+						| PRINT '''
+		p[0] = p[1]
 
 
     ########################### TODO:
