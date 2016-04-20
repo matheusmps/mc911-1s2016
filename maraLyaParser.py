@@ -337,16 +337,20 @@ class LyaParser(PLYParser):
 
 
 	def p_action_statement (self, p):
-		'''action_statement : action SMC'''
-#							| ID COLON action SMC '''
-#		if(len(p) == 5):
-#			p[0] = [p[1]] + p[3] #ESTA ERRADO
-#		else:
-		p[0] = p[1]
+		'''action_statement : action SMC
+							| label COLON action SMC '''
+		if(len(p) == 5):
+			p[0] = ast.ActionStatement(p[3], p[1])
+		else:
+			p[0] = ast.ActionStatement(p[1], None)
+
+	def p_label(self,p):
+		'''label : ID'''
+		p[0] = ast.Label(p[1])
 
 	def p_action (self, p):
-		'''action 	: assignment_action'''
-#					| bracketed_action'''
+		'''action 	: assignment_action
+					| bracketed_action'''
 #					| call_action
 #					| exit_action
 #					| return_action
@@ -384,8 +388,8 @@ class LyaParser(PLYParser):
 			p[0] = [p[1]]
 
 	def p_expression (self, p):
-		'''expression 	: operand0 '''
-#						| conditional_expression'''
+		'''expression 	: operand0
+						| conditional_expression'''
 		p[0] = p[1]
 
 	def p_operand0 (self, p):
@@ -471,6 +475,40 @@ class LyaParser(PLYParser):
 					| referenced_location'''
 		p[0] = p[1]
 
+	############ CONDITIONAL EXPRESSION ############
+	
+	def p_conditional_expression(self, p):
+		'''conditional_expression : IF boolean_expression then_expression else_expression FI'''
+		p[0] = ast.ConditionalExpression(p[2], p[3], None, p[4])
+
+	def p_conditional_expression2(self, p):
+		'''conditional_expression : IF boolean_expression then_expression elseif_expression_list else_expression FI'''
+		p[0] = ast.ConditionalExpression(p[2], p[3], p[4], p[5])
+
+	def p_boolean_expression(self, p):
+		'''boolean_expression : expression'''
+		p[0] = p[1]
+
+	def p_then_expression(self, p):
+		'''then_expression : THEN expression'''
+		p[0] = p[2]
+
+	def p_else_expression(self, p):
+		'''else_expression : ELSE expression'''
+		p[0] = p[2]
+
+	def p_elseif_expression_list(self, p):
+		'''elseif_expression_list : elseif_expression
+								  | elseif_expression_list elseif_expression'''
+		if(len(p) == 3):
+			p[0] = p[1] + [p[2]]
+		else:
+			p[0] = [p[1]]
+
+	def p_elseif_expression(self, p):
+		'''elseif_expression : ELSIF boolean_expression then_expression'''
+		p[0] = ast.ConditionalExpression(p[2], p[3], None, None)
+
 
 	############ LOCATION ############
 
@@ -511,6 +549,150 @@ class LyaParser(PLYParser):
 	def p_array_slice(self, p):
 		'''array_slice : location LBRACKET literal_range RBRACKET'''
 		p[0] = ast.ArraySlice(p[1], p[3])
+
+
+	############ BRACKETED ACTION ############
+
+
+	def p_bracketed_action(self, p):
+		'''bracketed_action : if_action
+							| do_action'''
+		p[0] = p[1]
+
+
+	############ IF ACTION ############
+
+
+	def p_if_action(self, p):
+		'''if_action : IF boolean_expression then_clause FI'''
+		p[0] = ast.IfAction(p[2], p[3], None)
+
+	def p_if_action2(self, p):
+		'''if_action : IF boolean_expression then_clause else_clause FI'''
+		p[0] = ast.IfAction(p[2], p[3], p[4])
+
+	def p_then_clause(self, p):
+		'''then_clause : THEN 
+					   | THEN action_statement_list'''
+		if(len(p) == 3):
+			p[0] = p[2]
+		else:
+			p[0] = None
+
+	def p_else_clause(self, p):
+		'''else_clause : ELSE
+					   | ELSE action_statement_list'''
+		if(len(p) == 3):
+			p[0] = [ast.ElseClause(p[2])]
+		else:
+			p[0] = []
+
+	def p_else_clause2(self, p):
+		'''else_clause : elseif_clause'''
+		p[0] = p[1]
+
+	def p_elseif_clause(self, p):
+		'''elseif_clause : ELSIF boolean_expression then_clause'''
+		p[0] = [ast.ElseIfClause(p[2], p[3])]
+
+	def p_elseif_clause2(self, p):
+		'''elseif_clause : ELSIF boolean_expression then_clause else_clause'''
+		p[0] = [ast.ElseIfClause(p[2], p[3])] + p[4]
+		
+
+	def p_action_statement_list(self, p):
+		'''action_statement_list : action_statement
+								 | action_statement_list action_statement'''
+		if(len(p) == 3):
+			p[0] = p[1] + [p[2]] 
+		else:
+			p[0] = [p[1]]
+
+
+	############ DO ACTION ############
+
+
+	def p_do_action(self, p):
+		'''do_action : DO OD'''
+		p[0] = ast.DoAction(None, None)
+
+	def p_do_action2(self, p):
+		'''do_action : DO control_part SMC OD'''
+		p[0] = ast.DoAction(p[2], None)
+
+	def p_do_action3(self, p):
+		'''do_action : DO control_part SMC action_statement_list OD'''
+		p[0] = ast.DoAction(p[2], p[4])
+
+	def p_do_action4(self, p):
+		'''do_action : DO action_statement_list OD'''
+		p[0] = ast.DoAction(None, p[2])
+
+	def p_control_part(self, p):
+		'''control_part : for_control
+						| while_control'''
+		p[0] = [p[1]]
+
+	def p_control_part2(self, p):
+		'''control_part : for_control while_control'''
+		p[0] = [p[1], p[2]]
+
+	def p_for_control(self, p):
+		'''for_control : FOR iteration'''
+		p[0] = ast.For(p[2])
+
+	def p_iteration(self, p):
+		'''iteration : step_enumeration
+					 | range_enumeration'''
+		p[0] = p[1]
+
+	def p_step_enumeration(self, p):
+		'''step_enumeration : loop_counter EQUALS start_value end_value'''
+		p[0] = ast.StepEnumeration(p[1], p[3], None, p[4], False)
+
+	def p_step_enumeration2(self, p):
+		'''step_enumeration : loop_counter EQUALS start_value step_value end_value'''
+		p[0] = ast.StepEnumeration(p[1], p[3], p[4], p[5], False)
+
+	def p_step_enumeration3(self, p):
+		'''step_enumeration : loop_counter EQUALS start_value DOWN end_value'''
+		p[0] = ast.StepEnumeration(p[1], p[3], None, p[5], True)
+
+	def p_step_enumeration4(self, p):
+		'''step_enumeration : loop_counter EQUALS start_value step_value DOWN end_value'''
+		p[0] = ast.StepEnumeration(p[1], p[3], p[4], p[5], True)
+
+	def p_loop_counter(self, p):
+		'''loop_counter : ID'''
+		p[0] = ast.Location(p[1])
+
+	def p_start_value(self, p):
+		'''start_value : discrete_expression'''
+		p[0] = p[1]
+
+	def p_step_value(self, p):
+		'''step_value : BY integer_expression'''
+		p[0] = p[2]
+
+	def p_end_value(self, p):
+		'''end_value : TO discrete_expression'''
+		p[0] = p[2]
+
+	def p_discrete_expression(self, p):
+		'''discrete_expression : expression'''
+		p[0] = p[1]
+
+	def p_range_enumeration(self, p):
+		'''range_enumeration : loop_counter IN discrete_mode'''
+		p[0] = ast.RangeEnumeration(p[1], p[3], False)
+
+	def p_range_enumeration2(self, p):
+		'''range_enumeration : loop_counter DOWN IN discrete_mode'''
+		p[0] = ast.RangeEnumeration(p[1], p[4], True)
+
+	def p_while_control(self, p):
+		'''while_control : WHILE boolean_expression'''
+		p[0] = ast.While(p[2])
 
 
     ########################### TODO:

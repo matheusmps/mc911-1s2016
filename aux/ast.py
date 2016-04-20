@@ -346,6 +346,24 @@ class ParenthesizedExpression(NodeAst):
 		nodelist = []
 		if self.expression is not None: nodelist.append((self.expression, "expressions"))
 		return nodelist
+		
+
+class ConditionalExpression(NodeAst):
+	__slots__ = ('if_expr', 'then_expr', 'elseif_expr', 'else_expr')
+	
+	def __init__(self, if_expr, then_expr, elseif_expr, else_expr):
+		self.if_expr = if_expr
+		self.then_expr = then_expr
+		self.elseif_expr = elseif_expr
+		self.else_expr = else_expr
+	
+	def children(self):
+		nodelist = []
+		if self.if_expr is not None: nodelist.append((self.if_expr, "if"))
+		if self.then_expr is not None: nodelist.append((self.then_expr, "then"))
+		for child in (self.elseif_expr or []): nodelist.append((child, "elseif"))
+		if self.else_expr is not None: nodelist.append((self.else_expr, "else"))
+		return nodelist
 
 
 class IntConst(NodeAst):
@@ -405,3 +423,140 @@ class ValueArraySlice(NodeAst):
 		if self.primitiveValue is not None: nodelist.append((self.primitiveValue, "primitiveValue"))
 		if self.literalRange is not None: nodelist.append((self.literalRange, "range"))
 		return nodelist
+
+class ActionStatement(NodeAst):
+	__slots__ = ('action', 'label')
+	
+	def __init__(self, action, label):
+		self.action = action
+		self.label = label
+	
+	def children(self):
+		nodelist = []
+		if self.action is not None: nodelist.append((self.action, "action"))
+		if self.label is not None: nodelist.append((self.label, "label"))
+		return nodelist
+
+class Label(NodeAst):
+	__slots__ = ('label')
+	
+	attr_names = ('label',)
+	
+	def __init__(self, label):
+		self.label = label
+
+class IfAction(NodeAst):
+	__slots__ = ('if_expr', 'then_clause', 'else_clause')
+	
+	def __init__(self, if_expr, then_clause, else_clause):
+		self.if_expr = if_expr
+		self.then_clause = then_clause
+		self.else_clause = else_clause
+		
+	def children(self):
+		nodelist = []
+		if self.if_expr is not None: nodelist.append((self.if_expr, "if"))
+		for child in (self.then_clause or []): nodelist.append((child, "then"))
+		for child in (self.else_clause or []): nodelist.append((child, "else"))
+		return nodelist
+
+class ElseIfClause(NodeAst):
+	__slots__ = ('test', 'stmts')
+
+	def __init__(self, test, stmts):
+		self.test = test
+		self.stmts = stmts
+
+	def children(self):
+		nodelist = []
+		if self.test is not None: nodelist.append((self.test, "if"))
+		for child in (self.stmts or []): nodelist.append((child, "then"))
+		return nodelist
+
+class ElseClause(NodeAst):
+	__slots__ = ('stmts')
+
+	def __init__(self, stmts):
+		self.stmts = stmts
+
+	def children(self):
+		nodelist = []
+		for child in (self.stmts or []): nodelist.append((child, "stmts"))
+		return nodelist
+
+class DoAction(NodeAst):
+	__slots__ = ('control', 'stmts')
+	
+	def __init__(self, control, stmts):
+		self.control = control
+		self.stmts = stmts
+		
+	def children(self):
+		nodelist = []
+		for child in (self.control or []): nodelist.append((child, "control"))
+		for child in (self.stmts or []): nodelist.append((child, "stmts"))
+		return nodelist
+
+class For(NodeAst):
+	__slots__ = ('iteration')
+	
+	def __init__(self, iteration):
+		self.iteration = iteration 
+		
+	def children(self):
+		nodelist = []
+		if self.iteration is not None: nodelist.append((self.iteration, "iteration"))
+		return nodelist
+
+class StepEnumeration(NodeAst):
+	__slots__ = ('counter', 'start_value', 'step_value', 'end_value', 'down')
+	
+	attr_names = ('down',)
+	
+	def __init__(self, counter, start_value, step_value, end_value, down):
+		self.counter = counter
+		self.start_value = start_value
+		self.step_value = step_value
+		self.end_value = end_value
+		self.down = down
+		
+	def children(self):
+		nodelist = []
+		if self.counter is not None: nodelist.append((self.counter, "counter"))
+		if self.start_value is not None: nodelist.append((self.start_value, "start_value"))
+		if self.step_value is not None: nodelist.append((self.step_value, "step_value"))
+		if self.end_value is not None: nodelist.append((self.end_value, "end_value"))
+		return nodelist
+
+class RangeEnumeration(NodeAst):
+	__slots__ = ('counter', 'expression', 'down')
+	
+	attr_names = ('down',)
+	
+	def __init__(self, counter, expression, down):
+		self.counter = counter
+		self.expression = expression
+		self.down = down
+		
+	def children(self):
+		nodelist = []
+		if self.counter is not None: nodelist.append((self.counter, "counter"))
+		if self.expression is not None: nodelist.append((self.expression, "expression"))
+		return nodelist
+
+
+class While(NodeAst):
+	__slots__ = ('bool_expr')
+	
+	def __init__(self, bool_expr):
+		self.bool_expr = bool_expr 
+		
+	def children(self):
+		nodelist = []
+		if self.bool_expr is not None: nodelist.append((self.bool_expr, "bool_expr"))
+		return nodelist
+
+
+
+
+
