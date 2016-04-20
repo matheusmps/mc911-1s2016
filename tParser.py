@@ -7,7 +7,7 @@ if(len(sys.argv) > 2):
 elif(len(sys.argv) == 2):
 	tree = p.parse_file(sys.argv[1])
 else:
-	tree = p.parse_file("tests/mTest.lya", 1)
+	tree = p.parse_file("tests/mTest.lya", 0)
 
 print("")
 print("")

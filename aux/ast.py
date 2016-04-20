@@ -653,12 +653,12 @@ class Parameter(NodeAst):
 class ExitAction(NodeAst):
 	__slots__ = ('label')
 	
-	def __init__(self, name):
-		self.name = name
+	def __init__(self, label):
+		self.label = label
 
 	def children(self):
 		nodelist = []
-		if self.name is not None: nodelist.append((self.name, "name"))
+		if self.label is not None: nodelist.append((self.label, "label"))
 		return nodelist
 
 
