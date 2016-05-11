@@ -38,6 +38,6 @@ class NodeVisitor(object):
 		or can be further traversed.
 		"""
 		print("\nVisitor method not found")
-		node.show()
+		node.show(recursive=False)
 		for (child, child_name) in node.children():
 			self.visit(child)

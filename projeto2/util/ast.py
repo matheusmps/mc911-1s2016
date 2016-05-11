@@ -10,7 +10,7 @@ class NodeAst(object):
 		""" A sequence of all children that are Nodes"""
 		return tuple([])
 	
-	def show(self, buf=sys.stdout, offset=0, _my_node_name=None, recursive=False):
+	def show(self, buf=sys.stdout, offset=0, _my_node_name=None, recursive=True):
 		
 		lead = ' ' * offset
 		if _my_node_name is not None:
@@ -30,7 +30,8 @@ class NodeAst(object):
 				child.show(
 					buf,
 					offset=offset + 4,
-					_my_node_name=child_name)
+					_my_node_name=child_name,
+					recursive=recursive)
 		else:
 			buf.write("    Nodes:")
 			for (child, child_name) in self.children():

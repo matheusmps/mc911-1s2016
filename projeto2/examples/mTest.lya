@@ -1,0 +1,3 @@
+/* some tests for syntax analysis */
+
+a = (-2) + 3;
