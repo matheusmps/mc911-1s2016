@@ -1,0 +1,9 @@
+
+
+--- TREE ---
+
+Program => 
+     <stmt>: ActionStatement => 
+         <action>: Assignment => assign_op = '*=' 
+             <location>: Location => idName = 't' 
+             <expression>: IntConst => val = '2' 

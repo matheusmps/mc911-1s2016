@@ -704,9 +704,9 @@ class LyaParser(PLYParser):
 			p[0] = ast.ProcedureDef(p[3], None, None)
 
 	def p_procedure_definition3 (self, p):
-		'''procedure_definition : PROC LPAREN RPAREN result_spec SMC statement_list
-								| PROC LPAREN RPAREN result_spec SMC '''
-		if(len(p) == 7):
+		'''procedure_definition : PROC LPAREN RPAREN result_spec SMC statement_list END
+								| PROC LPAREN RPAREN result_spec SMC END'''
+		if(len(p) == 8):
 			p[0] = ast.ProcedureDef(None, p[4], p[6])
 		else:
 			p[0] = ast.ProcedureDef(None, p[4], None)
@@ -757,8 +757,8 @@ class LyaParser(PLYParser):
 		p[0] = p[1]
 
 	def p_procedure_call (self, p):
-		'''procedure_call : procedure_name LPAREN RPAREN
-						  | procedure_name LPAREN parameter_list RPAREN '''
+		'''procedure_call : ID LPAREN RPAREN
+						  | ID LPAREN parameter_list RPAREN '''
 		if(len(p) == 5):
 			p[0] = ast.ProcedureCall(p[1], p[3])
 		else:
@@ -776,9 +776,9 @@ class LyaParser(PLYParser):
 		'''parameter : expression'''
 		p[0] = p[1]
 
-	def p_procedure_name(self, p):
-		'''procedure_name : ID'''
-		p[0] = ast.Location(p[1])
+	#def p_procedure_name(self, p):
+	#	'''procedure_name : ID'''
+	#	p[0] = ast.Location(p[1])
 
 	def p_exit_action(self, p):
 		'''exit_action	: EXIT label'''

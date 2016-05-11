@@ -29,7 +29,8 @@ class NodeAst(object):
 			#buf.write('\n')
 			child.show(
 				buf,
-				offset=offset + 4)
+				offset=offset + 4,
+				_my_node_name=child_name)
 
 class Program(NodeAst):
 	__slots__ = ('statements')
@@ -626,9 +627,11 @@ class ProcedureCall(NodeAst):
 		self.name = name
 		self.params = params
 
+	attr_names = ('name',)
+
 	def children(self):
 		nodelist = []
-		if self.name is not None: nodelist.append((self.name, "name"))
+#		if self.name is not None: nodelist.append((self.name, "name"))
 		for child in (self.params or []): nodelist.append((child, "params"))
 		return nodelist
 

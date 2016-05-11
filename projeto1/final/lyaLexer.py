@@ -60,7 +60,7 @@ class LyaLexer(object):
 		'do' : 'DO',
 		'down' : 'DOWN',
 		'else' : 'ELSE',
-		'elseif' : 'ELSIF',
+		'elsif' : 'ELSIF',
 		'end' : 'END',
 		'exit' : 'EXIT',
 		'fi' : 'FI',
