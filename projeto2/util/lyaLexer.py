@@ -106,13 +106,13 @@ class LyaLexer(object):
 		'INTCONST', 'STRINGCONST', 'CHARCONST',
 
 		# DELIMETERS
-		'COMMA', 'SMC', 'COLON', 'PERIOD',
+		'COMMA', 'SMC', 'COLON',
 		'LPAREN', 'RPAREN', 
 		'LBRACKET', 'RBRACKET',
 		'LBRACE', 'RBRACE',
 
 		# ASSIGNEMENT
-		'EQUALS', 'PLUSEQ', 'TIMESEQ', 'MINUSEQ', 'DIVEQ', 'MODEQ',
+		'EQUALS', 
 		
 		# OPERATOR
 		'PLUS', 'MINUS', 'TIMES', 'DIV', 'MOD',
@@ -121,11 +121,8 @@ class LyaLexer(object):
 		'NOTEQUAL', 'ISEQUAL', 'GT', 'GE', 'LT', 'LE', 
 		'AND', 'OR', 'NOT',
 		
-		# INCREMENT/DECREMENT
-		'PLUSPLUS', 'MINUSMINUS',
-		
 		# OTHER
-		'COMMENTLINE', 'COMMENT', 'STRCONC', 'ARROW'
+		'STRCONC', 'ARROW', 'COMMENT', 'COMMENTLINE'
 		
 	] + list(reserved.values())
 
@@ -139,7 +136,6 @@ class LyaLexer(object):
 	t_COMMA = r','
 	t_SMC = r';'
 	t_COLON = r':'
-	t_PERIOD = r'\.'
 	t_LPAREN = r'\(' 
 	t_RPAREN = r'\)' 
 	t_LBRACKET = r'\['
@@ -156,11 +152,6 @@ class LyaLexer(object):
 		return t
 
 	t_EQUALS = r'='
-	#t_PLUSEQ = r'\+='
-	#t_TIMESEQ = r'\*='
-	#t_MINUSEQ = r'-='
-	#t_DIVEQ = r'/='
-	#t_MODEQ = r'%='
 
 	t_PLUS    = r'\+'
 	t_MINUS   = r'-'
@@ -177,9 +168,6 @@ class LyaLexer(object):
 	t_AND = r'&&'
 	t_OR = r'\|\|'
 	t_NOT = r'!'
-
-	t_PLUSPLUS = r'\+\+'
-	t_MINUSMINUS = r'--'
 
 	t_STRCONC = r'&'
 	t_ARROW = r'->'
