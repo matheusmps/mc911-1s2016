@@ -35,18 +35,17 @@ class LyaParser(PLYParser):
 		self.lexer.filename = filePath
 		self.lexer.listTokens(self._readFile(filePath))
 
+	def genCoord(self, p):
+		return self._coord(lineno = p.lineno(1))
+
 	def p_error(self, p):
 		if p:
-			self._parse_error(
-				'before: %s' % p.value,
-				self._coord(lineno=p.lineno,
-					column=self.lexer.find_tok_column(p)))
+			self._parse_error('before: %s' % p.value, self._coord(lineno = p.lineno, column=self.lexer.find_tok_column(p)))
 		else:
 			self._parse_error('At end of input', '')
 
 
 	######################--   PRIVATE   --######################
-
 
 	def _readFile(self, filePath):
 		return FileHelper(filePath).readFile()
@@ -67,7 +66,7 @@ class LyaParser(PLYParser):
 		if p[1] is None:
 			p[0] = ast.Program([])
 		else:
-			p[0] = ast.Program(p[1])
+			p[0] = ast.Program(p[1], coord=self.genCoord(p))
 
 	def p_statement_list1(self, p):
 		'''statement_list : statement
@@ -91,7 +90,7 @@ class LyaParser(PLYParser):
 
 	def p_declaration_statement(self, p):
 		'''declaration_statement : DCL declaration_list SMC'''
-		p[0] = ast.DeclStmt(p[2])
+		p[0] = ast.DeclStmt(p[2], coord=self.genCoord(p))
 
 	def p_declaration_list(self, p):
 		'''declaration_list : declaration
@@ -103,11 +102,11 @@ class LyaParser(PLYParser):
 
 	def p_declaration1(self, p):
 		'''declaration : id_list mode initialization'''
-		p[0] = ast.Declaration(p[1], p[2], p[3])
+		p[0] = ast.Declaration(p[1], p[2], p[3], coord=self.genCoord(p))
 
 	def p_declaration2(self, p):
 		'''declaration : id_list mode '''
-		p[0] = ast.Declaration(p[1], p[2], None)
+		p[0] = ast.Declaration(p[1], p[2], None, coord=self.genCoord(p))
 
 	def p_id_list(self, p):
 		'''id_list  : ID
@@ -134,7 +133,7 @@ class LyaParser(PLYParser):
 
 	def p_mode_name(self, p):
 		'''mode_name : ID'''
-		p[0] = ast.Mode(p[1])
+		p[0] = ast.Mode(p[1], coord=self.genCoord(p))
 
 	def p_discrete_mode(self, p):
 		'''discrete_mode : basic_mode
@@ -145,20 +144,20 @@ class LyaParser(PLYParser):
 		'''basic_mode : INT
 					  | BOOL
 					  | CHAR'''
-		p[0] = ast.DiscreteMode(p[1])
+		p[0] = ast.DiscreteMode(p[1], coord=self.genCoord(p))
 
 	def p_discrete_range_mode(self, p):
 		'''discrete_range_mode : discrete_mode_name LPAREN literal_range RPAREN
 							   | basic_mode LPAREN literal_range RPAREN'''
-		p[0] = ast.DiscreteRangeMode(p[1], p[3])
+		p[0] = ast.DiscreteRangeMode(p[1], p[3], coord=self.genCoord(p))
 
 	def p_discrete_mode_name(self, p):
 		'''discrete_mode_name : ID'''
-		p[0] = ast.Mode(p[1])
+		p[0] = ast.Mode(p[1], coord=self.genCoord(p))
 
 	def p_litereal_range(self, p):
 		'''literal_range : lower_bound COLON upper_bound'''
-		p[0] = ast.LiteralRange(p[1], p[3])
+		p[0] = ast.LiteralRange(p[1], p[3], coord=self.genCoord(p))
 
 	def p_lower_bound(self, p):
 		'''lower_bound : expression'''
@@ -170,7 +169,7 @@ class LyaParser(PLYParser):
 
 	def p_reference_mode(self, p):
 		'''reference_mode : REF mode'''
-		p[0] = ast.ReferenceMode(p[2])
+		p[0] = ast.ReferenceMode(p[2], coord=self.genCoord(p))
 
 	def p_composite_mode(self, p):
 		'''composite_mode : string_mode
@@ -179,7 +178,7 @@ class LyaParser(PLYParser):
 
 	def p_string_mode(self, p):
 		'''string_mode : CHARS LBRACKET string_length RBRACKET'''
-		p[0] = ast.StringMode(p[3])
+		p[0] = ast.StringMode(p[3], coord=self.genCoord(p))
 
 	def p_string_length(self,p):
 		'''string_length : INTCONST'''
@@ -187,8 +186,8 @@ class LyaParser(PLYParser):
 
 	def p_array_mode(self, p):
 		'''array_mode : ARRAY LBRACKET index_mode_list RBRACKET element_node'''
-		index_mode = ast.IndexMode(p[3])
-		p[0] = ast.ArrayMode(index_mode, p[5])
+		index_mode = ast.IndexMode(p[3], coord=self.genCoord(p))
+		p[0] = ast.ArrayMode(index_mode, p[5], coord=self.genCoord(p))
 
 	def p_index_mode_list(self, p):
 		'''index_mode_list : index_mode
@@ -213,7 +212,7 @@ class LyaParser(PLYParser):
 
 	def p_newmode_statement(self, p):
 		'''newmode_statement : TYPE newmode_list SMC'''
-		p[0] = ast.NewModeStmt(p[2])
+		p[0] = ast.NewModeStmt(p[2], coord=self.genCoord(p))
 
 	def p_newmode_list(self, p):
 		'''newmode_list : mode_definition
@@ -225,11 +224,11 @@ class LyaParser(PLYParser):
 
 	def p_mode_definition(self, p):
 		'''mode_definition : id_list EQUALS mode'''
-		p[0] = ast.ModeDef(p[1], p[3])
+		p[0] = ast.ModeDef(p[1], p[3], coord=self.genCoord(p))
 
 	def p_synonym_statement(self, p):
 		'''synonym_statement : SYN syn_list SMC'''
-		p[0] = ast.SynStmt(p[2])
+		p[0] = ast.SynStmt(p[2], coord=self.genCoord(p))
 
 
 	############ SYNONYM STATEMENT ############
@@ -245,11 +244,11 @@ class LyaParser(PLYParser):
 
 	def p_syn_definition(self, p):
 		'''syn_definition : id_list EQUALS constant_expression'''
-		p[0] = ast.SynDef(p[1], None, p[3])
+		p[0] = ast.SynDef(p[1], None, p[3], coord=self.genCoord(p))
 
 	def p_syn_definition2(self, p):
 		'''syn_definition : id_list mode EQUALS constant_expression'''
-		p[0] = ast.SynDef(p[1], p[2], p[4])
+		p[0] = ast.SynDef(p[1], p[2], p[4], coord=self.genCoord(p))
 
 	def p_constant_expression(self, p):
 		'''constant_expression : expression'''
@@ -276,32 +275,32 @@ class LyaParser(PLYParser):
 
 	def p_integer_literal (self, p):
 		'''integer_literal : INTCONST '''
-		p[0] = ast.IntConst(p[1])
+		p[0] = ast.IntConst(p[1], coord=self.genCoord(p))
 
 	def p_boolean_literal (self, p):
 		'''boolean_literal  : FALSE
 							| TRUE'''
-		p[0] = ast.Boolean(p[1])
+		p[0] = ast.Boolean(p[1], coord=self.genCoord(p))
 
 	def p_char_literal (self, p):
 		'''char_literal : CHARCONST '''
-		p[0] = ast.CharConst(p[1])
+		p[0] = ast.CharConst(p[1], coord=self.genCoord(p))
 
 	def p_string_literal (self, p):
 		'''string_literal : STRINGCONST '''
-		p[0] = ast.StrConst(p[1])
+		p[0] = ast.StrConst(p[1], coord=self.genCoord(p))
 
 	def p_empty_literal (self, p):
 		'''empty_literal : NULL '''
-		p[0] = ast.EmptyConst()
+		p[0] = ast.EmptyConst(coord=self.genCoord(p))
 
 	def p_value_array_element(self, p):
 		'''value_array_element : array_primitive_value LBRACKET expression_list RBRACKET'''
-		p[0] = ast.ValueArrayElement(p[1], p[3])
+		p[0] = ast.ValueArrayElement(p[1], p[3], coord=self.genCoord(p))
 
 	def p_value_array_slice(self, p):
 		'''value_array_slice : array_primitive_value LBRACKET literal_range RBRACKET'''
-		p[0] = ast.ValueArraySlice(p[1], p[3])
+		p[0] = ast.ValueArraySlice(p[1], p[3], coord=self.genCoord(p))
 
 	def p_array_primitive_value(self, p):
 		'''array_primitive_value : primitive_value'''
@@ -319,13 +318,13 @@ class LyaParser(PLYParser):
 		'''action_statement : action SMC
 							| label COLON action SMC '''
 		if(len(p) == 5):
-			p[0] = ast.ActionStatement(p[3], p[1])
+			p[0] = ast.ActionStatement(p[3], p[1], coord=self.genCoord(p))
 		else:
-			p[0] = ast.ActionStatement(p[1], None)
+			p[0] = ast.ActionStatement(p[1], None, coord=self.genCoord(p))
 
 	def p_label(self,p):
 		'''label : ID'''
-		p[0] = ast.Label(p[1])
+		p[0] = ast.Label(p[1], coord=self.genCoord(p))
 
 	def p_action (self, p):
 		'''action 	: assignment_action
@@ -342,7 +341,7 @@ class LyaParser(PLYParser):
 
 	def p_assignment_action (self, p):
 		'''assignment_action : location assigning_operator expression '''
-		p[0] = ast.Assignment(p[1], p[2], p[3])
+		p[0] = ast.Assignment(p[1], p[2], p[3], coord=self.genCoord(p))
 
 	def p_assigning_operator (self, p):
 		'''assigning_operator 	: EQUALS
@@ -375,7 +374,7 @@ class LyaParser(PLYParser):
 		'''operand0 : operand1
 					| operand0 operator1 operand1 '''
 		if(len(p) == 4):
-			p[0] = ast.Expression(p[1], p[2], p[3])
+			p[0] = ast.Expression(p[1], p[2], p[3], coord=self.genCoord(p))
 		else:
 			p[0] = p[1]
 
@@ -403,7 +402,7 @@ class LyaParser(PLYParser):
 		'''operand1 : operand2
 					| operand1 operator2 operand2 '''
 		if(len(p) == 4):
-			p[0] = ast.Expression(p[1], p[2], p[3])
+			p[0] = ast.Expression(p[1], p[2], p[3], coord=self.genCoord(p))
 		else:
 			p[0] = p[1]
 
@@ -425,7 +424,7 @@ class LyaParser(PLYParser):
 		'''operand2 : operand3
 					| operand2 arithmetic_multiplicative_operator operand3 '''
 		if(len(p) == 4):
-			p[0]= ast.Expression(p[1], p[2], p[3])
+			p[0]= ast.Expression(p[1], p[2], p[3], coord=self.genCoord(p))
 		else:
 			p[0] = p[1]
 
@@ -439,7 +438,7 @@ class LyaParser(PLYParser):
 		'''operand3 : operand4
 					| monadic_operator operand4'''
 		if(len(p) == 3):
-			p[0] = ast.Expression(p[2], p[1], None)
+			p[0] = ast.Expression(p[2], p[1], None, coord=self.genCoord(p))
 		else:
 			p[0] = p[1]
 
@@ -458,11 +457,11 @@ class LyaParser(PLYParser):
 	
 	def p_conditional_expression(self, p):
 		'''conditional_expression : IF boolean_expression then_expression else_expression FI'''
-		p[0] = ast.ConditionalExpression(p[2], p[3], None, p[4])
+		p[0] = ast.ConditionalExpression(p[2], p[3], None, p[4], coord=self.genCoord(p))
 
 	def p_conditional_expression2(self, p):
 		'''conditional_expression : IF boolean_expression then_expression elseif_expression_list else_expression FI'''
-		p[0] = ast.ConditionalExpression(p[2], p[3], p[4], p[5])
+		p[0] = ast.ConditionalExpression(p[2], p[3], p[4], p[5], coord=self.genCoord(p))
 
 	def p_boolean_expression(self, p):
 		'''boolean_expression : expression'''
@@ -486,7 +485,7 @@ class LyaParser(PLYParser):
 
 	def p_elseif_expression(self, p):
 		'''elseif_expression : ELSIF boolean_expression then_expression'''
-		p[0] = ast.ConditionalExpression(p[2], p[3], None, None)
+		p[0] = ast.ConditionalExpression(p[2], p[3], None, None, coord=self.genCoord(p))
 
 
 	############ LOCATION ############
@@ -494,7 +493,7 @@ class LyaParser(PLYParser):
 
 	def p_referenced_location (self, p):
 		'''referenced_location : ARROW location '''
-		p[0] = ast.ReferencedLocation(p[2])
+		p[0] = ast.ReferencedLocation(p[2], coord=self.genCoord(p))
 
 	def p_location(self, p):
 		'''location : location_name
@@ -507,27 +506,27 @@ class LyaParser(PLYParser):
 
 	def p_location_name(self, p):
 		'''location_name : ID'''
-		p[0] = ast.Location(p[1])
+		p[0] = ast.Location(p[1], coord=self.genCoord(p))
 
 	def p_string_reference(self, p):
 		'''string_reference : location_name LBRACKET integer_expression RBRACKET'''
-		p[0] = ast.StringElement(p[1], p[3])
+		p[0] = ast.StringElement(p[1], p[3], coord=self.genCoord(p))
 
 	def p_string_reference2(self, p):
 		'''string_reference : location_name LBRACKET literal_range RBRACKET'''
-		p[0] = ast.StringSlice(p[1], p[3])
+		p[0] = ast.StringSlice(p[1], p[3], coord=self.genCoord(p))
 
 	def p_dereferenced_reference(self, p):
 		'''dereferenced_reference : location ARROW'''
-		p[0] = ast.DereferencedLocation(p[1])
+		p[0] = ast.DereferencedLocation(p[1], coord=self.genCoord(p))
 
 	def p_array_element(self, p):
 		'''array_element : location LBRACKET expression_list RBRACKET'''
-		p[0] = ast.ArrayElement(p[1], p[3])
+		p[0] = ast.ArrayElement(p[1], p[3], coord=self.genCoord(p))
 
 	def p_array_slice(self, p):
 		'''array_slice : location LBRACKET literal_range RBRACKET'''
-		p[0] = ast.ArraySlice(p[1], p[3])
+		p[0] = ast.ArraySlice(p[1], p[3], coord=self.genCoord(p))
 
 
 	############ BRACKETED ACTION ############
@@ -544,11 +543,11 @@ class LyaParser(PLYParser):
 
 	def p_if_action(self, p):
 		'''if_action : IF boolean_expression then_clause FI'''
-		p[0] = ast.IfAction(p[2], p[3], None)
+		p[0] = ast.IfAction(p[2], p[3], None, coord=self.genCoord(p))
 
 	def p_if_action2(self, p):
 		'''if_action : IF boolean_expression then_clause else_clause FI'''
-		p[0] = ast.IfAction(p[2], p[3], p[4])
+		p[0] = ast.IfAction(p[2], p[3], p[4], coord=self.genCoord(p))
 
 	def p_then_clause(self, p):
 		'''then_clause : THEN 
@@ -562,7 +561,7 @@ class LyaParser(PLYParser):
 		'''else_clause : ELSE
 					   | ELSE action_statement_list'''
 		if(len(p) == 3):
-			p[0] = [ast.ElseClause(p[2])]
+			p[0] = [ast.ElseClause(p[2], coord=self.genCoord(p))]
 		else:
 			p[0] = []
 
@@ -572,11 +571,11 @@ class LyaParser(PLYParser):
 
 	def p_elseif_clause(self, p):
 		'''elseif_clause : ELSIF boolean_expression then_clause'''
-		p[0] = [ast.ElseIfClause(p[2], p[3])]
+		p[0] = [ast.ElseIfClause(p[2], p[3], coord=self.genCoord(p))]
 
 	def p_elseif_clause2(self, p):
 		'''elseif_clause : ELSIF boolean_expression then_clause else_clause'''
-		p[0] = [ast.ElseIfClause(p[2], p[3])] + p[4]
+		p[0] = [ast.ElseIfClause(p[2], p[3], coord=self.genCoord(p))] + p[4]
 		
 
 	def p_action_statement_list(self, p):
@@ -593,19 +592,19 @@ class LyaParser(PLYParser):
 
 	def p_do_action(self, p):
 		'''do_action : DO OD'''
-		p[0] = ast.DoAction(None, None)
+		p[0] = ast.DoAction(None, None, coord=self.genCoord(p))
 
 	def p_do_action2(self, p):
 		'''do_action : DO control_part SMC OD'''
-		p[0] = ast.DoAction(p[2], None)
+		p[0] = ast.DoAction(p[2], None, coord=self.genCoord(p))
 
 	def p_do_action3(self, p):
 		'''do_action : DO control_part SMC action_statement_list OD'''
-		p[0] = ast.DoAction(p[2], p[4])
+		p[0] = ast.DoAction(p[2], p[4], coord=self.genCoord(p))
 
 	def p_do_action4(self, p):
 		'''do_action : DO action_statement_list OD'''
-		p[0] = ast.DoAction(None, p[2])
+		p[0] = ast.DoAction(None, p[2], coord=self.genCoord(p))
 
 	def p_control_part(self, p):
 		'''control_part : for_control
@@ -618,7 +617,7 @@ class LyaParser(PLYParser):
 
 	def p_for_control(self, p):
 		'''for_control : FOR iteration'''
-		p[0] = ast.For(p[2])
+		p[0] = ast.For(p[2], coord=self.genCoord(p))
 
 	def p_iteration(self, p):
 		'''iteration : step_enumeration
@@ -627,23 +626,23 @@ class LyaParser(PLYParser):
 
 	def p_step_enumeration(self, p):
 		'''step_enumeration : loop_counter EQUALS start_value end_value'''
-		p[0] = ast.StepEnumeration(p[1], p[3], None, p[4], False)
+		p[0] = ast.StepEnumeration(p[1], p[3], None, p[4], False, coord=self.genCoord(p))
 
 	def p_step_enumeration2(self, p):
 		'''step_enumeration : loop_counter EQUALS start_value step_value end_value'''
-		p[0] = ast.StepEnumeration(p[1], p[3], p[4], p[5], False)
+		p[0] = ast.StepEnumeration(p[1], p[3], p[4], p[5], False, coord=self.genCoord(p))
 
 	def p_step_enumeration3(self, p):
 		'''step_enumeration : loop_counter EQUALS start_value DOWN end_value'''
-		p[0] = ast.StepEnumeration(p[1], p[3], None, p[5], True)
+		p[0] = ast.StepEnumeration(p[1], p[3], None, p[5], True, coord=self.genCoord(p))
 
 	def p_step_enumeration4(self, p):
 		'''step_enumeration : loop_counter EQUALS start_value step_value DOWN end_value'''
-		p[0] = ast.StepEnumeration(p[1], p[3], p[4], p[5], True)
+		p[0] = ast.StepEnumeration(p[1], p[3], p[4], p[5], True, coord=self.genCoord(p))
 
 	def p_loop_counter(self, p):
 		'''loop_counter : ID'''
-		p[0] = ast.Location(p[1])
+		p[0] = ast.Location(p[1], coord=self.genCoord(p))
 
 	def p_start_value(self, p):
 		'''start_value : discrete_expression'''
@@ -663,15 +662,15 @@ class LyaParser(PLYParser):
 
 	def p_range_enumeration(self, p):
 		'''range_enumeration : loop_counter IN discrete_mode'''
-		p[0] = ast.RangeEnumeration(p[1], p[3], False)
+		p[0] = ast.RangeEnumeration(p[1], p[3], False, coord=self.genCoord(p))
 
 	def p_range_enumeration2(self, p):
 		'''range_enumeration : loop_counter DOWN IN discrete_mode'''
-		p[0] = ast.RangeEnumeration(p[1], p[4], True)
+		p[0] = ast.RangeEnumeration(p[1], p[4], True, coord=self.genCoord(p))
 
 	def p_while_control(self, p):
 		'''while_control : WHILE boolean_expression'''
-		p[0] = ast.While(p[2])
+		p[0] = ast.While(p[2], coord=self.genCoord(p))
 
 
 	############ PROCEDURE STATEMENT ############
@@ -679,37 +678,37 @@ class LyaParser(PLYParser):
 
 	def p_procedure_statement(self, p):
 		'''procedure_statement : label COLON procedure_definition SMC'''
-		p[0] = ast.ProcedureStmnt(p[1], p[3])
+		p[0] = ast.ProcedureStmnt(p[1], p[3], coord=self.genCoord(p))
 
 	def p_procedure_definition1 (self, p):
 		'''procedure_definition : PROC LPAREN RPAREN SMC END
 								| PROC LPAREN formal_parameter_list RPAREN SMC statement_list END
 								| PROC LPAREN RPAREN SMC statement_list END'''
 		if(len(p) == 6):
-			p[0] = ast.ProcedureDef(None, None, None)
+			p[0] = ast.ProcedureDef(None, None, None, coord=self.genCoord(p))
 		elif(len(p) == 8):
-			p[0] = ast.ProcedureDef(p[3], None, p[6])
+			p[0] = ast.ProcedureDef(p[3], None, p[6], coord=self.genCoord(p))
 		else:
-			p[0] = ast.ProcedureDef(None, None, p[5])
+			p[0] = ast.ProcedureDef(None, None, p[5], coord=self.genCoord(p))
 
 	def p_procedure_definition2 (self, p):
 		'''procedure_definition : PROC LPAREN formal_parameter_list RPAREN SMC END
 								| PROC LPAREN formal_parameter_list RPAREN result_spec SMC END
 								| PROC LPAREN formal_parameter_list RPAREN result_spec SMC statement_list END'''
 		if(len(p) == 9):
-			p[0] = ast.ProcedureDef(p[3], p[5], p[7])
+			p[0] = ast.ProcedureDef(p[3], p[5], p[7], coord=self.genCoord(p))
 		elif(len(p) == 8):
-			p[0] = ast.ProcedureDef(p[3], p[5], None)
+			p[0] = ast.ProcedureDef(p[3], p[5], None, coord=self.genCoord(p))
 		else:
-			p[0] = ast.ProcedureDef(p[3], None, None)
+			p[0] = ast.ProcedureDef(p[3], None, None, coord=self.genCoord(p))
 
 	def p_procedure_definition3 (self, p):
 		'''procedure_definition : PROC LPAREN RPAREN result_spec SMC statement_list END
 								| PROC LPAREN RPAREN result_spec SMC END'''
 		if(len(p) == 8):
-			p[0] = ast.ProcedureDef(None, p[4], p[6])
+			p[0] = ast.ProcedureDef(None, p[4], p[6], coord=self.genCoord(p))
 		else:
-			p[0] = ast.ProcedureDef(None, p[4], None)
+			p[0] = ast.ProcedureDef(None, p[4], None, coord=self.genCoord(p))
 
 	def p_formal_parameter_list (self, p):
 		'''formal_parameter_list 	: formal_parameter
@@ -721,15 +720,15 @@ class LyaParser(PLYParser):
 
 	def p_formal_parameter (self, p):
 		'''formal_parameter : id_list parameter_spec '''
-		p[0] = ast.FormalParameter(p[1], p[2])
+		p[0] = ast.FormalParameter(p[1], p[2], coord=self.genCoord(p))
 
 	def p_parameter_spec (self, p):
 		'''parameter_spec 	: mode
 							| mode parameter_attribute'''
 		if(len(p) == 3):
-			p[0] = ast.ParameterSpecs(p[1], p[2])
+			p[0] = ast.ParameterSpecs(p[1], p[2], coord=self.genCoord(p))
 		else:
-			p[0] = ast.ParameterSpecs(p[1], None)
+			p[0] = ast.ParameterSpecs(p[1], None, coord=self.genCoord(p))
 
 	def p_parameter_attribute (self, p):
 		'''parameter_attribute : LOC'''
@@ -739,9 +738,9 @@ class LyaParser(PLYParser):
 		'''result_spec 	: RETURNS LPAREN mode RPAREN
 						| RETURNS LPAREN mode result_attribute RPAREN'''
 		if(len(p) == 6):
-			p[0] = ast.ResultSpecs(p[3], p[4])
+			p[0] = ast.ResultSpecs(p[3], p[4], coord=self.genCoord(p))
 		else:
-			p[0] = ast.ResultSpecs(p[3], None)
+			p[0] = ast.ResultSpecs(p[3], None, coord=self.genCoord(p))
 
 	def p_result_attribute (self,p):
 		'''result_attribute : LOC'''
@@ -760,9 +759,9 @@ class LyaParser(PLYParser):
 		'''procedure_call : ID LPAREN RPAREN
 						  | ID LPAREN parameter_list RPAREN '''
 		if(len(p) == 5):
-			p[0] = ast.ProcedureCall(p[1], p[3])
+			p[0] = ast.ProcedureCall(p[1], p[3], coord=self.genCoord(p))
 		else:
-			p[0] = ast.ProcedureCall(p[1], None)
+			p[0] = ast.ProcedureCall(p[1], None, coord=self.genCoord(p))
 
 	def p_parameter_list(self, p):
 		'''parameter_list : parameter
@@ -782,19 +781,19 @@ class LyaParser(PLYParser):
 
 	def p_exit_action(self, p):
 		'''exit_action	: EXIT label'''
-		p[0] = ast.ExitAction(p[2])
+		p[0] = ast.ExitAction(p[2], coord=self.genCoord(p))
 
 	def p_return_action(self, p):
 		'''return_action 	: RETURN
 							| RETURN result'''
 		if(len(p) == 3):
-			p[0] = ast.ReturnAction(p[2])
+			p[0] = ast.ReturnAction(p[2], coord=self.genCoord(p))
 		else:
-			p[0] = ast.ReturnAction(None)
+			p[0] = ast.ReturnAction(None, coord=self.genCoord(p))
 
 	def p_result_action(self, p):
 		'''result_action : RESULT result'''
-		p[0] = ast.ResultAction(p[2])
+		p[0] = ast.ResultAction(p[2], coord=self.genCoord(p))
 
 	def p_result (self, p):
 		'''result : expression'''
@@ -804,9 +803,9 @@ class LyaParser(PLYParser):
 		'''builtin_call : builtin_name LPAREN RPAREN 
 						| builtin_name LPAREN parameter_list RPAREN'''
 		if(len(p) == 5):
-			p[0] = ast.BuiltinCall(p[1],p[3])
+			p[0] = ast.BuiltinCall(p[1],p[3], coord=self.genCoord(p))
 		else:
-			p[0] = ast.BuiltinCall(p[1],p[3])
+			p[0] = ast.BuiltinCall(p[1],p[3], coord=self.genCoord(p))
 
 	def p_builtin_name(self, p):
 		'''builtin_name : NUM

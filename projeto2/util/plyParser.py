@@ -6,9 +6,9 @@ class Coord(object):
         self.line = line
         self.column = column
 
-    def __str__(self):
-        str = "%s:%s" % (self.file, self.line)
-        if self.column: str += ":%s" % self.column
+    def __repr__(self):
+        str = "FILE: %s | LINE: %s " % (self.file, self.line)
+        if self.column: str += "| COLUMN : %s" % self.column
         return str
 
 
@@ -17,9 +17,7 @@ class ParseError(Exception): pass
 
 class PLYParser(object):
 	def _coord(self, lineno, column=None):
-		return Coord(file = self.lexer.filename, 
-			line = lineno, 
-			column=column)
+		return Coord(file = self.lexer.filename, line = lineno, column=column)
 
 	def _parse_error(self, coord, msg):
 		raise ParseError("%s: %s" % (msg, repr(coord)))

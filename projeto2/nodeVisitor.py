@@ -1,5 +1,5 @@
+import util.expressionTypes as expressionTypes
 from util.enviroment import Environment
-from util.expressionTypes import ExprType, IntType, FloatType, StringType, BoolType
 
 class NodeVisitor(object):
 	def visit(self,node):
@@ -13,9 +13,39 @@ class NodeVisitor(object):
 	def generic_visit(self,node):
 		print("\nVisitor method not found")
 		node.show(recursive=False)
+		print("coord: %s" % node.coord)
 		for (child, child_name) in node.children():
 			self.visit(child)
 
+class Visitor(NodeVisitor):
+	def __init__(self):
+		self.environment = Environment()
+		self.typemap = {
+			"int": expressionTypes.IntType,
+			"char": expressionTypes.CharType,
+			"string": expressionTypes.StringType,
+			"bool": expressionTypes.BoolType
+		}
+
+	def typeCheckUnaryExpression(self, node, op, val):
+		if hasattr(val, "check_type"):
+			if op not in val.check_type.unary_ops:
+				error(node.lineno, "Unary operator {} not supported".format(op))
+			return val.check_type
+
+	def typeCheckBinaryExpression(self, node, op, left, right):
+		if hasattr(left, "check_type") and hasattr(right, "check_type"):
+			if left.check_type != right.check_type:
+				error(node.lineno, "Binary operator {} does not have matching types".format(op))
+				return left.check_type
+			errside = None
+			if op not in left.check_type.binary_ops:
+				errside = "LHS"
+			if op not in right.check_type.binary_ops:
+				errside = "RHS"
+			if errside is not None:
+				error(node.lineno, "Binary operator {} not supported on {} of expression".format(op, errside))
+		return left.check_type
 
 def visit_Program(self, node):
 
@@ -106,11 +136,11 @@ def visit_While(self, node):
 def visit_ProcedureStmnt(self, node):
 
 def visit_ProcedureDef(self, node):
-		
+
 def visit_FormalParameter(self, node):
 
 def visit_ParameterSpecs(self, node):
-	
+
 def visit_ResultSpecs(self, node):
 
 def visit_ProcedureCall(self, node):

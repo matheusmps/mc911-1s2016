@@ -2,14 +2,14 @@ import sys
 
 class NodeAst(object):
 	
-	__slots__ = ()
+	__slots__ = ('coord')
 	
 	attr_names = ()
-	
+
 	def children(self):
 		""" A sequence of all children that are Nodes"""
 		return tuple([])
-	
+
 	def show(self, buf=sys.stdout, offset=0, _my_node_name=None, recursive=True):
 		
 		lead = ' ' * offset
@@ -17,14 +17,14 @@ class NodeAst(object):
 			buf.write(lead + ' <' + _my_node_name + '>: ' + self.__class__.__name__ + ' => ')
 		else:
 			buf.write(lead + self.__class__.__name__+ ' => ')
-
+		
 		if self.attr_names:
 			nvlist = [(n, getattr(self,n)) for n in self.attr_names]
 			attrstr = ', '.join('%s = \'%s\' ' % nv for nv in nvlist)
 			buf.write(attrstr)
-
+		
 		buf.write('\n')
-
+		
 		if recursive:
 			for (child, child_name) in self.children():
 				child.show(
@@ -41,7 +41,8 @@ class NodeAst(object):
 class Program(NodeAst):
 	__slots__ = ('statements')
 	
-	def __init__(self, statements):
+	def __init__(self, statements, coord):
+		self.coord = coord
 		self.statements = statements
 	
 	def children(self):
@@ -52,7 +53,8 @@ class Program(NodeAst):
 class DeclStmt(NodeAst):
 	__slots__ = ('decls')
 	
-	def __init__(self, decls):
+	def __init__(self, decls, coord):
+		self.coord = coord
 		self.decls = decls
 	
 	def children(self):
@@ -63,7 +65,8 @@ class DeclStmt(NodeAst):
 class Declaration(NodeAst):
 	__slots__ = ('idList', 'mode', 'init')
 	
-	def __init__(self, idList, mode, init):
+	def __init__(self, idList, mode, init, coord):
+		self.coord = coord
 		self.idList = idList
 		self.mode = mode
 		self.init = init
@@ -79,7 +82,8 @@ class Declaration(NodeAst):
 class Mode(NodeAst):
 	__slots__ = ('modeName')
 	
-	def __init__(self, modeName):
+	def __init__(self, modeName, coord):
+		self.coord = coord
 		self.modeName = modeName
 		
 	attr_names = ('modeName', )
@@ -87,7 +91,8 @@ class Mode(NodeAst):
 class DiscreteMode(NodeAst):
 	__slots__ = ('modeName')
 	
-	def __init__(self, modeName):
+	def __init__(self, modeName, coord):
+		self.coord = coord
 		self.modeName = modeName
 		
 	attr_names = ('modeName', )
@@ -95,7 +100,8 @@ class DiscreteMode(NodeAst):
 class ReferenceMode(NodeAst):
 	__slots__ = ('mode')
 	
-	def __init__(self, mode):
+	def __init__(self, mode, coord):
+		self.coord = coord
 		self.mode = mode
 		
 	def children(self):
@@ -106,7 +112,8 @@ class ReferenceMode(NodeAst):
 class DiscreteRangeMode(NodeAst):
 	__slots__ = ('mode', 'literalRange')
 	
-	def __init__(self, mode, literalRange):
+	def __init__(self, mode, literalRange, coord):
+		self.coord = coord
 		self.mode = mode
 		self.literalRange = literalRange
 	
@@ -119,7 +126,8 @@ class DiscreteRangeMode(NodeAst):
 class LiteralRange(NodeAst):
 	__slots__ = ('lowerBound', 'upperBound')
 	
-	def __init__(self, lowerBound, upperBound):
+	def __init__(self, lowerBound, upperBound, coord):
+		self.coord = coord
 		self.lowerBound = lowerBound
 		self.upperBound = upperBound
 	
@@ -132,7 +140,8 @@ class LiteralRange(NodeAst):
 class StringMode(NodeAst):
 	__slots__ = ('length')
 	
-	def __init__(self, length):
+	def __init__(self, length, coord):
+		self.coord = coord
 		self.length = length
 		
 	attr_names = ('length', )
@@ -140,7 +149,8 @@ class StringMode(NodeAst):
 class IndexMode(NodeAst):
 	__slots__ = ('index_mode_list')
 	
-	def __init__(self, index_mode_list):
+	def __init__(self, index_mode_list, coord):
+		self.coord = coord
 		self.index_mode_list = index_mode_list
 		
 	def children(self):
@@ -151,7 +161,8 @@ class IndexMode(NodeAst):
 class ArrayMode(NodeAst):
 	__slots__ = ('index_mode', 'element_node')
 	
-	def __init__(self, index_mode, element_node):
+	def __init__(self, index_mode, element_node, coord):
+		self.coord = coord
 		self.index_mode = index_mode
 		self.element_node = element_node
 		
@@ -164,7 +175,8 @@ class ArrayMode(NodeAst):
 class ModeDef(NodeAst):
 	__slots__ = ('idList', 'mode')
 	
-	def __init__(self, idList, mode):
+	def __init__(self, idList, mode, coord):
+		self.coord = coord
 		self.idList = idList
 		self.mode = mode
 		
@@ -178,7 +190,8 @@ class ModeDef(NodeAst):
 class NewModeStmt(NodeAst):
 	__slots__ = ('modeList')
 	
-	def __init__(self, modeList):
+	def __init__(self, modeList, coord):
+		self.coord = coord
 		self.modeList = modeList
 	
 	def children(self):
@@ -189,7 +202,8 @@ class NewModeStmt(NodeAst):
 class SynStmt(NodeAst):
 	__slots__ = ('synList')
 	
-	def __init__(self, synList):
+	def __init__(self, synList, coord):
+		self.coord = coord
 		self.synList = synList
 	
 	def children(self):
@@ -202,7 +216,8 @@ class SynDef(NodeAst):
 	
 	attr_names = ('idList', )
 	
-	def __init__(self, idList, mode, expression):
+	def __init__(self, idList, mode, expression, coord):
+		self.coord = coord
 		self.idList = idList
 		self.mode = mode
 		self.expression = expression
@@ -219,7 +234,8 @@ class IntConst(NodeAst):
 	
 	attr_names = ('val',)
 	
-	def __init__(self, val):
+	def __init__(self, val, coord):
+		self.coord = coord
 		self.val = val
 
 class Location(NodeAst):
@@ -227,13 +243,15 @@ class Location(NodeAst):
 	
 	attr_names = ('idName',)
 	
-	def __init__(self, idName):
+	def __init__(self, idName, coord):
+		self.coord = coord
 		self.idName = idName
 
 class ReferencedLocation(NodeAst):
 	__slots__ = ('location')
 	
-	def __init__(self, location):
+	def __init__(self, location, coord):
+		self.coord = coord
 		self.location = location
 		
 	def children(self):
@@ -244,7 +262,8 @@ class ReferencedLocation(NodeAst):
 class DereferencedLocation(NodeAst):
 	__slots__ = ('location')
 	
-	def __init__(self, location):
+	def __init__(self, location, coord):
+		self.coord = coord
 		self.location = location
 		
 	def children(self):
@@ -255,7 +274,8 @@ class DereferencedLocation(NodeAst):
 class StringElement(NodeAst):
 	__slots__ = ('idName', 'start_element')
 	
-	def __init__(self, idName, start_element):
+	def __init__(self, idName, start_element, coord):
+		self.coord = coord
 		self.idName = idName
 		self.start_element = start_element
 	
@@ -268,7 +288,8 @@ class StringElement(NodeAst):
 class StringSlice(NodeAst):
 	__slots__ = ('idName', 'literalRange')
 	
-	def __init__(self, idName, literalRange):
+	def __init__(self, idName, literalRange, coord):
+		self.coord = coord
 		self.idName = idName
 		self.literalRange = literalRange
 	
@@ -281,7 +302,8 @@ class StringSlice(NodeAst):
 class ArrayElement(NodeAst):
 	__slots__ = ('array_location', 'expressions')
 	
-	def __init__(self, array_location, expressions):
+	def __init__(self, array_location, expressions, coord):
+		self.coord = coord
 		self.array_location = array_location
 		self.expressions = expressions
 		
@@ -294,7 +316,8 @@ class ArrayElement(NodeAst):
 class ArraySlice(NodeAst):
 	__slots__ = ('array_location', 'literalRange')
 	
-	def __init__(self, array_location, literalRange):
+	def __init__(self, array_location, literalRange, coord):
+		self.coord = coord
 		self.array_location = array_location
 		self.literalRange = literalRange
 		
@@ -307,7 +330,8 @@ class ArraySlice(NodeAst):
 class Assignment(NodeAst):
 	__slots__ = ('location', 'assign_op', 'expression')
 	
-	def __init__(self, location, assign_op, expression):
+	def __init__(self, location, assign_op, expression, coord):
+		self.coord = coord
 		self.location = location
 		self.assign_op = assign_op
 		self.expression = expression
@@ -323,7 +347,8 @@ class Assignment(NodeAst):
 class Expression(NodeAst):
 	__slots__ = ('operand1', 'operator', 'operand2')
 	
-	def __init__(self, operand1, operator, operand2):
+	def __init__(self, operand1, operator, operand2, coord):
+		self.coord = coord
 		self.operand1 = operand1
 		self.operator = operator
 		self.operand2 = operand2
@@ -339,7 +364,8 @@ class Expression(NodeAst):
 class ParenthesizedExpression(NodeAst):
 	__slots__ = ('expression')
 	
-	def __init__(self, operand1, operator, operand2):
+	def __init__(self, operand1, operator, operand2, coord):
+		self.coord = coord
 		self.expression = expression
 	
 	def children(self):
@@ -351,7 +377,8 @@ class ParenthesizedExpression(NodeAst):
 class ConditionalExpression(NodeAst):
 	__slots__ = ('if_expr', 'then_expr', 'elseif_expr', 'else_expr')
 	
-	def __init__(self, if_expr, then_expr, elseif_expr, else_expr):
+	def __init__(self, if_expr, then_expr, elseif_expr, else_expr, coord):
+		self.coord = coord
 		self.if_expr = if_expr
 		self.then_expr = then_expr
 		self.elseif_expr = elseif_expr
@@ -370,28 +397,32 @@ class IntConst(NodeAst):
 	__slots__ = ('val')
 	attr_names = ('val',)
 	
-	def __init__(self, val):
+	def __init__(self, val, coord):
+		self.coord = coord
 		self.val = val
 
 class CharConst(NodeAst):
 	__slots__ = ('val')
 	attr_names = ('val',)
 	
-	def __init__(self, val):
+	def __init__(self, val, coord):
+		self.coord = coord
 		self.val = val
 
 class Boolean(NodeAst):
 	__slots__ = ('val')
 	attr_names = ('val',)
 	
-	def __init__(self, val):
+	def __init__(self, val, coord):
+		self.coord = coord
 		self.val = val
 
 class StrConst(NodeAst):
 	__slots__ = ('val')
 	attr_names = ('val',)
 	
-	def __init__(self, val):
+	def __init__(self, val, coord):
+		self.coord = coord
 		self.val = val
 
 class EmptyConst(NodeAst):
@@ -401,7 +432,8 @@ class EmptyConst(NodeAst):
 class ValueArrayElement(NodeAst):
 	__slots__ = ('primitiveValue', 'expressions')
 	
-	def __init__(self, primitiveValue, expressions):
+	def __init__(self, primitiveValue, expressions, coord):
+		self.coord = coord
 		self.primitiveValue = primitiveValue
 		self.expressions = expressions
 		
@@ -414,7 +446,8 @@ class ValueArrayElement(NodeAst):
 class ValueArraySlice(NodeAst):
 	__slots__ = ('primitiveValue', 'literalRange')
 	
-	def __init__(self, primitiveValue, literalRange):
+	def __init__(self, primitiveValue, literalRange, coord):
+		self.coord = coord
 		self.primitiveValue = primitiveValue
 		self.literalRange = literalRange
 		
@@ -427,7 +460,8 @@ class ValueArraySlice(NodeAst):
 class ActionStatement(NodeAst):
 	__slots__ = ('action', 'label')
 	
-	def __init__(self, action, label):
+	def __init__(self, action, label, coord):
+		self.coord = coord
 		self.action = action
 		self.label = label
 	
@@ -442,13 +476,15 @@ class Label(NodeAst):
 	
 	attr_names = ('label',)
 	
-	def __init__(self, label):
+	def __init__(self, label, coord):
+		self.coord = coord
 		self.label = label
 
 class IfAction(NodeAst):
 	__slots__ = ('if_expr', 'then_clause', 'else_clause')
 	
-	def __init__(self, if_expr, then_clause, else_clause):
+	def __init__(self, if_expr, then_clause, else_clause, coord):
+		self.coord = coord
 		self.if_expr = if_expr
 		self.then_clause = then_clause
 		self.else_clause = else_clause
@@ -463,7 +499,8 @@ class IfAction(NodeAst):
 class ElseIfClause(NodeAst):
 	__slots__ = ('test', 'stmts')
 
-	def __init__(self, test, stmts):
+	def __init__(self, test, stmts, coord):
+		self.coord = coord
 		self.test = test
 		self.stmts = stmts
 
@@ -476,7 +513,8 @@ class ElseIfClause(NodeAst):
 class ElseClause(NodeAst):
 	__slots__ = ('stmts')
 
-	def __init__(self, stmts):
+	def __init__(self, stmts, coord):
+		self.coord = coord
 		self.stmts = stmts
 
 	def children(self):
@@ -487,7 +525,8 @@ class ElseClause(NodeAst):
 class DoAction(NodeAst):
 	__slots__ = ('control', 'stmts')
 	
-	def __init__(self, control, stmts):
+	def __init__(self, control, stmts, coord):
+		self.coord = coord
 		self.control = control
 		self.stmts = stmts
 		
@@ -500,7 +539,8 @@ class DoAction(NodeAst):
 class For(NodeAst):
 	__slots__ = ('iteration')
 	
-	def __init__(self, iteration):
+	def __init__(self, iteration, coord):
+		self.coord = coord
 		self.iteration = iteration 
 		
 	def children(self):
@@ -513,7 +553,8 @@ class StepEnumeration(NodeAst):
 	
 	attr_names = ('down',)
 	
-	def __init__(self, counter, start_value, step_value, end_value, down):
+	def __init__(self, counter, start_value, step_value, end_value, down, coord):
+		self.coord = coord
 		self.counter = counter
 		self.start_value = start_value
 		self.step_value = step_value
@@ -533,7 +574,8 @@ class RangeEnumeration(NodeAst):
 	
 	attr_names = ('down',)
 	
-	def __init__(self, counter, expression, down):
+	def __init__(self, counter, expression, down, coord):
+		self.coord = coord
 		self.counter = counter
 		self.expression = expression
 		self.down = down
@@ -548,7 +590,8 @@ class RangeEnumeration(NodeAst):
 class While(NodeAst):
 	__slots__ = ('bool_expr')
 	
-	def __init__(self, bool_expr):
+	def __init__(self, bool_expr, coord):
+		self.coord = coord
 		self.bool_expr = bool_expr 
 		
 	def children(self):
@@ -559,7 +602,8 @@ class While(NodeAst):
 class ProcedureStmnt(NodeAst):
 	__slots__ = ('label', 'procedure_definition')
 	
-	def __init__(self, label, procedure_definition):
+	def __init__(self, label, procedure_definition, coord):
+		self.coord = coord
 		self.label = label
 		self.procedure_definition = procedure_definition
 		
@@ -572,7 +616,8 @@ class ProcedureStmnt(NodeAst):
 class ProcedureDef(NodeAst):
 	__slots__ = ('formal_parameter_list', 'result_spec', 'statement_list')
 	
-	def __init__(self, formal_parameter_list, result_spec, statement_list):
+	def __init__(self, formal_parameter_list, result_spec, statement_list, coord):
+		self.coord = coord
 		self.formal_parameter_list = formal_parameter_list
 		self.result_spec = result_spec
 		self.statement_list = statement_list
@@ -587,9 +632,11 @@ class ProcedureDef(NodeAst):
 class FormalParameter(NodeAst):
 	__slots__ = ('idList', 'parameter_specs')
 	
-	def __init__(self, idList, parameter_specs):
+	def __init__(self, idList, parameter_specs, coord):
+		self.coord = coord
 		self.idList = idList
-		self.parameter_specs = parameter_specs
+		self.parameter_spe
+		cs = parameter_specs
 		
 	def children(self):
 		nodelist = []
@@ -601,7 +648,8 @@ class FormalParameter(NodeAst):
 class ParameterSpecs(NodeAst):
 	__slots__ = ('mode', 'attr')
 	
-	def __init__(self, mode, attr):
+	def __init__(self, mode, attr, coord):
+		self.coord = coord
 		self.mode = mode
 		self.attr = attr
 		
@@ -615,7 +663,8 @@ class ParameterSpecs(NodeAst):
 class ResultSpecs(NodeAst):
 	__slots__ = ('mode', 'attr')
 	
-	def __init__(self, mode, attr):
+	def __init__(self, mode, attr, coord):
+		self.coord = coord
 		self.mode = mode
 		self.attr = attr
 		
@@ -629,7 +678,8 @@ class ResultSpecs(NodeAst):
 class ProcedureCall(NodeAst):
 	__slots__ = ('name', 'params')
 	
-	def __init__(self, name, params):
+	def __init__(self, name, params, coord):
+		self.coord = coord
 		self.name = name
 		self.params = params
 
@@ -644,7 +694,8 @@ class ProcedureCall(NodeAst):
 class Parameter(NodeAst):
 	__slots__ = ('expr')
 	
-	def __init__(self, expr):
+	def __init__(self, expr, coord):
+		self.coord = coord
 		self.expr = expr
 
 	def children(self):
@@ -656,7 +707,8 @@ class Parameter(NodeAst):
 class ExitAction(NodeAst):
 	__slots__ = ('label')
 	
-	def __init__(self, label):
+	def __init__(self, label, coord):
+		self.coord = coord
 		self.label = label
 
 	def children(self):
@@ -668,7 +720,8 @@ class ExitAction(NodeAst):
 class ReturnAction(NodeAst):
 	__slots__ = ('result')
 	
-	def __init__(self, result):
+	def __init__(self, result, coord):
+		self.coord = coord
 		self.result = result
 
 	def children(self):
@@ -680,7 +733,8 @@ class ReturnAction(NodeAst):
 class ResultAction(NodeAst):
 	__slots__ = ('result')
 	
-	def __init__(self, result):
+	def __init__(self, result, coord):
+		self.coord = coord
 		self.result = result
 
 	def children(self):
@@ -693,7 +747,8 @@ class BuiltinCall(NodeAst):
 	
 	attr_names = ('name', )
 	
-	def __init__(self, name, params):
+	def __init__(self, name, params, coord):
+		self.coord = coord
 		self.name = name
 		self.params = params
 

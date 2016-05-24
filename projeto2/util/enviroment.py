@@ -1,4 +1,4 @@
-from expressionTypes import ExprType, IntType, StringType, BoolType
+#from expressionTypes import ExprType, IntType, StringType, BoolType
 
 class SymbolTable(dict):
 
@@ -23,10 +23,10 @@ class Environment(object):
 		self.root = SymbolTable()
 		self.stack.append(self.root)
 		self.root.update({
-			"int": IntType,
-			"char": CharType,
-			"string": StringType,
-			"bool": BoolType
+			"int": expressionTypes.IntType,
+			"char": expressionTypes.CharType,
+			"string": expressionTypes.StringType,
+			"bool": expressionTypes.BoolType
 		})
 
 	def push(self, enclosure):

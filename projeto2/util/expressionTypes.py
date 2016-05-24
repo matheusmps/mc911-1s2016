@@ -6,11 +6,11 @@ class ExprType(object):
 				relOperators=None, relOpInst=None):
 
 		self.typename = typename
-		self.binaryOperators = binaryOperators or set()
-		self.unaryOperators = unaryOperators or set()
 		self.default = default
-		self.unaryOpInst = unaryOpInst or {}
+		self.binaryOperators = binaryOperators or set()
 		self.binaryOpInst = binaryOpInst or {}
+		self.unaryOperators = unaryOperators or set()
+		self.unaryOpInst = unaryOpInst or {}
 		self.relOperators = relOperators or set()
 		self.relOpInst = relOpInst or {}
 
@@ -19,8 +19,8 @@ class ExprType(object):
 
 IntType = ExprType("int", int(), 
 	binaryOperators={"+", "-", "*", "/"}, 
-	unaryOperators={"+", "-"},
 	binaryOpInst={"+": "add", "-": "sub", "*": "imul", "/": "idiv"},
+	unaryOperators={"+", "-"},
 	unaryOpInst={"+": "uadd", "-": "uneg"},
 	relOperators={"==", "!=", "<", ">", "<=", ">="},
 	relOpInst={"==": "eq", "!=": "neq", ">": "gt", "<": "lt", ">=": "gte", "<=": "lte"},
