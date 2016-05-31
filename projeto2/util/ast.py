@@ -2,7 +2,7 @@ import sys
 
 class NodeAst(object):
 	
-	__slots__ = ('coord')
+	__slots__ = ('coord', 'checkType')
 	
 	attr_names = ()
 
@@ -39,7 +39,7 @@ class NodeAst(object):
 			buf.write('\n')
 
 class Program(NodeAst):
-	__slots__ = ('statements')
+	__slots__ = ('statements', 'environment', 'symtab')
 	
 	def __init__(self, statements, coord):
 		self.coord = coord
@@ -63,7 +63,7 @@ class DeclStmt(NodeAst):
 		return nodelist
 
 class Declaration(NodeAst):
-	__slots__ = ('idList', 'mode', 'init')
+	__slots__ = ('idList', 'mode', 'init', 'scopeLevel')
 	
 	def __init__(self, idList, mode, init, coord):
 		self.coord = coord

@@ -1,3 +1,8 @@
 /* some tests for syntax analysis */
 
-a = (-2) + 3;
+dcl a, b int;
+dcl c char;
+dcl d int(2:3);
+
+a = 3 + b;
+b = 2;
