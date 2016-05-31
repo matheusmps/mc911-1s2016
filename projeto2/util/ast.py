@@ -248,7 +248,7 @@ class Location(NodeAst):
 		self.idName = idName
 
 class ReferencedLocation(NodeAst):
-	__slots__ = ('location')
+	__slots__ = ('location', 'idName')
 	
 	def __init__(self, location, coord):
 		self.coord = coord
@@ -260,7 +260,7 @@ class ReferencedLocation(NodeAst):
 		return nodelist
 
 class DereferencedLocation(NodeAst):
-	__slots__ = ('location')
+	__slots__ = ('location', 'idName')
 	
 	def __init__(self, location, coord):
 		self.coord = coord
@@ -300,7 +300,7 @@ class StringSlice(NodeAst):
 		return nodelist
 
 class ArrayElement(NodeAst):
-	__slots__ = ('array_location', 'expressions')
+	__slots__ = ('array_location', 'expressions', 'idName')
 	
 	def __init__(self, array_location, expressions, coord):
 		self.coord = coord
@@ -314,7 +314,7 @@ class ArrayElement(NodeAst):
 		return nodelist
 
 class ArraySlice(NodeAst):
-	__slots__ = ('array_location', 'literalRange')
+	__slots__ = ('array_location', 'literalRange', 'idName')
 	
 	def __init__(self, array_location, literalRange, coord):
 		self.coord = coord
