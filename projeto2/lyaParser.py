@@ -374,7 +374,7 @@ class LyaParser(PLYParser):
 		'''operand0 : operand1
 					| operand0 operator1 operand1 '''
 		if(len(p) == 4):
-			p[0] = ast.Expression(p[1], p[2], p[3], coord=self.genCoord(p))
+			p[0] = ast.RelationalExpression(p[1], p[2], p[3], coord=self.genCoord(p))
 		else:
 			p[0] = p[1]
 
@@ -402,7 +402,7 @@ class LyaParser(PLYParser):
 		'''operand1 : operand2
 					| operand1 operator2 operand2 '''
 		if(len(p) == 4):
-			p[0] = ast.Expression(p[1], p[2], p[3], coord=self.genCoord(p))
+			p[0] = ast.BinaryExpression(p[1], p[2], p[3], coord=self.genCoord(p))
 		else:
 			p[0] = p[1]
 
@@ -424,7 +424,7 @@ class LyaParser(PLYParser):
 		'''operand2 : operand3
 					| operand2 arithmetic_multiplicative_operator operand3 '''
 		if(len(p) == 4):
-			p[0]= ast.Expression(p[1], p[2], p[3], coord=self.genCoord(p))
+			p[0]= ast.BinaryExpression(p[1], p[2], p[3], coord=self.genCoord(p))
 		else:
 			p[0] = p[1]
 
@@ -438,7 +438,7 @@ class LyaParser(PLYParser):
 		'''operand3 : operand4
 					| monadic_operator operand4'''
 		if(len(p) == 3):
-			p[0] = ast.Expression(p[2], p[1], None, coord=self.genCoord(p))
+			p[0] = ast.UnaryExpression(p[2], p[1], coord=self.genCoord(p))
 		else:
 			p[0] = p[1]
 

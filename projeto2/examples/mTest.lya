@@ -2,7 +2,10 @@
 
 dcl a, b int;
 dcl c char;
-dcl d int(2:3);
+dcl d bool;
 
-a = 3 + b;
+d = false;
+
+a = 3;
 b = 2;
+c = 'c';

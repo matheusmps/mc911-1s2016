@@ -235,9 +235,32 @@ class Visitor(NodeVisitor):
 	#def visit_Expression(self, node):
 	# generic
 
-	#def visit_ParenthesizedExpression(self, node):
+	def visit_UnaryExpression(self,node):
+		self.visit(node.expr)
+		checkType = self.typeCheckUnaryExpression(node, node.operator, node.operand)
+		node.checkType = checkType
 
-	#def visit_ConditionalExpression(self, node):
+	def visit_BinaryExpression(self,node):
+		self.visit(node.left)
+		self.visit(node.right)
+		checkType = self.typeCheckBinaryExpression(node, node.operator, node.operand1, node.operand2)
+		node.checkType = checkType
+
+	def visit_RelationalExpression(self,node):
+		self.visit(node.left)
+		self.visit(node.right)
+		checkType = self.typeCheckRelationalExpression(node, node.operator, node.operand1, node.operand2)
+		node.checkType = checkType
+
+	def visit_ConditionalExpression(self, node):
+		self.visit(node.if_expr)
+		if node.if_expr.checkType != environment.BoolType:
+			self.newError(node, "Expressao do IF deve retornar um boolean")
+			return
+		self.visit(node.then_expr)
+		for clause in node.elseif_expr:
+			self.visit(clause)
+		self.visit(node.else_expr)
 
 	### -------------------------------------------------------------- ###
 
@@ -328,26 +351,85 @@ class Visitor(NodeVisitor):
 			self.newError(node, "Cannot assign {} to {}".format(node.expression.checkType, node.counter.checkType))
 
 	def visit_While(self, node):
-		if node.expr.check_type != BoolType:
+		self.visit(node.bool_expr)
+		if node.bool_expr.checkType != environment.BoolType:
 			self.newError(node, "Expressao nao eh booleana")
 			return
-		self.visit(node.bool_expr)
 
-	#def visit_ProcedureStmnt(self, node):
+	def visit_ProcedureStmnt(self, node):
+		node.scope_level = self.environment.scope_level()
+		if node.scope_level > 1:
+			error(node.lineno, "Nested functions not implemented")
+			return
+		self.environment.push(node)
+		if self.environment.lookup(node.label.label) is not None:
+			error(node.lineno, "Attempted to redefine func '{}', not allowed".format(node.label.label))
+			return
+		
+		self.environment.add_root(node.label.label, node)
+		self.visit(node.procedure_definition)
+		 
+		node.checkType = node.procedure_definition.checkType
+		self.environment.pop()
 
-	#def visit_ProcedureDef(self, node):
+	def visit_ProcedureDef(self, node):
+		for parameter in node.formal_parameter_list:
+			self.visit(parameter)
+		
+		self.visit(node.result_spec)
+		node.checkType = node.result_spec.checkType
+		
+		for statement in node.statement_list:
+			self.visit(statement)
 
-	#def visit_FormalParameter(self, node):
+	def visit_FormalParameter(self, node):
+		self.visit(parameter_specs)
+		node.checkType = node.parameter_specs.checkType
+		
+		for idName in node.idList:
+			self.environment.add_local(idName, node)
+			node.scope_level = self.environment.scope_level()
 
-	#def visit_ParameterSpecs(self, node):
+	def visit_ParameterSpecs(self, node):
+		self.visit(node.mode)
+		node.checkType = node.mode.checkType
 
-	#def visit_ResultSpecs(self, node):
+	def visit_ResultSpecs(self, node):
+		self.visit(node.mode)
+		node.checkType = node.mode.checkType
 
-	#def visit_ProcedureCall(self, node):
+	def visit_ProcedureCall(self, node):
+		sym = self.environment.lookup(node.name)
+		if not sym:
+			self.environment.print()
+			self.newError(node, "Function name '{}' not found".format(node.name))
+			return
+		if not isinstance(sym, ast.ProcedureStmnt):
+			self.newError(node, "Tried to call non-function '{}'".format(node.name))
+			return
+		if len(sym.parameter_specs) != len(node.params):
+			self.newError(node, "Number of arguments for call to function '{}' do not match function parameter declaration".format(node.name))
+		
+		for p in node.params:
+			self.visit(p)
+		
+		argerrors = False
+		for arg, parm in zip(node.params, sym.parameter_specs):
+			if arg.checkType != parm.checkType:
+				newError(node, "Argument type '{}' does not match parameter type '{}' in function call to '{}'".format(arg.checkType, parm.checkType, node.name))
+				argerrors = True
+			if argerrors:
+				return
+			arg.parm = parm
 
 	#def visit_Parameter(self, node):
+	# generic
 
-	#def visit_ExitAction(self, node):
+	def visit_ExitAction(self, node):
+		sym = self.environment.lookup(node.label.label)
+		if not sym:
+			self.newError(node, "Funcao '{}' nao encontrada".format(node.label.label))
+			return
 
 	def visit_ReturnAction(self, node):
 		self.visit(node.result)
@@ -355,5 +437,7 @@ class Visitor(NodeVisitor):
 			self.newError(node, "Tipo de retorno da funcao eh diferente do esperado")
 
 	#def visit_ResultAction(self, node):
-
+	# generic
+	
 	#def visit_BuiltinCall(self, node):
+	# generic

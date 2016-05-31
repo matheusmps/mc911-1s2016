@@ -344,7 +344,7 @@ class Assignment(NodeAst):
 		if self.expression is not None: nodelist.append((self.expression, "expression"))
 		return nodelist
 
-class Expression(NodeAst):
+class BinaryExpression(NodeAst):
 	__slots__ = ('operand1', 'operator', 'operand2')
 	
 	def __init__(self, operand1, operator, operand2, coord):
@@ -361,18 +361,37 @@ class Expression(NodeAst):
 		if self.operand2 is not None: nodelist.append((self.operand2, "operand2"))
 		return nodelist
 
-class ParenthesizedExpression(NodeAst):
-	__slots__ = ('expression')
+class RelationalExpression(NodeAst):
+	__slots__ = ('operand1', 'operator', 'operand2')
 	
 	def __init__(self, operand1, operator, operand2, coord):
 		self.coord = coord
-		self.expression = expression
+		self.operand1 = operand1
+		self.operator = operator
+		self.operand2 = operand2
+	
+	attr_names = ('operator',)
 	
 	def children(self):
 		nodelist = []
-		if self.expression is not None: nodelist.append((self.expression, "expressions"))
+		if self.operand1 is not None: nodelist.append((self.operand1, "operand1"))
+		if self.operand2 is not None: nodelist.append((self.operand2, "operand2"))
 		return nodelist
-		
+
+class UnaryExpression(NodeAst):
+	__slots__ = ('operand', 'operator')
+	
+	def __init__(self, operand, operator, coord):
+		self.coord = coord
+		self.operand1 = operand
+		self.operator = operator
+	
+	attr_names = ('operator',)
+	
+	def children(self):
+		nodelist = []
+		if self.operand is not None: nodelist.append((self.operand, "operand"))
+		return nodelist
 
 class ConditionalExpression(NodeAst):
 	__slots__ = ('if_expr', 'then_expr', 'elseif_expr', 'else_expr')
@@ -635,8 +654,7 @@ class FormalParameter(NodeAst):
 	def __init__(self, idList, parameter_specs, coord):
 		self.coord = coord
 		self.idList = idList
-		self.parameter_spe
-		cs = parameter_specs
+		self.parameter_specs = parameter_specs
 		
 	def children(self):
 		nodelist = []
