@@ -229,15 +229,6 @@ class SynDef(NodeAst):
 		return nodelist
 		
 
-class IntConst(NodeAst):
-	__slots__ = ('val')
-	
-	attr_names = ('val',)
-	
-	def __init__(self, val, coord):
-		self.coord = coord
-		self.val = val
-
 class Location(NodeAst):
 	__slots__ = ('idName')
 	
@@ -272,30 +263,30 @@ class DereferencedLocation(NodeAst):
 		return nodelist
 
 class StringElement(NodeAst):
-	__slots__ = ('idName', 'start_element')
+	__slots__ = ('location', 'start_element', 'idName')
 	
-	def __init__(self, idName, start_element, coord):
+	def __init__(self, location, start_element, coord):
 		self.coord = coord
-		self.idName = idName
+		self.location = location
 		self.start_element = start_element
 	
 	def children(self):
 		nodelist = []
-		if self.idName is not None: nodelist.append((self.idName, "id"))
+		if self.location is not None: nodelist.append((self.location, "id"))
 		if self.start_element is not None: nodelist.append((self.start_element, "start_element"))
 		return nodelist
 
 class StringSlice(NodeAst):
-	__slots__ = ('idName', 'literalRange')
+	__slots__ = ('location', 'literalRange', 'idName')
 	
-	def __init__(self, idName, literalRange, coord):
+	def __init__(self, location, literalRange, coord):
 		self.coord = coord
-		self.idName = idName
+		self.location = location
 		self.literalRange = literalRange
 	
 	def children(self):
 		nodelist = []
-		if self.idName is not None: nodelist.append((self.idName, "id"))
+		if self.location is not None: nodelist.append((self.location, "id"))
 		if self.literalRange is not None: nodelist.append((self.literalRange, "range"))
 		return nodelist
 
@@ -383,7 +374,7 @@ class UnaryExpression(NodeAst):
 	
 	def __init__(self, operand, operator, coord):
 		self.coord = coord
-		self.operand1 = operand
+		self.operand = operand
 		self.operator = operator
 	
 	attr_names = ('operator',)

@@ -66,7 +66,7 @@ class Visitor(NodeVisitor):
 				errside = "RHS"
 			if errside is not None:
 				self.newError(node, "Relational operator {} not supported on {} of expression".format(op, errside))
-			return environment.BoolType
+			return left.checkType
 
 	def isInsideFunction(self):
 		return self.environment.scope_level() > 1
@@ -205,27 +205,32 @@ class Visitor(NodeVisitor):
 		node.idName = node.location.idName
 
 	def visit_StringElement(self, node):
-		self.checkLocation(node)
+		self.checkLocation(node.location)
+		node.idName = node.location.idName
 		self.visit(node.start_element)
 		if node.start_element.checkType != environment.IntType:
 			self.newError(node, "Start element from String Element does not return an int but a %s" % node.start_element.checkType)
 
 	def visit_StringSlice(self, node):
-		self.checkLocation(node)
+		self.checkLocation(node.location)
+		node.idName = node.location.idName
 		self.visit(node.literalRange)
 
 	def visit_ArrayElement(self, node):
 		self.visit(node.array_location)
+		node.idName = node.array_location.idName
 		for expression in node.expressions:
 			self.visit(expression)
 
 	def visit_ArraySlice(self, node):
 		self.visit(node.array_location)
+		node.idName = node.array_location.idName
 		self.visit(node.literalRange)
 
 	### -------------------------------------------------------------- ###
 
 	def visit_Assignment(self, node):
+		self.visit(node.location)
 		symbol = self.environment.lookup(node.location.idName)
 		if not symbol:
 			self.newError(node, "name '{}' not defined".format(node.location.idName))

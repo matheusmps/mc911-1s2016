@@ -20,32 +20,32 @@ class ExprType(object):
 		return "ExprType({})".format(self.typename)
 
 IntType = ExprType("int", int(), 
-	binaryOperators={"+", "-", "*", "/"}, 
-	binaryOpInst={"+": "add", "-": "sub", "*": "imul", "/": "idiv"},
+	binaryOperators={"+", "-", "*", "/", "%"}, 
+	binaryOpInst={"+": "add", "-": "sub", "*": "mul", "/": "div", "%" : "mod"},
 	unaryOperators={"+", "-"},
-	unaryOpInst={"+": "uadd", "-": "uneg"},
+	unaryOpInst={"+": "add", "-": "neg"},
 	relOperators={"==", "!=", "<", ">", "<=", ">="},
-	relOpInst={"==": "eq", "!=": "neq", ">": "gt", "<": "lt", ">=": "gte", "<=": "lte"},
+	relOpInst={"==": "equ", "!=": "neq", ">": "grt", "<": "les", ">=": "gre", "<=": "leq"},
 )
 
 StringType = ExprType("string", str(), 
 	binaryOperators={"+"},
 	binaryOpInst={"+": "add"},
 	relOperators={"==", "!="},
-	relOpInst={"==": "eq", "!=": "neq"},
+	relOpInst={"==": "equ", "!=": "neq"},
 )
 
 CharType = ExprType("char", str(), 
 	binaryOperators={"+"},
 	binaryOpInst={"+": "add"},
 	relOperators={"==", "!="},
-	relOpInst={"==": "eq", "!=": "neq"},
+	relOpInst={"==": "equ", "!=": "neq"},
 )
 
 BoolType = ExprType("bool", bool(),
 	unaryOperators={"!"},
 	relOperators={"==", "!=", "&&", "||"},
-	relOpInst={"==": "eq", "!=": "neq", "&&": "land", "||": "lor"},
+	relOpInst={"==": "equ", "!=": "neq", "&&": "and", "||": "lor"},
 	unaryOpInst={"!": "not"},
 )
 
@@ -55,8 +55,8 @@ class SymbolTable(dict):
 		super().__init__()
 		self.decl = decl
 
-	def add(self, name, value):
-		self[name] = value
+	def add(self, name, node, scope_level, offset):
+		self[name] = {"node" : node, "scope_level" : scope_level, "offset" : offset}
 
 	def lookup(self, name):
 		return self.get(name, None)
@@ -71,6 +71,7 @@ class Environment(object):
 		self.stack = []
 		self.root = SymbolTable()
 		self.stack.append(self.root)
+		self.offset = 0
 		#self.root.update({
 		#	"int": IntType,
 		#	"char": CharType,
@@ -88,17 +89,53 @@ class Environment(object):
 		return self.stack[-1]
 
 	def scope_level(self):
-		return len(self.stack)
+		return len(self.stack) - 1 
 
 	def add_local(self, name, value):
+		self.peek().add(name, value, self.scope_level(), self.offset)
 		if isinstance(value, ast.Declaration):
-			value.offset = len(self.peek())
-		self.peek().add(name, value)
+			val = self.countAlocSizeForMode(value.mode)
+			self.offset = self.offset + val
+		else:
+			self.offset = self.offset + 1
+
+	def countAlocSizeForMode(self, node):
+		if isinstance(node, ast.DiscreteRangeMode):
+			return self.calculateLiteralRange(node.literalRange)
+		elif isinstance(node, ast.ReferenceMode):
+			return self.countAlocSizeForMode(node.mode)
+		elif isinstance(node, ast.StringMode):
+			return node.length
+		elif isinstance(node, ast.ArrayMode):
+			if node.index_mode.index_mode_list is not None:
+				value = 1
+				for index_mode in node.index_mode.index_mode_list:
+					if isinstance(index_mode, ast.LiteralRange):
+						aux = self.calculateLiteralRange(index_mode)
+					else:
+						aux = self.countAlocSizeForMode(index_mode)
+					value = value * aux
+				return value
+		else:
+			return 1
+
+	def calculateLiteralRange(self, node):
+		if not isinstance(node.upperBound, ast.IntConst) or not isinstance(node.lowerBound, ast.IntConst):
+			raise Exception("Not possible to calculate literal range without constants")
+		else:
+			return int(node.upperBound.val) - int(node.lowerBound.val) + 1
 
 	def add_root(self, name, value):
 		self.root.add(name, value)
 
 	def lookup(self, name):
+		sym = self.lookupComplete(name)
+		if sym is not None:
+			return sym.get("node")
+		else:
+			return None
+
+	def lookupComplete(self, name):
 		for scope in reversed(self.stack):
 			hit = scope.lookup(name)
 			if hit is not None:
@@ -114,14 +151,9 @@ class Environment(object):
 	def printItems(self, scope):
 		for k, v in scope.items():
 			
-			print('%s : %s' % (k, v), end = "")
-			
-			if hasattr(v, "scope_level"):
-				print(' - scope_level: %s' % v.scope_level, end = "")
-			
-			if hasattr(v, "offset"):
-				print(' - offset: %s' % v.offset, end = "")
-			
+			print('%s : %s' % (k, v.get("node")), end = "")
+			print(' - scope_level: %s' % v.get("scope_level"), end = "")
+			print(' - offset: %s' % v.get("offset"), end = "")
 			print("\n")
 			
 			if isinstance(v, ast.ProcedureStmnt):

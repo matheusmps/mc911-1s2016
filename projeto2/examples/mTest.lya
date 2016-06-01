@@ -1,9 +1,14 @@
 /* some tests for syntax analysis */
 
-dcl m int = 2, n int = 3;
+dcl a array[1:10] int;
+dcl i,j int;
 
-p: proc (x int);
-  dcl s int;
-  s = m * x;
-end;
-p(n);
+//read(j);
+
+a[1] = 2*j;
+do
+  for i = 2 to 10;
+    a[i] = 3+i;
+od;
+
+//print(a[j]);

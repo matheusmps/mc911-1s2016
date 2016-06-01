@@ -1,16 +1,18 @@
 import nodeVisitor
+import util.ast as ast
 
 class CodeGenerator(nodeVisitor.NodeVisitor):
 	
 	def __init__(self):
 		self.program = []
+		self.environment = None
 	
 	def printInstructions(self):
 		print("\n\n")
 		print("---- INSTRUCTIONS ----")
 		for val in self.program:
 			print("(", end="")
-			for i,value in enumerate(val):
+			for value in val:
 				if value is not None:
 					print("'%s'" % value, end=",")
 			print(")")
@@ -19,14 +21,37 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 		inst = (opcode, operand1, operand2)
 		self.program.append(inst)
 
+	def calculateSizeAloc(self, node):
+		counter = 0
+		for key, value in node.symtab.items():
+			declNode = value.get("node")
+			if isinstance(declNode, ast.Declaration):
+				counter = counter + self.environment.countAlocSizeForMode(declNode.mode)
+		return counter
+
+	def getSymbolInformation(self, name):
+		sym = self.environment.lookupComplete(name)
+		if sym is not None:
+			return (sym.get("scope_level"), sym.get("offset"))
+		else:
+			return None
+
 	def visit_Program(self, node):
+		self.environment = node.environment
 		node.environment.printStack()
-		self.stackOffset = 0
 		self.addInstruction('stp', None, None)
+		self.addInstruction('alc', self.calculateSizeAloc(node), None)
+		for statement in node.statements:
+			self.visit(statement)
 
 	#def visit_DeclStmt(self, node):
 
-	#def visit_Declaration(self, node):
+	def visit_Declaration(self, node):
+		for name in node.idList:
+			if node.init is not None:
+				self.visit(node.init)
+				sym = self.getSymbolInformation(name)
+				self.addInstruction('stv', sym[0], sym[1])
 
 	### -------------------------------------------------------------- ###
 
@@ -44,7 +69,9 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 
 	#def visit_StringMode(self, node):
 
-	#def visit_ArrayMode(self, node):
+	# def visit_ArrayMode(self, node):
+	# como saber quanto de memoria sera alocado
+	# se as expressoes sao avaliadas em tempo de execucao
 
 	# def visit_IndexMode(self, node):
 
@@ -62,13 +89,23 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 
 	### LOCATION ###
 
-	#def visit_Location(self, node):
+	def visit_Location(self, node):
+		sym = self.getSymbolInformation(node.idName)
+		self.addInstruction('ldv', sym[0], sym[1])
 
-	#def visit_ReferencedLocation(self, node):
+	def visit_ReferencedLocation(self, node):
+		sym = self.getSymbolInformation(node.idName)
+		self.addInstruction('ldr', sym[0], sym[1])
 
-	#def visit_DereferencedLocation(self, node):
+	def visit_DereferencedLocation(self, node):
+		sym = self.getSymbolInformation(node.idName)
+		self.addInstruction('lrv', sym[0], sym[1])
 
-	#def visit_StringElement(self, node):
+	def visit_StringElement(self, node):
+		sym = self.getSymbolInformation(node.idName)
+		self.addInstruction('ldr', sym[0], sym[1])
+		self.visit(node.start_element)
+		self.addInstruction('idx', 1, None)
 
 	#def visit_StringSlice(self, node):
 
@@ -77,26 +114,55 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 	#def visit_ArraySlice(self, node):
 
 	### -------------------------------------------------------------- ###
+	
+	def loadLocation(self, node):
+		if isinstance(node, ast.StringElement) or isinstance(node, ast.StringSlice) or isinstance(node, ast.ArrayElement) or isinstance(node, ast.ArraySlice):
+			self.visit(node)
 
-	#def visit_Assignment(self, node):
+	def saveLocation(self, node):
+		if isinstance(node, ast.StringElement):
+			self.addInstruction('smv', 1, None) 
+		#elif isinstance(node, ast.StringSlice): 
+		#elif isinstance(node, ast.ArrayElement): 
+		#elif isinstance(node, ast.ArraySlice):
+		else:
+			sym = self.getSymbolInformation(node.idName)
+			self.addInstruction('stv', sym[0], sym[1])
 
-	#def visit_Expression(self, node):
+	def visit_Assignment(self, node):
+		self.loadLocation(node.location)
+		self.visit(node.expression)
+		self.saveLocation(node.location)
 
-	#def visit_UnaryExpression(self,node):
+	def visit_BinaryExpression(self, node):
+		self.visit(node.operand1)
+		self.visit(node.operand2)
+		opcode = node.checkType.binaryOpInst.get(node.operator)
+		self.addInstruction(opcode, None, None)
 
-	#def visit_BinaryExpression(self,node):
+	def visit_UnaryExpression(self, node):
+		self.visit(node.operand)
+		opcode = node.checkType.unaryOpInst.get(node.operator)
+		self.addInstruction(opcode, None, None)
 
-	#def visit_RelationalExpression(self,node):
+	def visit_RelationalExpression(self, node):
+		self.visit(node.operand1)
+		self.visit(node.operand2)
+		opcode = node.checkType.relOpInst.get(node.operator)
+		self.addInstruction(opcode, None, None)
 
 	#def visit_ConditionalExpression(self, node):
 
 	### -------------------------------------------------------------- ###
 
-	#def visit_IntConst(self, node):
+	def visit_IntConst(self, node):
+		self.addInstruction('ldc', node.val, None)
 
-	#def visit_CharConst(self, node):
+	def visit_CharConst(self, node):
+		self.addInstruction('ldc', node.val, None)
 
-	#def visit_Boolean(self, node):
+	def visit_Boolean(self, node):
+		self.addInstruction('ldc', node.val, None)
 
 	#def visit_StrConst(self, node):
 
@@ -132,22 +198,3 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 
 	#def visit_ProcedureStmnt(self, node):
 
-	#def visit_ProcedureDef(self, node):
-
-	#def visit_FormalParameter(self, node):
-
-	#def visit_ParameterSpecs(self, node):
-
-	#def visit_ResultSpecs(self, node):
-
-	#def visit_ProcedureCall(self, node):
-
-	#def visit_Parameter(self, node):
-
-	#def visit_ExitAction(self, node):
-
-	#def visit_ReturnAction(self, node):
-
-	#def visit_ResultAction(self, node):
-
-	#def visit_BuiltinCall(self, node):
