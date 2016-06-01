@@ -101,6 +101,17 @@ class Environment(object):
 				return hit
 		return None
 
+	def printStack(self):
+		print("\n\n")
+		print("---- STACK ----")
+		i = 0
+		for scope in self.stack:
+			print("Stack Scope: %s" % i)
+			print("----")
+			for k, v in scope.items():
+				print('%s : %s' % (k, v))
+			i = i + 1
+
 	def find(self, name):
 		if name in self.stack[-1]:
 			return True

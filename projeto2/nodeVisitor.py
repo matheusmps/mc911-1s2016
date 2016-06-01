@@ -372,31 +372,37 @@ class Visitor(NodeVisitor):
 	def visit_ProcedureStmnt(self, node):
 		node.scope_level = self.environment.scope_level()
 		if node.scope_level > 1:
-			newError(node, "Nested functions not implemented")
+			self.newError(node, "Nested functions not implemented")
 			return
 		self.environment.push(node)
 		if self.environment.lookup(node.label.label) is not None:
-			newError(node, "Attempted to redefine func '{}', not allowed".format(node.label.label))
+			self.newError(node, "Attempted to redefine func '{}', not allowed".format(node.label.label))
 			return
 		
 		self.environment.add_root(node.label.label, node)
 		self.visit(node.procedure_definition)
-		 
-		node.checkType = node.procedure_definition.checkType
+		node.param_list_size = node.procedure_definition.param_list_size
+		
+		if hasattr(node.procedure_definition, "checkType"):
+			node.checkType = node.procedure_definition.checkType
+			
 		self.environment.pop()
 
 	def visit_ProcedureDef(self, node):
+		node.param_list_size = 0
 		for parameter in node.formal_parameter_list:
+			node.param_list_size +=  len(parameter.idList)
 			self.visit(parameter)
 		
-		self.visit(node.result_spec)
-		node.checkType = node.result_spec.checkType
+		if node.result_spec is not None:
+			self.visit(node.result_spec)
+			node.checkType = node.result_spec.checkType
 		
 		for statement in node.statement_list:
 			self.visit(statement)
 
 	def visit_FormalParameter(self, node):
-		self.visit(parameter_specs)
+		self.visit(node.parameter_specs)
 		node.checkType = node.parameter_specs.checkType
 		
 		for idName in node.idList:
@@ -414,29 +420,32 @@ class Visitor(NodeVisitor):
 	def visit_ProcedureCall(self, node):
 		sym = self.environment.lookup(node.name)
 		if not sym:
-			self.environment.print()
+			self.environment.printStack()
 			self.newError(node, "Function name '{}' not found".format(node.name))
 			return
 		if not isinstance(sym, ast.ProcedureStmnt):
 			self.newError(node, "Tried to call non-function '{}'".format(node.name))
 			return
-		if len(sym.parameter_specs) != len(node.params):
+		if sym.param_list_size != len(node.params):
 			self.newError(node, "Number of arguments for call to function '{}' do not match function parameter declaration".format(node.name))
 		
 		for p in node.params:
 			self.visit(p)
 		
 		argerrors = False
-		for arg, parm in zip(node.params, sym.parameter_specs):
+		for arg, parm in zip(node.params, sym.procedure_definition.formal_parameter_list):
+			print(arg.checkType)
+			print(parm.checkType)
 			if arg.checkType != parm.checkType:
 				newError(node, "Argument type '{}' does not match parameter type '{}' in function call to '{}'".format(arg.checkType, parm.checkType, node.name))
 				argerrors = True
 			if argerrors:
 				return
-			arg.parm = parm
+			arg.call_arg = parm
 
-	#def visit_Parameter(self, node):
-	# generic
+	def visit_Parameter(self, node):
+		self.visit(node.expr)
+		node.checkType = node.expr.checkType
 
 	def visit_ExitAction(self, node):
 		sym = self.environment.lookup(node.label.label)

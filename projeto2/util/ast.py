@@ -619,7 +619,7 @@ class While(NodeAst):
 		return nodelist
 
 class ProcedureStmnt(NodeAst):
-	__slots__ = ('label', 'procedure_definition')
+	__slots__ = ('label', 'procedure_definition', 'scope_level', 'param_list_size')
 	
 	def __init__(self, label, procedure_definition, coord):
 		self.coord = coord
@@ -633,7 +633,7 @@ class ProcedureStmnt(NodeAst):
 		return nodelist
 
 class ProcedureDef(NodeAst):
-	__slots__ = ('formal_parameter_list', 'result_spec', 'statement_list')
+	__slots__ = ('formal_parameter_list', 'result_spec', 'statement_list', 'param_list_size')
 	
 	def __init__(self, formal_parameter_list, result_spec, statement_list, coord):
 		self.coord = coord
@@ -649,7 +649,7 @@ class ProcedureDef(NodeAst):
 		return nodelist
 		
 class FormalParameter(NodeAst):
-	__slots__ = ('idList', 'parameter_specs')
+	__slots__ = ('idList', 'parameter_specs', 'scope_level')
 	
 	def __init__(self, idList, parameter_specs, coord):
 		self.coord = coord
@@ -710,7 +710,7 @@ class ProcedureCall(NodeAst):
 		return nodelist
 
 class Parameter(NodeAst):
-	__slots__ = ('expr')
+	__slots__ = ('expr', 'call_arg')
 	
 	def __init__(self, expr, coord):
 		self.coord = coord

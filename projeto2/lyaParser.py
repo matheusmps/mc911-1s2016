@@ -773,7 +773,7 @@ class LyaParser(PLYParser):
 
 	def p_parameter(self, p):
 		'''parameter : expression'''
-		p[0] = p[1]
+		p[0] = ast.Parameter(p[1], coord=self.genCoord(p))
 
 	#def p_procedure_name(self, p):
 	#	'''procedure_name : ID'''

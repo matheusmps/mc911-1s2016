@@ -1,11 +1,9 @@
 /* some tests for syntax analysis */
 
-dcl a, b int;
-dcl c char;
-dcl d bool;
+dcl m int = 2, n int = 3;
 
-d = false;
-
-a = 3;
-b = 2;
-c = 'c';
+p: proc (x int);
+  dcl s int;
+  s = m * x;
+end;
+p(n);
