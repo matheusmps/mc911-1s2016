@@ -1,3 +1,5 @@
+import util.ast as ast
+
 class ExprType(object):
 
 	def __init__(self, typename, default, 
@@ -61,7 +63,7 @@ class SymbolTable(dict):
 
 	def return_type(self):
 		if self.decl:
-			return self.decl.result_spec.mode.modeName
+			return self.decl.procedure_definition.checkType
 		return None
 
 class Environment(object):
@@ -69,12 +71,12 @@ class Environment(object):
 		self.stack = []
 		self.root = SymbolTable()
 		self.stack.append(self.root)
-		self.root.update({
-			"int": IntType,
-			"char": CharType,
-			"string": StringType,
-			"bool": BoolType
-		})
+		#self.root.update({
+		#	"int": IntType,
+		#	"char": CharType,
+		#	"string": StringType,
+		#	"bool": BoolType
+		#})
 
 	def push(self, enclosure):
 		self.stack.append(SymbolTable(decl=enclosure))
@@ -89,6 +91,8 @@ class Environment(object):
 		return len(self.stack)
 
 	def add_local(self, name, value):
+		if isinstance(value, ast.Declaration):
+			value.offset = len(self.peek())
 		self.peek().add(name, value)
 
 	def add_root(self, name, value):
@@ -103,14 +107,27 @@ class Environment(object):
 
 	def printStack(self):
 		print("\n\n")
-		print("---- STACK ----")
-		i = 0
+		print("---- COMPLETE STACK ----")
 		for scope in self.stack:
-			print("Stack Scope: %s" % i)
-			print("----")
-			for k, v in scope.items():
-				print('%s : %s' % (k, v))
-			i = i + 1
+			self.printItems(scope)
+	
+	def printItems(self, scope):
+		for k, v in scope.items():
+			
+			print('%s : %s' % (k, v), end = "")
+			
+			if hasattr(v, "scope_level"):
+				print(' - scope_level: %s' % v.scope_level, end = "")
+			
+			if hasattr(v, "offset"):
+				print(' - offset: %s' % v.offset, end = "")
+			
+			print("\n")
+			
+			if isinstance(v, ast.ProcedureStmnt):
+				print("---- PROCEDURE STACK ----")
+				self.printItems(v.symtab)
+		print("----")
 
 	def find(self, name):
 		if name in self.stack[-1]:

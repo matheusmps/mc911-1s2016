@@ -1,5 +1,5 @@
-import util.enviroment as environment
 import util.ast as ast 
+import enviroment as environment
 
 class NodeVisitor(object):
 	def visit(self,node):
@@ -116,14 +116,14 @@ class Visitor(NodeVisitor):
 			#	node.init = Literal(default)
 			#	node.expr.checkType = node.checkType
 			
-			node.scopeLevel = self.environment.scope_level()
+			node.scope_level = self.environment.scope_level()
 
 	### -------------------------------------------------------------- ###
 
 	### MODE ###
 
 	def visit_Mode(self, node):
-		varType = self.environment.lookup(node.modeName)
+		varType = self.typemap.get(node.modeName, None)
 		if not isinstance(varType, environment.ExprType):
 			self.newError(node, "%s nao e um tipo valido" % node.modeName)
 			return
@@ -237,7 +237,7 @@ class Visitor(NodeVisitor):
 		#		if symbol.checkType != node.expression.checkType:
 		#			self.newError(node, "Cannot assign {} to {}".format(node.expression.checkType, symbol.checkType))
 		#			return
-					
+		
 		if hasattr(node.location, "checkType") and hasattr(node.expression, "checkType"):
 			if node.location.checkType != node.expression.checkType:
 				self.newError(node, "Cannot assign {} to {}".format(node.expression.checkType, node.location.checkType))
@@ -379,13 +379,13 @@ class Visitor(NodeVisitor):
 			self.newError(node, "Attempted to redefine func '{}', not allowed".format(node.label.label))
 			return
 		
-		self.environment.add_root(node.label.label, node)
 		self.visit(node.procedure_definition)
 		node.param_list_size = node.procedure_definition.param_list_size
-		
 		if hasattr(node.procedure_definition, "checkType"):
 			node.checkType = node.procedure_definition.checkType
-			
+		
+		node.symtab = self.environment.peek()
+		self.environment.add_root(node.label.label, node)
 		self.environment.pop()
 
 	def visit_ProcedureDef(self, node):
@@ -455,7 +455,7 @@ class Visitor(NodeVisitor):
 
 	def visit_ReturnAction(self, node):
 		self.visit(node.result)
-		if self.environment.peek().return_type() != node.expr.check_type:
+		if self.environment.peek().return_type() != node.result.check_type:
 			self.newError(node, "Tipo de retorno da funcao eh diferente do esperado")
 
 	#def visit_ResultAction(self, node):
