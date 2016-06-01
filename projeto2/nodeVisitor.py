@@ -20,7 +20,7 @@ class NodeVisitor(object):
 			self.visit(child)
 
 	def newError(self, node, message):
-		raise Exception("%s : %s" % (node.coord, message))
+		raise Exception(message)
 
 class Visitor(NodeVisitor):
 	def __init__(self):
@@ -66,14 +66,14 @@ class Visitor(NodeVisitor):
 				errside = "RHS"
 			if errside is not None:
 				self.newError(node, "Relational operator {} not supported on {} of expression".format(op, errside))
-			return BoolType
+			return environment.BoolType
 
 	def isInsideFunction(self):
 		return self.environment.scope_level() > 1
 
 	def checkIdIsUsed(self, idName):
 		if self.environment.lookup(idName) is not None:
-			self.newError(node, "Variavel '{}' ja declarada".format(idName))
+			self.newError(None, "Variavel '{}' ja declarada".format(idName))
 			return
 
 	def checkLocation(self,node):
@@ -104,11 +104,18 @@ class Visitor(NodeVisitor):
 				node.checkType = node.mode.checkType
 
 			self.visit(node.init)
+			
+			if node.init is not None:
+				if (node.checkType != node.init.checkType):
+					self.newError(node, "Cannot assign {} to {}".format(node.init.checkType, node.checkType))
+					return
+				
 			# TODO
 			#if node.init is None:
 			#	default = node.check_type.default
 			#	node.init = Literal(default)
 			#	node.expr.checkType = node.checkType
+			
 			node.scopeLevel = self.environment.scope_level()
 
 	### -------------------------------------------------------------- ###
@@ -175,9 +182,12 @@ class Visitor(NodeVisitor):
 
 	def visit_SynDef(self, node):
 		self.visit_ModeDef(node)
-		self.visit(node.expression)
-		if node.checkType != node.expression.checkType:
-			self.newError(node, "Cannot assign {} to {}".format(node.expression.checkType, node.checkType))
+		if node.mode is None:
+			self.visit(node.expression)
+			node.mode = node.expression.checkType
+		else:
+			if node.checkType != node.expression.checkType:
+				self.newError(node, "Cannot assign {} to {}".format(node.expression.checkType, node.checkType))
 
 	### -------------------------------------------------------------- ###
 
@@ -196,7 +206,7 @@ class Visitor(NodeVisitor):
 
 	def visit_StringElement(self, node):
 		self.checkLocation(node)
-		node.visit(node.start_element)
+		self.visit(node.start_element)
 		if node.start_element.checkType != environment.IntType:
 			self.newError(node, "Start element from String Element does not return an int but a %s" % node.start_element.checkType)
 
@@ -222,11 +232,11 @@ class Visitor(NodeVisitor):
 		
 		self.visit(node.expression)
 		
-		if isinstance(symbol, ast.Declaration):
-			if hasattr(symbol, "checkType") and hasattr(node.expression, "checkType"):
-				if symbol.checkType != node.expression.checkType:
-					self.newError(node, "Cannot assign {} to {}".format(node.expression.checkType, symbol.checkType))
-					return
+		#if isinstance(symbol, ast.Declaration):
+		#	if hasattr(symbol, "checkType") and hasattr(node.expression, "checkType"):
+		#		if symbol.checkType != node.expression.checkType:
+		#			self.newError(node, "Cannot assign {} to {}".format(node.expression.checkType, symbol.checkType))
+		#			return
 					
 		if hasattr(node.location, "checkType") and hasattr(node.expression, "checkType"):
 			if node.location.checkType != node.expression.checkType:
@@ -236,19 +246,19 @@ class Visitor(NodeVisitor):
 	# generic
 
 	def visit_UnaryExpression(self,node):
-		self.visit(node.expr)
+		self.visit(node.operand)
 		checkType = self.typeCheckUnaryExpression(node, node.operator, node.operand)
 		node.checkType = checkType
 
 	def visit_BinaryExpression(self,node):
-		self.visit(node.left)
-		self.visit(node.right)
+		self.visit(node.operand1)
+		self.visit(node.operand2)
 		checkType = self.typeCheckBinaryExpression(node, node.operator, node.operand1, node.operand2)
 		node.checkType = checkType
 
 	def visit_RelationalExpression(self,node):
-		self.visit(node.left)
-		self.visit(node.right)
+		self.visit(node.operand1)
+		self.visit(node.operand2)
 		checkType = self.typeCheckRelationalExpression(node, node.operator, node.operand1, node.operand2)
 		node.checkType = checkType
 
@@ -301,8 +311,9 @@ class Visitor(NodeVisitor):
 		
 		for clause in node.then_clause:
 			self.visit(clause)
-		for clause in node.else_clause:
-			self.visit(clause)
+		if node.else_clause is not None:
+			for clause in node.else_clause:
+				self.visit(clause)
 
 	def visit_ElseIfClause(self, node):
 		self.visit(node.test)
@@ -316,12 +327,13 @@ class Visitor(NodeVisitor):
 	# não precisa, generic
 
 	def visit_DoAction(self, node):
-		self.visit(node.control)
-		if node.control.checkType != environment.BoolType:
-			self.newError(node, "Expressao do ElseIF deve retornar um boolean")
-			return
+		for ctrl in node.control:
+			self.visit(ctrl)
+		#if node.control.checkType != environment.BoolType:
+		#	self.newError(node, "Expressao do ElseIF deve retornar um boolean")
+		#	return
 		for statement in node.stmts:
-			node.visit(statemente)
+			self.visit(statement)
 
 	#def visit_For(self, node):
 	# generic visit
@@ -335,12 +347,13 @@ class Visitor(NodeVisitor):
 			return
 		
 		self.visit(node.step_value)
-		if node.start_value.checkType != environment.IntType:
-			self.newError(node, "Step value from FOR must be a int not a %s" % node.start_value.checkType)
-			return
+		if node.step_value is not None:
+			if node.step_value.checkType != environment.IntType:
+				self.newError(node, "Step value from FOR must be a int not a %s" % node.start_value.checkType)
+				return
 		
 		self.visit(node.end_value)
-		if node.start_value.checkType != environment.IntType:
+		if node.end_value.checkType != environment.IntType:
 			self.newError(node, "End value from FOR must be a int not a %s" % node.start_value.checkType)
 			return
 
@@ -359,11 +372,11 @@ class Visitor(NodeVisitor):
 	def visit_ProcedureStmnt(self, node):
 		node.scope_level = self.environment.scope_level()
 		if node.scope_level > 1:
-			error(node.lineno, "Nested functions not implemented")
+			newError(node, "Nested functions not implemented")
 			return
 		self.environment.push(node)
 		if self.environment.lookup(node.label.label) is not None:
-			error(node.lineno, "Attempted to redefine func '{}', not allowed".format(node.label.label))
+			newError(node, "Attempted to redefine func '{}', not allowed".format(node.label.label))
 			return
 		
 		self.environment.add_root(node.label.label, node)
