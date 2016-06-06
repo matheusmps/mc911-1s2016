@@ -99,6 +99,28 @@ class Environment(object):
 		else:
 			self.offset = self.offset + 1
 
+	def countAlocSizeForLocation(self, node):
+		if isinstance(node, ast.StringElement):
+			return 1
+		elif isinstance(node, ast.StringSlice) or isinstance(node, ast.ArraySlice):  
+			size = self.calculateLiteralRange(node.literalRange)
+			return size
+		elif isinstance(node, ast.ArrayElement):
+			size = len(node.expressions)
+			return size
+		else:
+			sym = lookup(node.idName)
+			mode = sym.mode
+			
+			if isinstance(mode, ast.ReferenceMode) or isinstance(mode, ast.DiscreteRangeMode):
+				mode = mode.mode
+				
+			if isinstance(mode, ast.StringMode) or isinstance(mode, ast.ArrayMode):
+				size = self.countAlocSizeForMode(mode)
+				return size
+			else:
+				return 1
+
 	def countAlocSizeForMode(self, node):
 		if isinstance(node, ast.DiscreteRangeMode):
 			return self.calculateLiteralRange(node.literalRange)

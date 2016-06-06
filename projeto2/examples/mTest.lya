@@ -8,8 +8,8 @@ dcl a, b array [2:9] int;
 
 //b = a;
 //b[2:5] = a[6:8];
-
-b[2] = a[2] + 2;
-
-//print(a[3:6]);
+print(a);
+print(i);
+print(a[3]);
+print(a[4:6]);
 //print(length(b));

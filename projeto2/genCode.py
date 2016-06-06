@@ -55,6 +55,7 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 			base = self.getSymbolInformation(node.idName)
 			self.addInstruction('ldr', base[0], base[1])
 
+			# or ArrayElement???
 			if isinstance(node, ast.StringSlice) or isinstance(node, ast.ArraySlice) or isinstance(node, ast.StringElement):
 				self.loadSliceLocations(node, left_side)
 		elif not left_side:
@@ -70,13 +71,8 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 
 
 	def saveLocation(self, node):
-		if isinstance(node, ast.StringElement):
-			self.addInstruction('smv', 1, None) 
-		elif isinstance(node, ast.StringSlice) or isinstance(node, ast.ArraySlice):  
-			size = self.environment.calculateLiteralRange(node.literalRange)
-			self.addInstruction('smv', size, None)
-		elif isinstance(node, ast.ArrayElement):
-			size = len(node.expressions)
+		if isinstance(node, ast.StringElement) or isinstance(node, ast.StringSlice) or isinstance(node, ast.ArraySlice) or isinstance(node, ast.ArrayElement):
+			size = self.environment.countAlocSizeForLocation(node)
 			self.addInstruction('smv', size, None)
 		else:
 			sym = self.environment.lookup(node.idName)
@@ -280,6 +276,32 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 			sym = self.environment.lookup(node.params[0].expr.idName)
 			upperBound = self.getUpperBoundForMode(sym.mode)
 			self.addInstruction('ldc', upperBound, None)
+		if node.name == 'print':
+			self.addComment("print")
+			location = node.params[0].expr
+			self.handlePrint(location)
+			## TRATAR CASO PRINT INTEIRO/CHAR/String
+
+	def handlePrint(self, location):
+		self.loadLocation(location, left_side = True)
+		if isinstance(location, ast.StringSlice) or isinstance(location, ast.ArraySlice) or isinstance(location, ast.StringElement) or isinstance(location, ast.ArrayElement):
+			size = self.environment.countAlocSizeForLocation(location)
+			self.addInstruction('lmv', size, None)
+			self.addInstruction('prt', size, None)
+		else:
+			mode = self.environment.lookup(location.idName).mode
+			if isinstance(mode, ast.ReferenceMode) or isinstance(mode, ast.DiscreteRangeMode):
+				mode = mode.mode
+		
+			if isinstance(mode, ast.StringMode) or isinstance(mode, ast.ArrayMode):
+				size = self.environment.countAlocSizeForMode(mode)
+				self.addInstruction('lmv', size, None)
+				self.addInstruction('prt', size, None)
+			else:
+				sym = self.getSymbolInformation(location.idName)
+				self.addInstruction('ldv', sym[0], sym[1])
+				self.addInstruction('prv', None, None)
+
 
 	def getLowerBoundForMode(self, node):
 		if isinstance(node, ast.DiscreteRangeMode):
