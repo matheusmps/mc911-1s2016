@@ -102,10 +102,13 @@ class Environment(object):
 	def countAlocSizeForMode(self, node):
 		if isinstance(node, ast.DiscreteRangeMode):
 			return self.calculateLiteralRange(node.literalRange)
+		
 		elif isinstance(node, ast.ReferenceMode):
 			return self.countAlocSizeForMode(node.mode)
+		
 		elif isinstance(node, ast.StringMode):
 			return node.length
+		
 		elif isinstance(node, ast.ArrayMode):
 			if node.index_mode.index_mode_list is not None:
 				value = 1

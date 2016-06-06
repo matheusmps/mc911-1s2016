@@ -11,15 +11,24 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 		print("\n\n")
 		print("---- INSTRUCTIONS ----")
 		for val in self.program:
-			print("(", end="")
-			for value in val:
-				if value is not None:
-					print("'%s'" % value, end=",")
-			print(")")
+			if type(val) is not tuple:
+				print("\n ### %s ###" % val)
+			else:
+				print("(", end="")
+				for i, value in enumerate(val):
+					if value is not None:
+						if i == 0:
+							print("'%s'" % value, end="")
+						else:
+							print(", '%s'" % value, end="")
+				print(")")
 
 	def addInstruction(self, opcode, operand1, operand2):
 		inst = (opcode, operand1, operand2)
 		self.program.append(inst)
+
+	def addComment(self, message):
+		self.program.append(message)
 
 	def calculateSizeAloc(self, node):
 		counter = 0
@@ -36,6 +45,55 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 		else:
 			return None
 
+	def loadLocation(self, node, left_side = False):
+		sym = self.environment.lookup(node.idName)
+		mode = sym.mode
+		if isinstance(mode, ast.ReferenceMode) or isinstance(mode, ast.DiscreteRangeMode):
+			mode = mode.mode
+		
+		if isinstance(mode, ast.StringMode) or isinstance(mode, ast.ArrayMode):
+			base = self.getSymbolInformation(node.idName)
+			self.addInstruction('ldr', base[0], base[1])
+
+			if isinstance(node, ast.StringSlice) or isinstance(node, ast.ArraySlice) or isinstance(node, ast.StringElement):
+				self.loadSliceLocations(node, left_side)
+		elif not left_side:
+			if isinstance(node, ast.Location):
+				sym = self.getSymbolInformation(node.idName)
+				self.addInstruction('ldv', sym[0], sym[1])
+			elif isinstance(node, ast.ReferencedLocation):
+				sym = self.getSymbolInformation(node.idName)
+				self.addInstruction('ldr', sym[0], sym[1])
+			elif isinstance(node, ast.DereferencedLocation):
+				sym = self.getSymbolInformation(node.idName)
+				self.addInstruction('lrv', sym[0], sym[1])
+
+
+	def saveLocation(self, node):
+		if isinstance(node, ast.StringElement):
+			self.addInstruction('smv', 1, None) 
+		elif isinstance(node, ast.StringSlice) or isinstance(node, ast.ArraySlice):  
+			size = self.environment.calculateLiteralRange(node.literalRange)
+			self.addInstruction('smv', size, None)
+		elif isinstance(node, ast.ArrayElement):
+			size = len(node.expressions)
+			self.addInstruction('smv', size, None)
+		else:
+			sym = self.environment.lookup(node.idName)
+			mode = sym.mode
+			
+			if isinstance(mode, ast.ReferenceMode) or isinstance(mode, ast.DiscreteRangeMode):
+				mode = mode.mode
+				
+			if isinstance(mode, ast.StringMode) or isinstance(mode, ast.ArrayMode):
+					size = self.environment.countAlocSizeForMode(mode)
+					self.addInstruction('smv', size, None)
+			else:
+				sym = self.getSymbolInformation(node.idName)
+				self.addInstruction('stv', sym[0], sym[1])
+
+	### -------------------------------------------------------------- ###
+
 	def visit_Program(self, node):
 		self.environment = node.environment
 		node.environment.printStack()
@@ -45,6 +103,7 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 			self.visit(statement)
 
 	#def visit_DeclStmt(self, node):
+	#generic
 
 	def visit_Declaration(self, node):
 		for name in node.idList:
@@ -58,6 +117,7 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 	### MODE ###
 
 	#def visit_Mode(self, node):
+	# generic
 
 	#def visit_DiscreteMode(self, node):
 
@@ -90,47 +150,57 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 	### LOCATION ###
 
 	def visit_Location(self, node):
-		sym = self.getSymbolInformation(node.idName)
-		self.addInstruction('ldv', sym[0], sym[1])
+		#sym = self.getSymbolInformation(node.idName)
+		#self.addInstruction('ldv', sym[0], sym[1])
+		self.loadLocation(node)
 
 	def visit_ReferencedLocation(self, node):
-		sym = self.getSymbolInformation(node.idName)
-		self.addInstruction('ldr', sym[0], sym[1])
+		#sym = self.getSymbolInformation(node.idName)
+		#self.addInstruction('ldr', sym[0], sym[1])
+		self.loadLocation(node)
 
 	def visit_DereferencedLocation(self, node):
-		sym = self.getSymbolInformation(node.idName)
-		self.addInstruction('lrv', sym[0], sym[1])
+		#sym = self.getSymbolInformation(node.idName)
+		#self.addInstruction('lrv', sym[0], sym[1])
+		self.loadLocation(node)
 
 	def visit_StringElement(self, node):
-		sym = self.getSymbolInformation(node.idName)
-		self.addInstruction('ldr', sym[0], sym[1])
-		self.visit(node.start_element)
+		#sym = self.getSymbolInformation(node.idName)
+		#self.addInstruction('ldr', sym[0], sym[1])
+		#self.visit(node.start_element)
+		#self.addInstruction('idx', 1, None)
+		self.loadLocation(node)
+
+	def visit_StringSlice(self, node):
+		#self.loadSliceLocations(node)
+		self.loadLocation(node)
+
+	def visit_ArrayElement(self, node):
+		self.loadLocation(node)
+
+	def visit_ArraySlice(self, node):
+		#self.loadSliceLocations(node)
+		self.loadLocation(node)
+
+	def loadSliceLocations(self, node, left_side = False):
+		if isinstance(node, ast.StringElement):
+			self.visit(node.start_element)
+		else:
+			self.addInstruction('ldc', node.literalRange.lowerBound.val, None)
+			
+		sym = self.environment.lookup(node.idName)
+		definedLowerBound = self.getLowerBoundForMode(sym.mode)
+		self.addInstruction('ldc', definedLowerBound, None)
+		self.addInstruction('sub', None, None)
 		self.addInstruction('idx', 1, None)
-
-	#def visit_StringSlice(self, node):
-
-	#def visit_ArrayElement(self, node):
-
-	#def visit_ArraySlice(self, node):
+		if not left_side: self.addInstruction('grc', None, None)
 
 	### -------------------------------------------------------------- ###
-	
-	def loadLocation(self, node):
-		if isinstance(node, ast.StringElement) or isinstance(node, ast.StringSlice) or isinstance(node, ast.ArrayElement) or isinstance(node, ast.ArraySlice):
-			self.visit(node)
-
-	def saveLocation(self, node):
-		if isinstance(node, ast.StringElement):
-			self.addInstruction('smv', 1, None) 
-		#elif isinstance(node, ast.StringSlice): 
-		#elif isinstance(node, ast.ArrayElement): 
-		#elif isinstance(node, ast.ArraySlice):
-		else:
-			sym = self.getSymbolInformation(node.idName)
-			self.addInstruction('stv', sym[0], sym[1])
 
 	def visit_Assignment(self, node):
-		self.loadLocation(node.location)
+		self.addComment("assignment 1")
+		self.loadLocation(node.location, True)
+		#print(node.expression)
 		self.visit(node.expression)
 		self.saveLocation(node.location)
 
@@ -197,4 +267,46 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 	#def visit_While(self, node):
 
 	#def visit_ProcedureStmnt(self, node):
+	
+	def visit_BuiltinCall(self, node):
+		if node.name == 'read':
+			self.addInstruction('rdv', None, None)
+			self.saveLocation(node.params[0].expr)
+		if node.name == 'lower':
+			sym = self.environment.lookup(node.params[0].expr.idName)
+			lowerBound = self.getLowerBoundForMode(sym.mode)
+			self.addInstruction('ldc', lowerBound, None)
+		if node.name == 'upper':
+			sym = self.environment.lookup(node.params[0].expr.idName)
+			upperBound = self.getUpperBoundForMode(sym.mode)
+			self.addInstruction('ldc', upperBound, None)
 
+	def getLowerBoundForMode(self, node):
+		if isinstance(node, ast.DiscreteRangeMode):
+			return node.literalRange.lowerBound.val
+			
+		elif isinstance(node, ast.ReferenceMode):
+			return self.getLowerBoundForMode(node.mode)
+			
+		elif isinstance(node, ast.ArrayMode):
+			if len(node.index_mode.index_mode_list) > 1:
+				raise Exception("Lower bound of matrix??")
+			else:
+				return node.index_mode.index_mode_list[0].lowerBound.val
+		else:
+			raise Exception("Not possible to determine lower bound")
+
+	def getUpperBoundForMode(self, node):
+		if isinstance(node, ast.DiscreteRangeMode):
+			return node.literalRange.upperBound.val
+			
+		elif isinstance(node, ast.ReferenceMode):
+			return self.getLowerBoundForMode(node.mode)
+			
+		elif isinstance(node, ast.ArrayMode):
+			if len(node.index_mode.index_mode_list) > 1:
+				raise Exception("Upper bound of matrix??")
+			else:
+				return node.index_mode.index_mode_list[0].upperBound.val
+		else:
+			raise Exception("Not possible to determine upper bound")

@@ -97,12 +97,13 @@ class Visitor(NodeVisitor):
 	def visit_Declaration(self, node):
 		for idName in node.idList:
 			self.checkIdIsUsed(idName)
-			self.environment.add_local(idName, node)
 			
 			self.visit(node.mode)
 			if hasattr(node.mode, "checkType"):
 				node.checkType = node.mode.checkType
-
+			
+			self.environment.add_local(idName, node)
+			
 			self.visit(node.init)
 			
 			if node.init is not None:
@@ -198,14 +199,17 @@ class Visitor(NodeVisitor):
 
 	def visit_ReferencedLocation(self, node):
 		self.visit(node.location)
+		node.checkType = node.location.checkType
 		node.idName = node.location.idName
 
 	def visit_DereferencedLocation(self, node):
 		self.visit(node.location)
+		node.checkType = node.location.checkType
 		node.idName = node.location.idName
 
 	def visit_StringElement(self, node):
 		self.checkLocation(node.location)
+		node.checkType = node.location.checkType
 		node.idName = node.location.idName
 		self.visit(node.start_element)
 		if node.start_element.checkType != environment.IntType:
@@ -213,17 +217,20 @@ class Visitor(NodeVisitor):
 
 	def visit_StringSlice(self, node):
 		self.checkLocation(node.location)
+		node.checkType = node.location.checkType
 		node.idName = node.location.idName
 		self.visit(node.literalRange)
 
 	def visit_ArrayElement(self, node):
 		self.visit(node.array_location)
+		node.checkType = node.array_location.checkType
 		node.idName = node.array_location.idName
 		for expression in node.expressions:
 			self.visit(expression)
 
 	def visit_ArraySlice(self, node):
 		self.visit(node.array_location)
+		node.checkType = node.array_location.checkType
 		node.idName = node.array_location.idName
 		self.visit(node.literalRange)
 
