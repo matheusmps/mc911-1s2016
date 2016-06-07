@@ -1,15 +1,8 @@
 /* some tests for syntax analysis */
 
-dcl i, j, k int;
-dcl a, b array [2:9] int;
+type integer = int, character = char;
 
-//j = lower(a);
-//k = upper(a);
+dcl a integer = 2;
+dcl b character = 'a';
 
-//b = a;
-//b[2:5] = a[6:8];
-print(a);
-print(i);
-print(a[3]);
-print(a[4:6]);
-//print(length(b));
+dcl c int = a + 2;

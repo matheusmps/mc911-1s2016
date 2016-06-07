@@ -20,7 +20,7 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 						if i == 0:
 							print("'%s'" % value, end="")
 						else:
-							print(", '%s'" % value, end="")
+							print(", %s" % value, end="")
 				print(")")
 
 	def addInstruction(self, opcode, operand1, operand2):
@@ -36,6 +36,13 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 			declNode = value.get("node")
 			if isinstance(declNode, ast.Declaration):
 				counter = counter + self.environment.countAlocSizeForMode(declNode.mode)
+			elif isinstance(declNode, ast.SynDef):
+				if declNode.mode is not None:
+					counter = counter + self.environment.countAlocSizeForMode(declNode.mode)
+				else:
+					counter = counter + 1;
+			else:
+				counter = counter + 1;
 		return counter
 
 	def getSymbolInformation(self, name):
@@ -54,10 +61,13 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 		if isinstance(mode, ast.StringMode) or isinstance(mode, ast.ArrayMode):
 			base = self.getSymbolInformation(node.idName)
 			self.addInstruction('ldr', base[0], base[1])
-
-			# or ArrayElement???
+			
 			if isinstance(node, ast.StringSlice) or isinstance(node, ast.ArraySlice) or isinstance(node, ast.StringElement):
 				self.loadSliceLocations(node, left_side)
+			elif isinstance(node, ast.ArrayElement):
+				## TODO
+				pass
+		
 		elif not left_side:
 			if isinstance(node, ast.Location):
 				sym = self.getSymbolInformation(node.idName)
@@ -69,6 +79,18 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 				sym = self.getSymbolInformation(node.idName)
 				self.addInstruction('lrv', sym[0], sym[1])
 
+	def loadSliceLocations(self, node, left_side = False):
+		if isinstance(node, ast.StringElement):
+			self.visit(node.start_element)
+		else:
+			self.addInstruction('ldc', node.literalRange.lowerBound.val, None)
+			
+		sym = self.environment.lookup(node.idName)
+		definedLowerBound = self.getLowerBoundForMode(sym.mode)
+		self.addInstruction('ldc', definedLowerBound, None)
+		self.addInstruction('sub', None, None)
+		self.addInstruction('idx', 1, None)
+		if not left_side: self.addInstruction('grc', None, None)
 
 	def saveLocation(self, node):
 		if isinstance(node, ast.StringElement) or isinstance(node, ast.StringSlice) or isinstance(node, ast.ArraySlice) or isinstance(node, ast.ArrayElement):
@@ -104,9 +126,10 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 	def visit_Declaration(self, node):
 		for name in node.idList:
 			if node.init is not None:
+				self.addComment("declaration: %s" % name)
 				self.visit(node.init)
-				sym = self.getSymbolInformation(name)
-				self.addInstruction('stv', sym[0], sym[1])
+				auxNode = ast.Location(name, None)
+				self.saveLocation(auxNode)
 
 	### -------------------------------------------------------------- ###
 
@@ -116,87 +139,75 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 	# generic
 
 	#def visit_DiscreteMode(self, node):
+	# generic
 
 	#def visit_ReferenceMode(self, node):
+	# generic
 
 	#def visit_DiscreteRangeMode(self, node):
+	# generic
 
 	#def visit_LiteralRange(self, node):
+	# generic
 
 	#def visit_StringMode(self, node):
+	# generic
 
 	# def visit_ArrayMode(self, node):
 	# como saber quanto de memoria sera alocado
 	# se as expressoes sao avaliadas em tempo de execucao
 
 	# def visit_IndexMode(self, node):
+	# generic
 
 	### -------------------------------------------------------------- ###
 
 	### MODE / SYN DEFINITION ###
 
-	#def visit_ModeDef(self, node):
+	def visit_ModeDef(self, node):
+		# everything done in nodeVisitor
+		pass
 
 	#def visit_NewModeStmt(self, node):
+	# generic
 
-	#def visit_SynDef(self, node):
+	def visit_SynDef(self, node):
+		for name in node.idList:
+			self.addComment("syn def: %s" % name)
+			self.visit(node.expression)
+			auxNode = ast.Location(name, None)
+			self.saveLocation(auxNode)
 
 	### -------------------------------------------------------------- ###
 
 	### LOCATION ###
 
 	def visit_Location(self, node):
-		#sym = self.getSymbolInformation(node.idName)
-		#self.addInstruction('ldv', sym[0], sym[1])
 		self.loadLocation(node)
 
 	def visit_ReferencedLocation(self, node):
-		#sym = self.getSymbolInformation(node.idName)
-		#self.addInstruction('ldr', sym[0], sym[1])
 		self.loadLocation(node)
 
 	def visit_DereferencedLocation(self, node):
-		#sym = self.getSymbolInformation(node.idName)
-		#self.addInstruction('lrv', sym[0], sym[1])
 		self.loadLocation(node)
 
 	def visit_StringElement(self, node):
-		#sym = self.getSymbolInformation(node.idName)
-		#self.addInstruction('ldr', sym[0], sym[1])
-		#self.visit(node.start_element)
-		#self.addInstruction('idx', 1, None)
 		self.loadLocation(node)
 
 	def visit_StringSlice(self, node):
-		#self.loadSliceLocations(node)
 		self.loadLocation(node)
 
 	def visit_ArrayElement(self, node):
 		self.loadLocation(node)
 
 	def visit_ArraySlice(self, node):
-		#self.loadSliceLocations(node)
 		self.loadLocation(node)
-
-	def loadSliceLocations(self, node, left_side = False):
-		if isinstance(node, ast.StringElement):
-			self.visit(node.start_element)
-		else:
-			self.addInstruction('ldc', node.literalRange.lowerBound.val, None)
-			
-		sym = self.environment.lookup(node.idName)
-		definedLowerBound = self.getLowerBoundForMode(sym.mode)
-		self.addInstruction('ldc', definedLowerBound, None)
-		self.addInstruction('sub', None, None)
-		self.addInstruction('idx', 1, None)
-		if not left_side: self.addInstruction('grc', None, None)
 
 	### -------------------------------------------------------------- ###
 
 	def visit_Assignment(self, node):
-		self.addComment("assignment 1")
+		self.addComment("assignment: %s" % node.location.idName)
 		self.loadLocation(node.location, True)
-		#print(node.expression)
 		self.visit(node.expression)
 		self.saveLocation(node.location)
 
@@ -231,18 +242,23 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 		self.addInstruction('ldc', node.val, None)
 
 	#def visit_StrConst(self, node):
+	## TODO
 
 	#def visit_EmptyConst(self, node):
+	## TODO
 
 	### -------------------------------------------------------------- ###
 
 	#def visit_ValueArrayElement(self, node):
+	## ???
 
 	#def visit_ValueArraySlice(self, node):
+	## ???
 
 	### -------------------------------------------------------------- ###
 
 	#def visit_ActionStatement(self, node):
+	# generic
 
 	#def visit_Label(self, node):
 
@@ -302,7 +318,6 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 				self.addInstruction('ldv', sym[0], sym[1])
 				self.addInstruction('prv', None, None)
 
-
 	def getLowerBoundForMode(self, node):
 		if isinstance(node, ast.DiscreteRangeMode):
 			return node.literalRange.lowerBound.val
@@ -312,11 +327,11 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 			
 		elif isinstance(node, ast.ArrayMode):
 			if len(node.index_mode.index_mode_list) > 1:
-				raise Exception("Lower bound of matrix??")
+				self.newError("Lower bound of matrix??")
 			else:
 				return node.index_mode.index_mode_list[0].lowerBound.val
 		else:
-			raise Exception("Not possible to determine lower bound")
+			self.newError("Not possible to determine lower bound")
 
 	def getUpperBoundForMode(self, node):
 		if isinstance(node, ast.DiscreteRangeMode):
@@ -327,8 +342,8 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 			
 		elif isinstance(node, ast.ArrayMode):
 			if len(node.index_mode.index_mode_list) > 1:
-				raise Exception("Upper bound of matrix??")
+				self.newError("Upper bound of matrix??")
 			else:
 				return node.index_mode.index_mode_list[0].upperBound.val
 		else:
-			raise Exception("Not possible to determine upper bound")
+			self.newError("Not possible to determine upper bound")
