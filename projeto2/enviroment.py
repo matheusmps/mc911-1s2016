@@ -74,6 +74,7 @@ class Environment(object):
 		self.offset = []
 		self.offset.append(0)
 		self.labels = 0
+		self.formalParams = -1
 		#self.root.update({
 		#	"int": IntType,
 		#	"char": CharType,
@@ -94,6 +95,9 @@ class Environment(object):
 	def incrementOffset(self, val):
 		self.offset[-1] = self.offset[-1] + val
 
+	def pushProcedureStack(self, symtab):
+		self.stack.append(symtab)
+
 	def push(self, enclosure):
 		self.stack.append(SymbolTable(decl=enclosure))
 		self.offset.append(0)
@@ -101,15 +105,31 @@ class Environment(object):
 	def pop(self):
 		self.stack.pop()
 		self.offset.pop()
+		self.formalParams = -1
 
 	def peek(self):
 		return self.stack[-1]
 
 	def scope_level(self):
 		return len(self.stack) - 1 
-	
+
+	def add_label(self, name, value):
+		value.start_label = self.addLabel()
+		value.end_label = self.addLabel()
+		self.peek().add(name, value, self.scope_level(), None)
+
 	def add_procedure(self, name, value):
+		self.formalParams = -1
+		print(self.formalParams)
 		self.root.add(name, value, self.scope_level(), None)
+		value.start_label = self.addLabel()
+		value.end_label = self.addLabel()
+
+	def add_formalParam(self, name, value):
+		self.peek().add(name, value, self.scope_level(), self.formalParams)
+		if isinstance(value, ast.FormalParameter):
+			aloc_size = self.countAlocSizeForMode(value.parameter_specs.mode)
+			self.formalParams = self.formalParams - aloc_size
 
 	def add_local(self, name, value):
 		self.peek().add(name, value, self.scope_level(), self.getOffset())
@@ -201,6 +221,9 @@ class Environment(object):
 			print(' - scope_level: %s' % v.get("scope_level"), end = "")
 			if v.get("offset") is not None:
 				print(' - offset: %s' % v.get("offset"), end = "")
+			
+			if isinstance(node, ast.ProcedureStmnt) or isinstance(node, ast.Label):
+				print(' - start: %s - end: %s' % (node.start_label, node.end_label), end = "")
 			print("\n")
 			
 			if isinstance(node, ast.ProcedureStmnt):

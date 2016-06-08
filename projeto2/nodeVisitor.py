@@ -312,11 +312,12 @@ class Visitor(NodeVisitor):
 
 	### -------------------------------------------------------------- ###
 
-	#def visit_ActionStatement(self, node):
-	# generic
+	def visit_ActionStatement(self, node):
+		self.visit(node.label)
+		self.visit(node.action)
 
-	#def visit_Label(self, node):
-	# generic
+	def visit_Label(self, node):
+		self.environment.add_label(node.label, node)
 
 	def visit_IfAction(self, node):
 		self.visit(node.if_expr)
@@ -419,10 +420,11 @@ class Visitor(NodeVisitor):
 
 	def visit_FormalParameter(self, node):
 		self.visit(node.parameter_specs)
+		node.mode = node.parameter_specs.mode
 		node.checkType = node.parameter_specs.checkType
 		
 		for idName in node.idList:
-			self.environment.add_local(idName, node)
+			self.environment.add_formalParam(idName, node)
 			node.scope_level = self.environment.scope_level()
 
 	def visit_ParameterSpecs(self, node):
@@ -432,6 +434,7 @@ class Visitor(NodeVisitor):
 	def visit_ResultSpecs(self, node):
 		self.visit(node.mode)
 		node.checkType = node.mode.checkType
+		self.environment.add_formalParam("_ret", node)
 
 	def visit_ProcedureCall(self, node):
 		sym = self.environment.lookup(node.name)
@@ -449,11 +452,13 @@ class Visitor(NodeVisitor):
 			self.visit(p)
 		
 		argerrors = False
+		print(node.params)
+		print(sym.procedure_definition.formal_parameter_list)
 		for arg, parm in zip(node.params, sym.procedure_definition.formal_parameter_list):
 			print(arg.checkType)
 			print(parm.checkType)
 			if arg.checkType != parm.checkType:
-				newError(node, "'%s': Argument type mismatch function call. Expected '%s' instead of '%s' " % (node.name, parm.checkType, arg.checkType))
+				self.newError("Argument type '{}' does not match parameter type '{}' in function call to '{}'".format(arg.checkType, parm.checkType, node.name))
 				argerrors = True
 			if argerrors:
 				return
@@ -464,6 +469,7 @@ class Visitor(NodeVisitor):
 		node.checkType = node.expr.checkType
 
 	def visit_ExitAction(self, node):
+		self.environment.printStack()
 		sym = self.environment.lookup(node.label.label)
 		if not sym:
 			self.newError("Function '%s' not found" % node.label.label)
@@ -474,7 +480,7 @@ class Visitor(NodeVisitor):
 		if self.environment.peek().return_type() != node.result.check_type:
 			self.newError("Return type not expected in function call '%s'" % node.name)
 
-	#def visit_ResultAction(self, node):
+	# def visit_ResultAction(self, node):
 	# generic
 	
 	#def visit_BuiltinCall(self, node):

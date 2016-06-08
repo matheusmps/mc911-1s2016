@@ -714,13 +714,15 @@ class LyaParser(PLYParser):
 		'''formal_parameter_list 	: formal_parameter
 									| formal_parameter COMMA formal_parameter_list '''
 		if(len(p) == 4):
-			p[0] = [p[1]] + p[3]
+			p[0] = p[1] + p[3]
 		else:
-			p[0] = [p[1]]
+			p[0] = p[1]
 
 	def p_formal_parameter (self, p):
 		'''formal_parameter : id_list parameter_spec '''
-		p[0] = ast.FormalParameter(p[1], p[2], coord=self.genCoord(p))
+		p[0] = []
+		for idName in p[1]:
+			p[0].append(ast.FormalParameter([idName], p[2], coord=self.genCoord(p)))
 
 	def p_parameter_spec (self, p):
 		'''parameter_spec 	: mode

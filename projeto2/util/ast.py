@@ -482,7 +482,7 @@ class ActionStatement(NodeAst):
 		return nodelist
 
 class Label(NodeAst):
-	__slots__ = ('label')
+	__slots__ = ('label', 'start_label', 'end_label')
 	
 	attr_names = ('label',)
 	
@@ -610,7 +610,7 @@ class While(NodeAst):
 		return nodelist
 
 class ProcedureStmnt(NodeAst):
-	__slots__ = ('label', 'procedure_definition', 'scope_level', 'param_list_size', 'symtab')
+	__slots__ = ('label', 'procedure_definition', 'scope_level', 'param_list_size', 'symtab', 'start_label', 'end_label')
 	
 	def __init__(self, label, procedure_definition, coord):
 		self.coord = coord
@@ -640,7 +640,7 @@ class ProcedureDef(NodeAst):
 		return nodelist
 		
 class FormalParameter(NodeAst):
-	__slots__ = ('idList', 'parameter_specs', 'scope_level', 'offset')
+	__slots__ = ('idList', 'parameter_specs', 'scope_level', 'offset', 'mode')
 	
 	def __init__(self, idList, parameter_specs, coord):
 		self.coord = coord

@@ -43,8 +43,8 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 					counter = counter + self.environment.countAlocSizeForMode(declNode.mode)
 				else:
 					counter = counter + 1;
-			else:
-				counter = counter + 1;
+			elif isinstance(declNode, ast.ProcedureStmnt) or isinstance(declNode, ast.Label):
+				pass
 		return counter
 
 	def getSymbolInformation(self, name):
@@ -135,7 +135,7 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 	def visit_Declaration(self, node):
 		for name in node.idList:
 			if node.init is not None:
-				self.addComment("declaration: %s" % name)
+				#self.addComment("declaration: %s" % name)
 				self.visit(node.init)
 				auxNode = ast.Location(name, None)
 				self.saveLocation(auxNode)
@@ -182,7 +182,7 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 
 	def visit_SynDef(self, node):
 		for name in node.idList:
-			self.addComment("syn def: %s" % name)
+			#self.addComment("syn def: %s" % name)
 			self.visit(node.expression)
 			auxNode = ast.Location(name, None)
 			self.saveLocation(auxNode)
@@ -215,10 +215,18 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 	### -------------------------------------------------------------- ###
 
 	def visit_Assignment(self, node):
-		self.addComment("assignment: %s" % node.location.idName)
-		self.loadLocation(node.location, True)
-		self.visit(node.expression)
-		self.saveLocation(node.location)
+		#self.addComment("assignment: %s" % node.location.idName)
+		
+		if node.assign_op == "+=":
+			binaryNode = ast.BinaryExpression(node.location, "+", node.expression, None)
+			binaryNode.checkType = node.location.checkType
+			auxNode = ast.Assignment(node.location, "=", binaryNode, None)
+			auxNode.checkType = node.location.checkType
+			self.visit(auxNode)
+		else:
+			self.loadLocation(node.location, True)
+			self.visit(node.expression)
+			self.saveLocation(node.location)
 
 	def visit_BinaryExpression(self, node):
 		self.visit(node.operand1)
@@ -268,13 +276,17 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 
 	### -------------------------------------------------------------- ###
 
-	#def visit_ActionStatement(self, node):
-	# generic
+	def visit_ActionStatement(self, node):
+		if node.label is not None:
+			self.addInstruction('lbl', node.label.start_label, None)
+		self.visit(node.action)
+		if node.label is not None:
+			self.addInstruction('lbl', node.label.end_label, None)
 
 	#def visit_Label(self, node):
 
 	def visit_IfAction(self, node):
-		self.addComment("if")
+		#self.addComment("if")
 		
 		self.visit(node.if_expr)
 		
@@ -316,7 +328,7 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 		self.addInstruction('lbl', fi_label, None)
 
 	def visit_ElseIfClause(self, node):
-		self.addComment("else if")
+		#self.addComment("else if")
 		self.addInstruction('lbl', node.label, None)
 		self.visit(node.test)
 		self.addInstruction('jof', node.label + 1, None)
@@ -326,7 +338,7 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 				self.visit(statement)
 
 	def visit_ElseClause(self, node):
-		self.addComment("else")
+		#self.addComment("else")
 		self.addInstruction('lbl', node.label, None)
 		if node.stmts is not None:
 			for statement in node.stmts:
@@ -439,19 +451,18 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 				testNode = ast.RelationalExpression(node.counter, "<=", node.end_value, None)
 			
 			## update
-			self.addComment("update step enum")
+			#self.addComment("update step enum")
 			updateExpr.checkType = environment.IntType
 			updateNode = ast.Assignment(node.counter, "=", updateExpr, None)
 			self.visit(updateNode)
 			
 			## test
-			self.addComment("test step enum")
+			#self.addComment("test step enum")
 			testNode.checkType = environment.IntType
 			self.visit(testNode)
 			
 		else:
 			pass
-
 
 	# def visit_For(self, node):
 	# handle in DoAction
@@ -465,8 +476,69 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 	#def visit_RangeEnumeration(self, node):
 	# handle in DoAction
 
-	#def visit_ProcedureStmnt(self, node):
-	
+	def visit_ProcedureStmnt(self, node):
+		# jump para fora da funcao
+		self.addInstruction('jmp', node.end_label, None)
+		
+		# label procedure
+		self.addInstruction('lbl', node.start_label, None)
+		self.addInstruction('enf', node.start_label, None)
+		
+		# tamanho do aloc
+		aloc_size = self.calculateSizeAloc(node)
+		self.addInstruction('alc', aloc_size, None)
+		
+		# add procedure stack
+		self.environment.pushProcedureStack(node.symtab)
+		
+		# statements
+		if node.procedure_definition is not None:
+			if node.procedure_definition.statement_list is not None:
+				for statement in node.procedure_definition.statement_list:
+					self.visit(statement)
+		
+		# remove procedure stack
+		self.environment.pop()
+		
+		# dealocate memory
+		self.addInstruction('dlc', aloc_size, None)
+		
+		# label out
+		self.addInstruction('lbl', node.end_label, None)
+
+	#def visit_ProcedureDef(self, node):
+	# generic
+
+	#def visit_FormalParameter(self, node):
+	# generic
+
+	#def visit_ParameterSpecs(self, node):
+	# generic
+
+	#def visit_ResultSpecs(self, node):
+	# generic
+
+	def visit_ProcedureCall(self, node):
+		if node.params is not None:
+			for param in node.params:
+				self.visit(param)
+		proc = self.environment.lookup(node.name)
+		self.addInstruction('cfu', proc.start_label, None)
+
+	#def visit_Parameter(self, node):
+	# generic
+
+	def visit_ExitAction(self, node):
+		label = self.environment.lookup(node.label.label)
+		if label is not None:
+			self.addInstruction('jmp', label.end_label, None)
+
+	#def visit_ReturnAction(self, node):
+
+	def visit_ResultAction(self, node):
+		assign = ast.Assignment(ast.Location("_ret", None), "=", node.result, None)
+		self.visit(assign)
+
 	def visit_BuiltinCall(self, node):
 		if node.name == 'read':
 			self.addInstruction('rdv', None, None)
@@ -481,8 +553,11 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 			self.addInstruction('ldc', upperBound, None)
 		if node.name == 'print':
 			location = node.params[0].expr
-			self.handlePrint(location)
-			## TRATAR CASO PRINT INTEIRO/CHAR/String
+			if isinstance(location, ast.IntConst) or isinstance(location, ast.CharConst) or isinstance(location, ast.StrConst) or isinstance(location, ast.EmptyConst):
+				self.visit(location)
+				self.addInstruction('prv', None, None)
+			else:
+				self.handlePrint(location)
 
 	def handlePrint(self, location):
 		self.loadLocation(location, left_side = True)
