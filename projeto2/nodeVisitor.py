@@ -35,13 +35,13 @@ class Visitor(NodeVisitor):
 	def typeCheckUnaryExpression(self, node, op, val):
 		if hasattr(val, "checkType"):
 			if op not in val.checkType.unaryOperators:
-				self.newError("Unary operator {} not supported".format(op))
+				self.newError("%s does not support Unary operator" % op)
 			return val.checkType
 
 	def typeCheckBinaryExpression(self, node, op, left, right):
 		if hasattr(left, "checkType") and hasattr(right, "checkType"):
 			if left.checkType != right.checkType:
-				self.newError("Binary operator {} does not have matching types".format(op))
+				self.newError("Unmatching types in Binary operator %s" % op)
 				return left.checkType
 				
 			errside = None
@@ -50,13 +50,13 @@ class Visitor(NodeVisitor):
 			if op not in right.checkType.binaryOperators:
 				errside = "RHS"
 			if errside is not None:
-				self.newError("Binary operator {} not supported on {} of expression".format(op, errside))
+				self.newError("%s does not support Binary operator %s " %(errside, op))
 		return left.checkType
 
 	def typeCheckRelationalExpression(self, node, op, left, right):
 		if hasattr(left, "checkType") and hasattr(right, "checkType"):
 			if left.checkType != right.checkType:
-				self.newError("Relational operator {} does not have matching types".format(op))
+				self.newError("Unmatching types in Relational operator %s"% op)
 				return left.checkType
 				
 			errside = None
@@ -65,7 +65,7 @@ class Visitor(NodeVisitor):
 			if op not in right.checkType.relOperators:
 				errside = "RHS"
 			if errside is not None:
-				self.newError("Relational operator {} not supported on {} of expression".format(op, errside))
+				self.newError("%s does not support Relational operator %s "%( errside, op))
 			return environment.BoolType
 
 	def isInsideFunction(self):
@@ -73,13 +73,13 @@ class Visitor(NodeVisitor):
 
 	def checkIdIsUsed(self, idName):
 		if self.environment.lookup(idName) is not None:
-			self.newError("Variavel '{}' ja declarada".format(idName))
+			self.newError("Previous declaration of Variable %s already exist" % idName)
 			return
 
 	def checkLocation(self,node):
 		symbol = self.environment.lookup(node.idName)
 		if not symbol:
-			self.newError("name '{}' not found".format(node.idName))
+			self.newError("name %s not found" % node.idName)
 			return
 		node.checkType = symbol.checkType
 
@@ -108,7 +108,7 @@ class Visitor(NodeVisitor):
 			
 			if node.init is not None:
 				if (node.checkType != node.init.checkType):
-					self.newError("Cannot assign {} to {}".format(node.init.checkType, node.checkType))
+					self.newError("Cannot assign %s to %s" % (node.init.checkType, node.checkType))
 					return
 				
 			# TODO
@@ -126,7 +126,7 @@ class Visitor(NodeVisitor):
 	def visit_Mode(self, node):
 		varType = self.typemap.get(node.modeName, None)
 		if not isinstance(varType, environment.ExprType):
-			self.newError("%s nao e um tipo valido" % node.modeName)
+			self.newError("%s is not a valid type" % node.modeName)
 			return
 		node.checkType = varType
 
@@ -146,10 +146,10 @@ class Visitor(NodeVisitor):
 		self.visit(node.lowerBound)
 		self.visit(node.upperBound)
 		if node.lowerBound.checkType != environment.IntType:
-			self.newError("Lower Bound expression nao retorna um inteiro mas um %s" % node.lowerBound.checkType)
+			self.newError("Lower Bound expression return a %s instead of an integer" % node.lowerBound.checkType)
 			return
 		if node.upperBound.checkType != environment.IntType:
-			self.newError("Upper Bound expression nao retorna um inteiro mas um %s" % node.upperBound.checkType)
+			self.newError("Upper Bound expression return a %s instead of an integer" % node.upperBound.checkType)
 			return 
 
 	def visit_StringMode(self, node):
@@ -195,7 +195,7 @@ class Visitor(NodeVisitor):
 			node.checkType = node.mode.checkType
 		
 		if node.checkType != node.expression.checkType:
-			self.newError("Cannot assign {} to {}".format(node.expression.checkType, node.checkType))
+			self.newError("Cannot assign %s to %s" % (node.expression.checkType, node.checkType))
 
 	### -------------------------------------------------------------- ###
 
@@ -220,7 +220,7 @@ class Visitor(NodeVisitor):
 		node.idName = node.location.idName
 		self.visit(node.start_element)
 		if node.start_element.checkType != environment.IntType:
-			self.newError("Start element from String Element does not return an int but a %s" % node.start_element.checkType)
+			self.newError("Start element from String Element return a %s instead of an integer" % node.start_element.checkType)
 
 	def visit_StringSlice(self, node):
 		self.checkLocation(node.location)
@@ -247,15 +247,15 @@ class Visitor(NodeVisitor):
 		self.visit(node.location)
 		symbol = self.environment.lookup(node.location.idName)
 		if not symbol:
-			self.newError("name '{}' not defined".format(node.location.idName))
+			self.newError("Cannot find previous declaration of '%s'"% node.location.idName )
 		elif isinstance(symbol, ast.SynDef):
-			self.newError("'{}' cannot be assigned because is a synonym".format(node.location.idName))
+			self.newError("Cannot assing a synonym ('%s')"% node.location.idName )
 		
 		self.visit(node.expression)
 		
 		if hasattr(node.location, "checkType") and hasattr(node.expression, "checkType"):
 			if node.location.checkType != node.expression.checkType:
-				self.newError("Cannot assign {} to {}".format(node.expression.checkType, node.location.checkType))
+				self.newError("Cannot assign %s to %s"%s node.expression.checkType, node.location.checkType)
 
 	#def visit_Expression(self, node):
 	# generic
@@ -280,7 +280,7 @@ class Visitor(NodeVisitor):
 	def visit_ConditionalExpression(self, node):
 		self.visit(node.if_expr)
 		if node.if_expr.checkType != environment.BoolType:
-			self.newError("Expressao do IF deve retornar um boolean")
+			self.newError("IF expression is not boolean")
 			return
 		self.visit(node.then_expr)
 		for clause in node.elseif_expr:
@@ -321,7 +321,7 @@ class Visitor(NodeVisitor):
 	def visit_IfAction(self, node):
 		self.visit(node.if_expr)
 		if node.if_expr.checkType != environment.BoolType:
-			self.newError("Expressao do IF deve retornar um boolean")
+			self.newError("IF expression is not boolean")
 			return
 		
 		for clause in node.then_clause:
@@ -333,7 +333,7 @@ class Visitor(NodeVisitor):
 	def visit_ElseIfClause(self, node):
 		self.visit(node.test)
 		if node.test.checkType != environment.BoolType:
-			self.newError("Expressao do ElseIF deve retornar um boolean")
+			self.newError("ElseIF expression is not boolean")
 			return
 		for statement in node.stmts:
 			self.visit(statement)
@@ -358,30 +358,30 @@ class Visitor(NodeVisitor):
 		
 		self.visit(node.start_value)
 		if node.start_value.checkType != environment.IntType:
-			self.newError("Start value from FOR must be a int not a %s" % node.start_value.checkType)
+			self.newError("Start value from FOR must be a int instead of a %s" % node.start_value.checkType)
 			return
 		
 		self.visit(node.step_value)
 		if node.step_value is not None:
 			if node.step_value.checkType != environment.IntType:
-				self.newError("Step value from FOR must be a int not a %s" % node.start_value.checkType)
+				self.newError("Step value from FOR must be a int instead of a %s" % node.start_value.checkType)
 				return
 		
 		self.visit(node.end_value)
 		if node.end_value.checkType != environment.IntType:
-			self.newError("End value from FOR must be a int not a %s" % node.start_value.checkType)
+			self.newError("End value from FOR must be a int instead of a %s" % node.start_value.checkType)
 			return
 
 	def visit_RangeEnumeration(self, node):
 		self.visit(node.counter)
 		self.visit(node.expression)
 		if node.counter.checkType != node.expression.checkType:
-			self.newError("Cannot assign {} to {}".format(node.expression.checkType, node.counter.checkType))
+			self.newError("Cannot assign %s to %s"% (node.expression.checkType, node.counter.checkType))
 
 	def visit_While(self, node):
 		self.visit(node.bool_expr)
 		if node.bool_expr.checkType != environment.BoolType:
-			self.newError("Expressao nao eh booleana")
+			self.newError("While expression is not boolean")
 			return
 
 	def visit_ProcedureStmnt(self, node):
@@ -391,7 +391,7 @@ class Visitor(NodeVisitor):
 			return
 		self.environment.push(node)
 		if self.environment.lookup(node.label.label) is not None:
-			self.newError("Attempted to redefine func '{}', not allowed".format(node.label.label))
+			self.newError("Function %s already declared" %s node.label.label)
 			return
 		
 		self.visit(node.procedure_definition)
@@ -437,13 +437,13 @@ class Visitor(NodeVisitor):
 		sym = self.environment.lookup(node.name)
 		if not sym:
 			self.environment.printStack()
-			self.newError("Function name '{}' not found".format(node.name))
+			self.newError("'%s': Function not found" % node.name)
 			return
 		if not isinstance(sym, ast.ProcedureStmnt):
-			self.newError("Tried to call non-function '{}'".format(node.name))
+			self.newError("'%s' is not a function"% node.name)
 			return
 		if sym.param_list_size != len(node.params):
-			self.newError("Number of arguments for call to function '{}' do not match function parameter declaration".format(node.name))
+			self.newError("Wrong number of arguments in call to function '%s' " % node.name)
 		
 		for p in node.params:
 			self.visit(p)
@@ -453,7 +453,7 @@ class Visitor(NodeVisitor):
 			print(arg.checkType)
 			print(parm.checkType)
 			if arg.checkType != parm.checkType:
-				newError(node, "Argument type '{}' does not match parameter type '{}' in function call to '{}'".format(arg.checkType, parm.checkType, node.name))
+				newError(node, "'%s': Argument type mismatch function call. Expected '%s' instead of '%s' " % (node.name, parm.checkType, arg.checkType))
 				argerrors = True
 			if argerrors:
 				return
@@ -466,13 +466,13 @@ class Visitor(NodeVisitor):
 	def visit_ExitAction(self, node):
 		sym = self.environment.lookup(node.label.label)
 		if not sym:
-			self.newError("Funcao '{}' nao encontrada".format(node.label.label))
+			self.newError("Function '%s' not found" % node.label.label)
 			return
 
 	def visit_ReturnAction(self, node):
 		self.visit(node.result)
 		if self.environment.peek().return_type() != node.result.check_type:
-			self.newError("Tipo de retorno da funcao eh diferente do esperado")
+			self.newError("Return type not expected in function call '%s'" % node.name)
 
 	#def visit_ResultAction(self, node):
 	# generic
