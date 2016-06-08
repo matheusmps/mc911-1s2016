@@ -1,0 +1,7 @@
+/* some tests for syntax analysis */
+
+type vector = array[1:10] int;
+dcl v vector, i int;
+
+i = 0;
+i = v[i];

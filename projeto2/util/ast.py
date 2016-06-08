@@ -507,7 +507,7 @@ class IfAction(NodeAst):
 		return nodelist
 
 class ElseIfClause(NodeAst):
-	__slots__ = ('test', 'stmts')
+	__slots__ = ('test', 'stmts', 'label')
 
 	def __init__(self, test, stmts, coord):
 		self.coord = coord
@@ -521,7 +521,7 @@ class ElseIfClause(NodeAst):
 		return nodelist
 
 class ElseClause(NodeAst):
-	__slots__ = ('stmts')
+	__slots__ = ('stmts', 'label')
 
 	def __init__(self, stmts, coord):
 		self.coord = coord

@@ -1,0 +1,6 @@
+/* some tests for syntax analysis */
+
+dcl a,b array[1:10] int;
+dcl c int;
+
+a[1:2] = b[1:2];

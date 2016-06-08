@@ -71,7 +71,9 @@ class Environment(object):
 		self.stack = []
 		self.root = SymbolTable()
 		self.stack.append(self.root)
-		self.offset = 0
+		self.offset = []
+		self.offset.append(0)
+		self.labels = 0
 		#self.root.update({
 		#	"int": IntType,
 		#	"char": CharType,
@@ -79,25 +81,43 @@ class Environment(object):
 		#	"bool": BoolType
 		#})
 
+	def getLabel(self):
+		return self.labels
+
+	def addLabel(self):
+		self.labels = self.labels + 1
+		return self.labels
+
+	def getOffset(self):
+		return self.offset[-1]
+
+	def incrementOffset(self, val):
+		self.offset[-1] = self.offset[-1] + val
+
 	def push(self, enclosure):
 		self.stack.append(SymbolTable(decl=enclosure))
+		self.offset.append(0)
 
 	def pop(self):
 		self.stack.pop()
+		self.offset.pop()
 
 	def peek(self):
 		return self.stack[-1]
 
 	def scope_level(self):
 		return len(self.stack) - 1 
+	
+	def add_procedure(self, name, value):
+		self.root.add(name, value, self.scope_level(), None)
 
 	def add_local(self, name, value):
-		self.peek().add(name, value, self.scope_level(), self.offset)
+		self.peek().add(name, value, self.scope_level(), self.getOffset())
 		if isinstance(value, ast.Declaration):
 			val = self.countAlocSizeForMode(value.mode)
-			self.offset = self.offset + val
+			self.incrementOffset(val)
 		else:
-			self.offset = self.offset + 1
+			self.incrementOffset(1)
 
 	def countAlocSizeForLocation(self, node):
 		if isinstance(node, ast.StringElement):
@@ -150,9 +170,6 @@ class Environment(object):
 		else:
 			return int(node.upperBound.val) - int(node.lowerBound.val) + 1
 
-	def add_root(self, name, value):
-		self.root.add(name, value)
-
 	def lookup(self, name):
 		sym = self.lookupComplete(name)
 		if sym is not None:
@@ -172,19 +189,23 @@ class Environment(object):
 		print("---- COMPLETE STACK ----")
 		for scope in self.stack:
 			self.printItems(scope)
+		print("----")
 	
-	def printItems(self, scope):
+	def printItems(self, scope, offset = 0):
 		for k, v in scope.items():
 			
-			print('%s : %s' % (k, v.get("node")), end = "")
+			lead = ' ' * offset
+			node = v.get("node")
+			
+			print(lead + '%s : %s' % (k, node), end = "")
 			print(' - scope_level: %s' % v.get("scope_level"), end = "")
-			print(' - offset: %s' % v.get("offset"), end = "")
+			if v.get("offset") is not None:
+				print(' - offset: %s' % v.get("offset"), end = "")
 			print("\n")
 			
-			if isinstance(v, ast.ProcedureStmnt):
-				print("---- PROCEDURE STACK ----")
-				self.printItems(v.symtab)
-		print("----")
+			if isinstance(node, ast.ProcedureStmnt):
+				print("    ---- PROCEDURE STACK ----")
+				self.printItems(node.symtab, offset = 4)
 
 	def find(self, name):
 		if name in self.stack[-1]:

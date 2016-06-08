@@ -1,8 +1,9 @@
 /* some tests for syntax analysis */
 
-type integer = int, character = char;
+dcl i int;
+dcl soma int = 0, b bool = true;
 
-dcl a integer = 2;
-dcl b character = 'a';
-
-dcl c int = a + 2;
+do while b for i=1 to 10;
+    soma = soma + i;
+od;
+print (soma); 

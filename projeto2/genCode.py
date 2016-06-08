@@ -1,5 +1,6 @@
 import nodeVisitor
 import util.ast as ast
+import enviroment as environment
 
 class CodeGenerator(nodeVisitor.NodeVisitor):
 	
@@ -9,10 +10,11 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 	
 	def printInstructions(self):
 		print("\n\n")
-		print("---- INSTRUCTIONS ----")
+		print(" ---- INSTRUCTIONS ----\n")
+		print(" ###     Powered by      ###\n ### Fusion Energy Drink ###\n")
 		for val in self.program:
 			if type(val) is not tuple:
-				print("\n ### %s ###" % val)
+				print(val)
 			else:
 				print("(", end="")
 				for i, value in enumerate(val):
@@ -28,7 +30,7 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 		self.program.append(inst)
 
 	def addComment(self, message):
-		self.program.append(message)
+		self.program.append("\n ### %s ###" % message)
 
 	def calculateSizeAloc(self, node):
 		counter = 0
@@ -55,6 +57,7 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 	def loadLocation(self, node, left_side = False):
 		sym = self.environment.lookup(node.idName)
 		mode = sym.mode
+
 		if isinstance(mode, ast.ReferenceMode) or isinstance(mode, ast.DiscreteRangeMode):
 			mode = mode.mode
 		
@@ -90,10 +93,13 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 		self.addInstruction('ldc', definedLowerBound, None)
 		self.addInstruction('sub', None, None)
 		self.addInstruction('idx', 1, None)
-		if not left_side: self.addInstruction('grc', None, None)
+		
+		if not left_side and isinstance(node, ast.StringElement): 
+			self.addInstruction('grc', None, None)
 
 	def saveLocation(self, node):
 		if isinstance(node, ast.StringElement) or isinstance(node, ast.StringSlice) or isinstance(node, ast.ArraySlice) or isinstance(node, ast.ArrayElement):
+			## FIX
 			size = self.environment.countAlocSizeForLocation(node)
 			self.addInstruction('smv', size, None)
 		else:
@@ -116,9 +122,12 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 		self.environment = node.environment
 		node.environment.printStack()
 		self.addInstruction('stp', None, None)
-		self.addInstruction('alc', self.calculateSizeAloc(node), None)
+		aloc_size = self.calculateSizeAloc(node)
+		self.addInstruction('alc', aloc_size, None)
 		for statement in node.statements:
 			self.visit(statement)
+		self.addInstruction('dlc', aloc_size, None)
+		self.addInstruction('end', None, None)
 
 	#def visit_DeclStmt(self, node):
 	#generic
@@ -165,7 +174,7 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 	### MODE / SYN DEFINITION ###
 
 	def visit_ModeDef(self, node):
-		# everything done in nodeVisitor
+		## FIX
 		pass
 
 	#def visit_NewModeStmt(self, node):
@@ -225,8 +234,10 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 	def visit_RelationalExpression(self, node):
 		self.visit(node.operand1)
 		self.visit(node.operand2)
-		opcode = node.checkType.relOpInst.get(node.operator)
-		self.addInstruction(opcode, None, None)
+		## type was checked during semantic
+		opcode = node.operand1.checkType.relOpInst.get(node.operator)
+		if opcode is not None:
+			self.addInstruction(opcode, None, None)
 
 	#def visit_ConditionalExpression(self, node):
 
@@ -262,21 +273,197 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 
 	#def visit_Label(self, node):
 
-	#def visit_IfAction(self, node):
+	def visit_IfAction(self, node):
+		self.addComment("if")
+		
+		self.visit(node.if_expr)
+		
+		current_label = self.environment.getLabel()
+		fi_label = current_label + 1
+		
+		if node.else_clause is not None:
+			## valor da label final (fi)
+			fi_label = fi_label + len(node.else_clause)
+			
+			## jump para a proxima label (caso falso)
+			self.addInstruction('jof', current_label + 1, None)
+			
+			## label de cada statement
+			for clause in node.else_clause:
+				new_label = self.environment.addLabel()
+				clause.label = new_label
+			
+			## label do FI
+			self.environment.addLabel()
+			
+			## resolvo then (caso true)
+			if node.then_clause is not None:
+				for statement in node.then_clause:
+					self.visit(statement)
+					
+			## pula para fi
+			self.addInstruction('jmp', fi_label, None)
+			
+			for clause in node.else_clause:
+				self.visit(clause)
+				self.addInstruction('jmp', fi_label, None)
+		else:
+			self.addInstruction('jof', fi_label, None)
+			if node.then_clause is not None:
+				for statement in node.then_clause:
+					self.visit(statement)
+		
+		self.addInstruction('lbl', fi_label, None)
 
-	#def visit_ElseIfClause(self, node):
+	def visit_ElseIfClause(self, node):
+		self.addComment("else if")
+		self.addInstruction('lbl', node.label, None)
+		self.visit(node.test)
+		self.addInstruction('jof', node.label + 1, None)
+		
+		if node.stmts is not None:
+			for statement in node.stmts:
+				self.visit(statement)
 
-	#def visit_ElseClause(self, node):
+	def visit_ElseClause(self, node):
+		self.addComment("else")
+		self.addInstruction('lbl', node.label, None)
+		if node.stmts is not None:
+			for statement in node.stmts:
+				self.visit(statement)
 
-	#def visit_DoAction(self, node):
+	def visit_DoAction(self, node):
+		if node.control is not None:
+			
+			do_label = self.environment.addLabel()
+			od_label = self.environment.addLabel()
+			
+			if len(node.control) == 1:
+				self.handleControl(node, node.control[0], do_label, od_label)
+			else:
+				controlFor = node.control[0]
+				controlWhile = node.control[1]
+				
+				# init for
+				self.initializeCondition(controlFor.iteration)
+				
+				# DO label
+				self.addInstruction('lbl', do_label, None)
+				
+				## check while expression
+				self.visit(controlWhile.bool_expr)
+				
+				# control jump
+				self.addInstruction('jof', od_label, None)
+				
+				# statements
+				if node.stmts is not None:
+					for statement in node.stmts:
+						self.visit(statement)
+				
+				# update and test
+				self.updateAndTestCondition(controlFor.iteration)
+				
+				# control jumps
+				self.addInstruction('jof', od_label, None)
+				self.addInstruction('jmp', do_label, None)
+				
+				# OD label
+				self.addInstruction('lbl', od_label, None)
 
-	#def visit_For(self, node):
+	def handleControl(self, doActionNode, controlNode, do_label, od_label):
+		if isinstance(controlNode, ast.For):
+			
+			# initialize
+			self.initializeCondition(controlNode.iteration)
+			
+			# DO label
+			self.addInstruction('lbl', do_label, None)
+			
+			# statements
+			if doActionNode.stmts is not None:
+				for statement in doActionNode.stmts:
+					self.visit(statement)
+			
+			# update and test
+			self.updateAndTestCondition(controlNode.iteration)
+			
+			# control jumps
+			self.addInstruction('jof', od_label, None)
+			self.addInstruction('jmp', do_label, None)
+			
+			## OD label
+			self.addInstruction('lbl', od_label, None)
+		
+		else: ## while
+			
+			## DO label
+			self.addInstruction('lbl', do_label, None)
+			
+			## check expression
+			self.visit(controlNode.bool_expr)
+			
+			# control jump
+			self.addInstruction('jof', od_label, None)
+			
+			# statements
+			if doActionNode.stmts is not None:
+				for statement in doActionNode.stmts:
+					self.visit(statement)
+			
+			# control jump
+			self.addInstruction('jmp', do_label, None)
+			
+			# OD label
+			self.addInstruction('lbl', od_label, None)
+
+	def initializeCondition(self, node):
+		if isinstance(node, ast.StepEnumeration):
+			auxNode = ast.Assignment(node.counter, "=", node.start_value, None)
+			self.visit(auxNode)
+		else:
+			pass
+
+	def updateAndTestCondition(self, node):
+		if isinstance(node, ast.StepEnumeration):
+			if node.step_value is None:
+				step_value = ast.IntConst(1, None)
+			else:
+				step_value = node.step_value
+			
+			if node.down:
+				updateExpr = ast.BinaryExpression(node.counter, "-", step_value, None)
+				testNode = ast.RelationalExpression(node.counter, ">=", node.end_value, None)
+			else:
+				updateExpr = ast.BinaryExpression(node.counter, "+", step_value, None)
+				testNode = ast.RelationalExpression(node.counter, "<=", node.end_value, None)
+			
+			## update
+			self.addComment("update step enum")
+			updateExpr.checkType = environment.IntType
+			updateNode = ast.Assignment(node.counter, "=", updateExpr, None)
+			self.visit(updateNode)
+			
+			## test
+			self.addComment("test step enum")
+			testNode.checkType = environment.IntType
+			self.visit(testNode)
+			
+		else:
+			pass
+
+
+	# def visit_For(self, node):
+	# handle in DoAction
+	
+	#def visit_While(self, node):
+	# handle in DoAction
 
 	#def visit_StepEnumeration(self, node):
+	# handle in DoAction
 
 	#def visit_RangeEnumeration(self, node):
-
-	#def visit_While(self, node):
+	# handle in DoAction
 
 	#def visit_ProcedureStmnt(self, node):
 	
@@ -293,7 +480,6 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 			upperBound = self.getUpperBoundForMode(sym.mode)
 			self.addInstruction('ldc', upperBound, None)
 		if node.name == 'print':
-			self.addComment("print")
 			location = node.params[0].expr
 			self.handlePrint(location)
 			## TRATAR CASO PRINT INTEIRO/CHAR/String

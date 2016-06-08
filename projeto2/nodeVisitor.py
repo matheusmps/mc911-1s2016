@@ -66,7 +66,7 @@ class Visitor(NodeVisitor):
 				errside = "RHS"
 			if errside is not None:
 				self.newError("Relational operator {} not supported on {} of expression".format(op, errside))
-			return left.checkType
+			return environment.BoolType
 
 	def isInsideFunction(self):
 		return self.environment.scope_level() > 1
@@ -172,6 +172,7 @@ class Visitor(NodeVisitor):
 	##### TEST #####
 
 	def visit_ModeDef(self, node):
+		### FIX
 		self.visit(node.mode)
 		node.checkType = node.mode.checkType
 		for idName in node.idList:
@@ -399,7 +400,7 @@ class Visitor(NodeVisitor):
 			node.checkType = node.procedure_definition.checkType
 		
 		node.symtab = self.environment.peek()
-		self.environment.add_root(node.label.label, node)
+		self.environment.add_procedure(node.label.label, node)
 		self.environment.pop()
 
 	def visit_ProcedureDef(self, node):
@@ -412,8 +413,9 @@ class Visitor(NodeVisitor):
 			self.visit(node.result_spec)
 			node.checkType = node.result_spec.checkType
 		
-		for statement in node.statement_list:
-			self.visit(statement)
+		if node.statement_list is not None:
+			for statement in node.statement_list:
+				self.visit(statement)
 
 	def visit_FormalParameter(self, node):
 		self.visit(node.parameter_specs)
