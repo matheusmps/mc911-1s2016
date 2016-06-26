@@ -1,26 +1,55 @@
+from enviroment import Environment
 
 class LyaVirtualMachine(object):
 	
-	def __init__(self, program):
+	def __init__(self):
 		self.pc = 0
 		self.sp = 0
-		self.program = program
-		
+		self.program = []
 		self.M = []
 		self.D = []
+		self.labelsMap = {}
 
-	def execute(self):
-		for instruction in self.program:
-			if type(instruction) is tuple:
-				inst = instruction[0]
-				print(inst)
-				print("")
+	def initExecution(self):
+		self.pc = 0
+		self.sp = 0
+		self.program = []
+		self.M = [None] * 1000
+		self.D = [None] * 100
+		self.labelsMap = {}
+
+	def getCurrentInstruction(self):
+		return self.program[self.pc]
+
+	def execute(self, program, labelsMap):
+		self.initExecution()
+		
+		self.program = program
+		self.labelsMap = labelsMap
+		
+		currentInstruction = self.getCurrentInstruction()
+		
+		while currentInstruction[0] != "end":
+			self.executeInstruction(currentInstruction)
+			currentInstruction = self.getCurrentInstruction()
+
+	def generic_execute(self, instruction):
+		print("Missing execution method for instruction: %s" % instruction[0])
+
+	def executeInstruction(self, instruction):
+		method = 'execute_' + instruction[0]
+		executor = getattr(self, method, self.generic_execute)
+		
+		if executor is not None:
+			executor(instruction)
+		else:
+			raise Exception("Missing execution method.")
 
 
 	def execute_stp(self, instruction):
 		self.sp = -1
+		self.pc += 1
 		self.D[0] = 0
-	
 
 #	LDC: sp=sp+1;  M[sp]=k
 #	(’ldc’, k)
@@ -99,7 +128,7 @@ class LyaVirtualMachine(object):
 #	(’div’) 
 
 	def execute_div(self, instruction):
-		self.M[self.sp-1] = self.M[self.(sp-1)] / self.M[self.sp]
+		self.M[self.sp-1] = self.M[self.sp-1] / self.M[self.sp]
 		self.sp -= 1
 		self.pc += 1
 
@@ -108,7 +137,7 @@ class LyaVirtualMachine(object):
 
 
 	def execute_mod(self, instruction):
-		self.M[self.sp-1] = self.M[self.(sp-1)] % self.M[self.sp]
+		self.M[self.sp-1] = self.M[self.sp-1] % self.M[self.sp]
 		self.sp -= 1
 		self.pc += 1
 
@@ -116,8 +145,11 @@ class LyaVirtualMachine(object):
 #	(’leq’) 
 
 	def execute_leq(self, instruction):
-		if ( self.M[self.sp-1] <= self.M[self.sp]) self.M[self.sp-1] = 1
-		else self.M[self.sp-1] = 0
+		if self.M[self.sp-1] <= self.M[self.sp]: 
+			self.M[self.sp-1] = 1
+		else:
+			self.M[self.sp-1] = 0
+			
 		self.sp -= 1
 		self.pc += 1
 
@@ -125,7 +157,7 @@ class LyaVirtualMachine(object):
 #	(’jmp’, p)
 
 	def execute_jmp(self, instruction):
-		self.pc += instruction[1]
+		self.pc = self.labelsMap[instruction[1]]
 
 #	JOF: if not M[sp]: pc=p    else: pc=pc+1  sp=sp-1
 #	(’jof’, p)
@@ -133,8 +165,8 @@ class LyaVirtualMachine(object):
 
 	def execute_jof(self, instruction):
 		if not self.M[self.sp]:
-			self.pc = instruction[1]
-		else
+			self.pc = self.labelsMap[instruction[1]]
+		else:
 			self.pc += 1
 		self.sp -= 1
 
@@ -165,4 +197,4 @@ class LyaVirtualMachine(object):
 #	(’lbl’, i)
 
 	def execute_lbl(self, instruction):
-		pass
+		self.pc += 1

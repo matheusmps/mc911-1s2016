@@ -1,15 +1,8 @@
 /* some tests for syntax analysis */
 
-dcl i, j, k int;
-dcl a, b array [2:9] int;
-j = lower(a);
-k = upper(a);
-do
-  for i=j to k;
-    read (a[i]);
+dcl i, soma int;
+soma = 0;
+do for i=1 to 10;
+    soma += i;
 od;
-
-b = a;
-b[2:5] = a[6:9];
-print(a[3:6]);
-//print(b);
+print (soma); 

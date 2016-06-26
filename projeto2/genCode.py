@@ -7,6 +7,8 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 	def __init__(self):
 		self.program = []
 		self.environment = None
+		self.labelsMap = {}
+		self.instructionIndex = 0
 	
 	def printInstructions(self):
 		print("\n\n")
@@ -28,6 +30,11 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 	def addInstruction(self, opcode, operand1, operand2):
 		inst = (opcode, operand1, operand2)
 		self.program.append(inst)
+		
+		if opcode == "lbl":
+			self.labelsMap[operand1] = self.instructionIndex
+		
+		self.instructionIndex += 1
 
 	def addComment(self, message):
 		self.program.append("\n ### %s ###" % message)
