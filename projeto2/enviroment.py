@@ -74,7 +74,7 @@ class Environment(object):
 		self.offset = []
 		self.offset.append(0)
 		self.labels = 0
-		self.formalParams = -1
+		self.formalParams = -3
 		#self.root.update({
 		#	"int": IntType,
 		#	"char": CharType,
@@ -105,7 +105,7 @@ class Environment(object):
 	def pop(self):
 		self.stack.pop()
 		self.offset.pop()
-		self.formalParams = -1
+		self.formalParams = -3
 
 	def peek(self):
 		return self.stack[-1]
@@ -119,7 +119,7 @@ class Environment(object):
 		self.peek().add(name, value, self.scope_level(), None)
 
 	def add_procedure(self, name, value):
-		self.formalParams = -1
+		self.formalParams = -3
 		print(self.formalParams)
 		self.root.add(name, value, self.scope_level(), None)
 		value.start_label = self.addLabel()

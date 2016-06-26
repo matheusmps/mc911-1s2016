@@ -50,13 +50,13 @@ class Visitor(NodeVisitor):
 			if op not in right.checkType.binaryOperators:
 				errside = "RHS"
 			if errside is not None:
-				self.newError("%s does not support Binary operator %s " %(errside, op))
+				self.newError("%s does not support Binary operator %s " % (errside, op))
 		return left.checkType
 
 	def typeCheckRelationalExpression(self, node, op, left, right):
 		if hasattr(left, "checkType") and hasattr(right, "checkType"):
 			if left.checkType != right.checkType:
-				self.newError("Unmatching types in Relational operator %s"% op)
+				self.newError("Unmatching types in Relational operator %s" % op)
 				return left.checkType
 				
 			errside = None
@@ -65,7 +65,7 @@ class Visitor(NodeVisitor):
 			if op not in right.checkType.relOperators:
 				errside = "RHS"
 			if errside is not None:
-				self.newError("%s does not support Relational operator %s "%( errside, op))
+				self.newError("%s does not support Relational operator %s " % ( errside, op))
 			return environment.BoolType
 
 	def isInsideFunction(self):
@@ -247,15 +247,15 @@ class Visitor(NodeVisitor):
 		self.visit(node.location)
 		symbol = self.environment.lookup(node.location.idName)
 		if not symbol:
-			self.newError("Cannot find previous declaration of '%s'"% node.location.idName )
+			self.newError("Cannot find previous declaration of '%s'" % node.location.idName )
 		elif isinstance(symbol, ast.SynDef):
-			self.newError("Cannot assing a synonym ('%s')"% node.location.idName )
+			self.newError("Cannot assing a synonym ('%s')" % node.location.idName )
 		
 		self.visit(node.expression)
 		
 		if hasattr(node.location, "checkType") and hasattr(node.expression, "checkType"):
 			if node.location.checkType != node.expression.checkType:
-				self.newError("Cannot assign %s to %s"%s node.expression.checkType, node.location.checkType)
+				self.newError("Cannot assign %s to %s" %s (node.expression.checkType, node.location.checkType))
 
 	#def visit_Expression(self, node):
 	# generic
@@ -377,7 +377,7 @@ class Visitor(NodeVisitor):
 		self.visit(node.counter)
 		self.visit(node.expression)
 		if node.counter.checkType != node.expression.checkType:
-			self.newError("Cannot assign %s to %s"% (node.expression.checkType, node.counter.checkType))
+			self.newError("Cannot assign %s to %s" % (node.expression.checkType, node.counter.checkType))
 
 	def visit_While(self, node):
 		self.visit(node.bool_expr)
@@ -392,7 +392,7 @@ class Visitor(NodeVisitor):
 			return
 		self.environment.push(node)
 		if self.environment.lookup(node.label.label) is not None:
-			self.newError("Function %s already declared" %s node.label.label)
+			self.newError("Function %s already declared" % node.label.label)
 			return
 		
 		self.visit(node.procedure_definition)
@@ -443,22 +443,23 @@ class Visitor(NodeVisitor):
 			self.newError("'%s': Function not found" % node.name)
 			return
 		if not isinstance(sym, ast.ProcedureStmnt):
-			self.newError("'%s' is not a function"% node.name)
+			self.newError("'%s' is not a function" % node.name)
 			return
 		if sym.param_list_size != len(node.params):
 			self.newError("Wrong number of arguments in call to function '%s' " % node.name)
 		
+		print("params: %s" % node.params)
 		for p in node.params:
 			self.visit(p)
+			
+		node.checkType = sym.procedure_definition.result_spec.checkType
 		
 		argerrors = False
-		print(node.params)
-		print(sym.procedure_definition.formal_parameter_list)
 		for arg, parm in zip(node.params, sym.procedure_definition.formal_parameter_list):
-			print(arg.checkType)
-			print(parm.checkType)
+			print("arg: %s" % arg.checkType)
+			print("parm: %s" % parm.checkType)
 			if arg.checkType != parm.checkType:
-				self.newError("Argument type '{}' does not match parameter type '{}' in function call to '{}'".format(arg.checkType, parm.checkType, node.name))
+				self.newError("Argument type '%s' does not match parameter type '%s' in function call to '%s'" % (arg.checkType, parm.checkType, node.name))
 				argerrors = True
 			if argerrors:
 				return
@@ -466,6 +467,8 @@ class Visitor(NodeVisitor):
 
 	def visit_Parameter(self, node):
 		self.visit(node.expr)
+		#print("%s: type %s" % (node.expr, node.expr.checkType))
+		#print("type %s" % (node.expr.checkType))
 		node.checkType = node.expr.checkType
 
 	def visit_ExitAction(self, node):
@@ -478,7 +481,7 @@ class Visitor(NodeVisitor):
 	def visit_ReturnAction(self, node):
 		self.visit(node.result)
 		if self.environment.peek().return_type() != node.result.check_type:
-			self.newError("Return type not expected in function call '%s'" % node.name)
+			self.newError("Return type not expected in function call")
 
 	# def visit_ResultAction(self, node):
 	# generic

@@ -1,11 +1,15 @@
 /* some tests for syntax analysis */
 
-dcl a array[1:10, 1:5] int;
-dcl i, j int;
+dcl i, j, k int;
+dcl a, b array [2:9] int;
+j = lower(a);
+k = upper(a);
 do
-  for i=1 to 10;
-    do
-      for j=1 to 5;
-    a[i,j]=i*j;
-    od;
+  for i=j to k;
+    read (a[i]);
 od;
+
+b = a;
+b[2:5] = a[6:9];
+print(a[3:6]);
+//print(b);

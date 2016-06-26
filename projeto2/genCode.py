@@ -94,8 +94,12 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 		self.addInstruction('sub', None, None)
 		self.addInstruction('idx', 1, None)
 		
-		if not left_side and isinstance(node, ast.StringElement): 
-			self.addInstruction('grc', None, None)
+		if not left_side: 
+			if  isinstance(node, ast.StringElement):
+				self.addInstruction('grc', None, None)
+			else:
+				aloc = self.environment.countAlocSizeForLocation(node)
+				self.addInstruction('lmv', aloc, None)
 
 	def saveLocation(self, node):
 		if isinstance(node, ast.StringElement) or isinstance(node, ast.StringSlice) or isinstance(node, ast.ArraySlice) or isinstance(node, ast.ArrayElement):
@@ -519,10 +523,13 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 	# generic
 
 	def visit_ProcedureCall(self, node):
+		proc = self.environment.lookup(node.name)		
+		if proc.procedure_definition.result_spec is not None:
+			self.addInstruction('alc', 1, None)
+		
 		if node.params is not None:
-			for param in node.params:
+			for param in reversed(node.params):
 				self.visit(param)
-		proc = self.environment.lookup(node.name)
 		self.addInstruction('cfu', proc.start_label, None)
 
 	#def visit_Parameter(self, node):
@@ -541,6 +548,7 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 
 	def visit_BuiltinCall(self, node):
 		if node.name == 'read':
+			self.loadLocation(node.params[0].expr, left_side = True)
 			self.addInstruction('rdv', None, None)
 			self.saveLocation(node.params[0].expr)
 		if node.name == 'lower':
@@ -556,16 +564,19 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 			if isinstance(location, ast.IntConst) or isinstance(location, ast.CharConst) or isinstance(location, ast.StrConst) or isinstance(location, ast.EmptyConst):
 				self.visit(location)
 				self.addInstruction('prv', None, None)
+			elif isinstance(location, ast.StringSlice) or isinstance(location, ast.ArraySlice) or isinstance(location, ast.StringElement) or isinstance(location, ast.ArrayElement) or isinstance(location, ast.Location) or isinstance(location, ast.ReferencedLocation) or isinstance(location, ast.DereferencedLocation):
+				self.loadLocation(location, left_side = True)
+				self.handlePrint(location)
 			else:
+				self.visit(location)
 				self.handlePrint(location)
 
 	def handlePrint(self, location):
-		self.loadLocation(location, left_side = True)
 		if isinstance(location, ast.StringSlice) or isinstance(location, ast.ArraySlice) or isinstance(location, ast.StringElement) or isinstance(location, ast.ArrayElement):
 			size = self.environment.countAlocSizeForLocation(location)
 			self.addInstruction('lmv', size, None)
 			self.addInstruction('prt', size, None)
-		else:
+		elif hasattr(location, "idName"):
 			mode = self.environment.lookup(location.idName).mode
 			if isinstance(mode, ast.ReferenceMode) or isinstance(mode, ast.DiscreteRangeMode):
 				mode = mode.mode
@@ -575,9 +586,11 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 				self.addInstruction('lmv', size, None)
 				self.addInstruction('prt', size, None)
 			else:
-				sym = self.getSymbolInformation(location.idName)
-				self.addInstruction('ldv', sym[0], sym[1])
+				#sym = self.getSymbolInformation(location.idName)
+				#self.addInstruction('ldv', sym[0], sym[1])
 				self.addInstruction('prv', None, None)
+		else:
+			self.addInstruction('prv', None, None)
 
 	def getLowerBoundForMode(self, node):
 		if isinstance(node, ast.DiscreteRangeMode):
