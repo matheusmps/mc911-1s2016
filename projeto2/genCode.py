@@ -492,7 +492,9 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 		self.addInstruction('jmp', node.end_label, None)
 		
 		# label procedure
+		self.labelsMap[node.start_label] = self.instructionIndex
 		self.addInstruction('lbl', node.start_label, None)
+		
 		self.addInstruction('enf', node.start_label, None)
 		
 		# tamanho do aloc

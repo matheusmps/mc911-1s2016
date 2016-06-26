@@ -29,6 +29,10 @@ class LyaVirtualMachine(object):
 		self.program = program
 		self.labelsMap = labelsMap
 		
+		print("labels map:")
+		print(self.labelsMap)
+		print("")
+		
 		currentInstruction = self.getCurrentInstruction()
 		
 		while currentInstruction[0] != "end":
