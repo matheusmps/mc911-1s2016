@@ -1,0 +1,43 @@
+Email:
+
+- Decorated AST and LVM code example
+	- projeto 2:
+	- projeto 3:
+
+- New LVM code Example
+	- projeto 2: falta retorno de funcao e print de chamada de func 
+	- projeto 3:
+
+- Example with "do while", labeled and exit actions
+	- projeto 2: OK
+	- projeto 3:
+
+- Example with "do for"
+	- projeto 2: print variavel
+
+- for and while combined
+	- projeto 2: print variavel
+
+- Example with references
+	- projeto 2: return func
+
+- Example with locs:
+	- projeto 2: print variavel, print mais de um param, retorno func, 
+
+- Simple example using array and array indexing:
+	- projeto 2: OK
+
+- New example with arrays
+	- projeto 2: new modes
+
+- simple example with 2-dim array
+	- projeto 2: 2-dim array
+
+- Example with slices & built-ins
+	- ERRO
+
+- Example returning a location
+	- ERRO
+
+- Stack of Integers
+- Bubble sort

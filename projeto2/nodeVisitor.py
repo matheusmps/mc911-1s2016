@@ -391,9 +391,13 @@ class Visitor(NodeVisitor):
 			self.newError("Nested functions not implemented")
 			return
 		self.environment.push(node)
+		
 		if self.environment.lookup(node.label.label) is not None:
 			self.newError("Function %s already declared" % node.label.label)
 			return
+		
+		hasReturn = node.procedure_definition.result_spec is not None
+		self.environment.add_procedure(node.label.label, node, hasReturn)
 		
 		self.visit(node.procedure_definition)
 		node.param_list_size = node.procedure_definition.param_list_size
@@ -401,7 +405,7 @@ class Visitor(NodeVisitor):
 			node.checkType = node.procedure_definition.checkType
 		
 		node.symtab = self.environment.peek()
-		self.environment.add_procedure(node.label.label, node)
+		
 		self.environment.pop()
 
 	def visit_ProcedureDef(self, node):
@@ -452,7 +456,8 @@ class Visitor(NodeVisitor):
 		for p in node.params:
 			self.visit(p)
 			
-		node.checkType = sym.procedure_definition.result_spec.checkType
+		if sym.procedure_definition.result_spec is not None:
+			node.checkType = sym.procedure_definition.result_spec.checkType
 		
 		argerrors = False
 		for arg, parm in zip(node.params, sym.procedure_definition.formal_parameter_list):
@@ -467,8 +472,6 @@ class Visitor(NodeVisitor):
 
 	def visit_Parameter(self, node):
 		self.visit(node.expr)
-		#print("%s: type %s" % (node.expr, node.expr.checkType))
-		#print("type %s" % (node.expr.checkType))
 		node.checkType = node.expr.checkType
 
 	def visit_ExitAction(self, node):

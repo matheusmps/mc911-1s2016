@@ -25,7 +25,7 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 							print("'%s'" % value, end="")
 						else:
 							print(", %s" % value, end="")
-				print(")")
+				print("),")
 
 	def addInstruction(self, opcode, operand1, operand2):
 		inst = (opcode, operand1, operand2)
@@ -79,15 +79,15 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 				pass
 		
 		elif not left_side:
-			if isinstance(node, ast.Location):
+			if isinstance(node, ast.DereferencedLocation) or ( isinstance(sym, ast.FormalParameter) and sym.parameter_specs.attr is not None ):
+				sym = self.getSymbolInformation(node.idName)
+				self.addInstruction('lrv', sym[0], sym[1])
+			elif isinstance(node, ast.Location):
 				sym = self.getSymbolInformation(node.idName)
 				self.addInstruction('ldv', sym[0], sym[1])
 			elif isinstance(node, ast.ReferencedLocation):
 				sym = self.getSymbolInformation(node.idName)
 				self.addInstruction('ldr', sym[0], sym[1])
-			elif isinstance(node, ast.DereferencedLocation):
-				sym = self.getSymbolInformation(node.idName)
-				self.addInstruction('lrv', sym[0], sym[1])
 
 	def loadSliceLocations(self, node, left_side = False):
 		if isinstance(node, ast.StringElement):
@@ -124,8 +124,12 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 					size = self.environment.countAlocSizeForMode(mode)
 					self.addInstruction('smv', size, None)
 			else:
-				sym = self.getSymbolInformation(node.idName)
-				self.addInstruction('stv', sym[0], sym[1])
+				if isinstance(node, ast.DereferencedLocation) or ( isinstance(sym, ast.FormalParameter) and sym.parameter_specs.attr is not None ):
+					sym = self.getSymbolInformation(node.idName)
+					self.addInstruction('srv', sym[0], sym[1])
+				else:
+					sym = self.getSymbolInformation(node.idName)
+					self.addInstruction('stv', sym[0], sym[1])
 
 	### -------------------------------------------------------------- ###
 
@@ -508,6 +512,15 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 		if node.procedure_definition is not None:
 			if node.procedure_definition.statement_list is not None:
 				for statement in node.procedure_definition.statement_list:
+					
+					## solve return type with LOC
+					if node.procedure_definition.result_spec is not None:
+						if isinstance(statement, ast.ActionStatement) and isinstance(statement.action, ast.ResultAction) and node.procedure_definition.result_spec.attr is not None:
+							if isinstance(statement.action.result, ast.Location):
+								newLocation = ast.ReferencedLocation(statement.action.result, None)
+								newLocation.idName = statement.action.result.idName
+								statement.action.result = newLocation
+								
 					self.visit(statement)
 		
 		# remove procedure stack
@@ -532,7 +545,7 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 	# generic
 
 	def visit_ProcedureCall(self, node):
-		proc = self.environment.lookup(node.name)		
+		proc = self.environment.lookup(node.name)
 		if proc.procedure_definition.result_spec is not None:
 			self.addInstruction('alc', 1, None)
 		

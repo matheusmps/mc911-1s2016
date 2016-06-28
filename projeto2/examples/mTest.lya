@@ -1,8 +1,16 @@
 /* some tests for syntax analysis */
 
-dcl i, soma int;
-soma = 0;
-do for i=1 to 10;
-    soma += i;
-od;
-print (soma); 
+dcl x, y int;
+
+p: proc (b bool) returns (int loc);
+  if b then
+    result x;
+  else
+    result y;
+  fi;
+end;
+
+dcl b bool = false;
+p(b)    = 20;
+p(true) = 10;
+print(x,y);   // display 10, 20
