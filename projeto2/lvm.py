@@ -79,7 +79,7 @@ class LyaVirtualMachine(object):
 
 	def execute_ldr(self, instruction):
 		self.sp += 1
-		self.M[self.sp] = self.M[self.D[ instruction[1] ]+instruction[2]]
+		self.M[self.sp] = self.D[ instruction[1] ]+instruction[2]
 		self.pc += 1
 
 #	STV: M[D[i]+j]=M[sp];  sp=sp-1
@@ -306,7 +306,7 @@ class LyaVirtualMachine(object):
 #	(’idx’, k)
 
 	def execute_idx(self, instruction):
-		self.M[self.sp-1] = self.M[self.sp-1] + self.M[self.sp] * instruction[1]
+		self.M[self.sp-1] = self.M[self.sp-1] + self.M[self.sp]*instruction[1]
 		self.sp -= 1
 		self.pc += 1
 
@@ -322,7 +322,7 @@ class LyaVirtualMachine(object):
 
 	def execute_lmv(self, instruction):
 		t = self.M[self.sp]
-		for i=0 to instruction[1]:
+		for i in range (0, instruction[1]):
 			self.M[self.sp + i] = self.M[t + i]
 		self.sp += instruction[1] - 1 
 		self.pc += 1
@@ -332,8 +332,8 @@ class LyaVirtualMachine(object):
 
 	def execute_smv(self, instruction):
 		t = self.M[self.sp-instruction[1]]
-		for i=0 to instruction[1]:
-			self.M[t + i] = self.M[self.sp - instruction[1] + 1 +i ]
+		for i in range (instruction[1],0):
+			self.M[t + i] = self.M[self.sp - i + 1]
 		self.sp -= instruction[1] + 1
 		self.pc += 1
 
@@ -344,7 +344,7 @@ class LyaVirtualMachine(object):
 		t1 = self.M[self.sp-1]
 		t2 = self.M[self.sp]
 		
-		for i=0 to instruction[1]:
+		for i in range (0, instruction[1]):
 			self.M[t1 + i] = self.M[t2 + i]
 		self.sp -= 1
 		self.pc += 1
@@ -354,7 +354,7 @@ class LyaVirtualMachine(object):
 
 	def execute_sts(self, instruction):
 		adr = self.M[self.sp]
-		self.M[adr] =  len ( self.H[instruction[1] )
+		self.M[adr] =  len( self.H[instruction[1]] )
 		
 		for c in self.H[instruction[1]]:
 			adr += 1
@@ -369,6 +369,11 @@ class LyaVirtualMachine(object):
 	def execute_rdv(self, instruction):
 		self.sp += 1
 		self.M[self.sp] = input()
+		try: 
+			int(self.M[self.sp])
+			self.M[self.sp] = int(self.M[self.sp])
+		except ValueError:
+			pass
 		self.pc += 1
 
 #	RDS: str=input(); adr=M[sp]; M[adr] = len(str); for k in str: adr=adr+1 M[adr]=k; sp=sp-1;
@@ -396,9 +401,9 @@ class LyaVirtualMachine(object):
 #	('prt', k)
 
 	def execute_prt(self, instruction):
-		for i=instruction[1] to 0:
+		for i in range (instruction[1], 0):
 			print(self.M[self.sp - i + 1])
-		self.sp -= instruction[1] - 1
+		self.sp -= (instruction[1] - 1)
 		self.pc += 1
 
 #	PRC: print(H(i),end="")
