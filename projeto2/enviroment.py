@@ -118,11 +118,7 @@ class Environment(object):
 		self.peek().add(name, value, self.scope_level(), None)
 
 	def add_procedure(self, name, value, hasReturn = False):
-		if hasReturn:
-			self.formalParams = -3
-		else:
-			self.formalParams = -2
-		
+		self.formalParams = -3
 		self.root.add(name, value, self.scope_level(), None)
 		value.start_label = self.addLabel()
 		value.end_label = self.addLabel()

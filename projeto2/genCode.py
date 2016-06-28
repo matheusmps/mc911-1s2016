@@ -65,6 +65,15 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 		sym = self.environment.lookup(node.idName)
 		mode = sym.mode
 
+		#print("===== NODE =====")
+		#print(node)
+
+		#print("===== SYM =====")
+		#print(sym)
+
+		#print("===== MODE =====")
+		#print(mode)
+
 		if isinstance(mode, ast.ReferenceMode) or isinstance(mode, ast.DiscreteRangeMode):
 			mode = mode.mode
 		
@@ -528,6 +537,9 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 		
 		# dealocate memory
 		self.addInstruction('dlc', aloc_size, None)
+
+		## ADD RETURN INSTRUCTION
+		self.addInstruction('ret', 1, 2)
 		
 		# label out
 		self.addInstruction('lbl', node.end_label, None)
@@ -554,15 +566,22 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 				self.visit(param)
 		self.addInstruction('cfu', proc.start_label, None)
 
-	#def visit_Parameter(self, node):
-	# generic
-
+	def visit_Parameter(self, node):
+		print(node.call_arg)
+		if node.call_arg is not None and node.call_arg.parameter_specs.attr is not None:
+			if isinstance(node.expr, ast.Location):
+				newNode = ast.ReferencedLocation(node.expr, None)
+				newNode.idName = node.expr.idName
+				node.expr = newNode
+		self.visit(node.expr)
+	 
 	def visit_ExitAction(self, node):
 		label = self.environment.lookup(node.label.label)
 		if label is not None:
 			self.addInstruction('jmp', label.end_label, None)
 
-	#def visit_ReturnAction(self, node):
+	# def visit_ReturnAction(self, node):
+	# generic		
 
 	def visit_ResultAction(self, node):
 		assign = ast.Assignment(ast.Location("_ret", None), "=", node.result, None)
@@ -582,17 +601,22 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 			upperBound = self.getUpperBoundForMode(sym.mode)
 			self.addInstruction('ldc', upperBound, None)
 		if node.name == 'print':
-			location = node.params[0].expr
-			if isinstance(location, ast.IntConst) or isinstance(location, ast.CharConst) or isinstance(location, ast.StrConst) or isinstance(location, ast.EmptyConst):
-				self.visit(location)
-				self.addInstruction('prv', None, None)
-			elif isinstance(location, ast.StringSlice) or isinstance(location, ast.ArraySlice) or isinstance(location, ast.StringElement) or isinstance(location, ast.ArrayElement) or isinstance(location, ast.Location) or isinstance(location, ast.ReferencedLocation) or isinstance(location, ast.DereferencedLocation):
-				self.loadLocation(location, left_side = True)
-				self.handlePrint(location)
-			else:
-				self.visit(location)
-				self.handlePrint(location)
-
+			for param in node.params:
+				location = param.expr
+				
+				print("===== PRINT =====")
+				print(location)
+				
+				if isinstance(location, ast.IntConst) or isinstance(location, ast.CharConst) or isinstance(location, ast.StrConst) or isinstance(location, ast.EmptyConst):
+					self.visit(location)
+					self.addInstruction('prv', None, None)
+				elif isinstance(location, ast.StringSlice) or isinstance(location, ast.ArraySlice) or isinstance(location, ast.StringElement) or isinstance(location, ast.ArrayElement) or isinstance(location, ast.Location) or isinstance(location, ast.ReferencedLocation) or isinstance(location, ast.DereferencedLocation):
+					self.loadLocation(location)
+					self.handlePrint(location)
+				else:
+					self.visit(location)
+					self.addInstruction('prv', None, None)
+			
 	def handlePrint(self, location):
 		if isinstance(location, ast.StringSlice) or isinstance(location, ast.ArraySlice) or isinstance(location, ast.StringElement) or isinstance(location, ast.ArrayElement):
 			size = self.environment.countAlocSizeForLocation(location)
