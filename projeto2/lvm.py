@@ -23,14 +23,19 @@ class LyaVirtualMachine(object):
 	def getCurrentInstruction(self):
 		return self.program[self.pc]
 
-	def execute(self, program, labelsMap):
+	def execute(self, program, labelsMap, constantsStack):
 		self.initExecution()
 		
 		self.program = program
 		self.labelsMap = labelsMap
+		self.H = constantsStack
 		
 		print("labels map:")
 		print(self.labelsMap)
+		print("")
+		
+		print("constants:")
+		print(self.H)
 		print("")
 		
 		currentInstruction = self.getCurrentInstruction()
@@ -44,6 +49,7 @@ class LyaVirtualMachine(object):
 
 	def executeInstruction(self, instruction):
 		method = 'execute_' + instruction[0]
+		#print(method)
 		executor = getattr(self, method, self.generic_execute)
 		
 		if executor is not None:
@@ -95,13 +101,14 @@ class LyaVirtualMachine(object):
 
 	def execute_lrv(self, instruction):
 		self.sp += 1
-		self.M[self.sp] = self.M[self.D[ instruction[1] ]+instruction[2]]
+		self.M[self.sp] = self.M[self.M[self.D[instruction[1]]+instruction[2]]]
+		self.pc += 1
 
 #	SRV:  M[M[D[i]+j]]=M[sp];  sp=sp-1
 #	(’srv’, i, j)
 
 	def execute_srv(self, instruction):
-		self.M[self.D[ instruction[1] ]+instruction[2]] = self.M[self.sp]
+		self.M[self.M[self.D[ instruction[1] ]+instruction[2]]] = self.M[self.sp]
 		self.sp -= 1
 		self.pc += 1
 		
@@ -165,7 +172,7 @@ class LyaVirtualMachine(object):
 #	LOR: M[sp-1]=M[sp-1] or M[sp];  sp=sp-1
 #	(’lor’)
 
-	def execute_and(self, instruction):
+	def execute_lor(self, instruction):
 		self.M[self.sp-1] = self.M[self.sp-1] or self.M[self.sp]
 		self.sp -= 1
 		self.pc += 1
@@ -254,7 +261,7 @@ class LyaVirtualMachine(object):
 #	(’jof’, p)
 
 
-	def execute_jof(self, instruction):
+	def execute_jof(self, instruction):		
 		if not self.M[self.sp]:
 			self.pc = self.labelsMap[instruction[1]]
 		else:
@@ -282,7 +289,7 @@ class LyaVirtualMachine(object):
 	def execute_cfu(self, instruction):
 		self.sp += 1
 		self.M[self.sp] = self.pc+1
-		self.pc += self.labelsMap[instruction[1]]
+		self.pc = self.labelsMap[instruction[1]]
 
 
 #	ENF: sp=sp+1; M[sp]=D[k]; D[k]=sp+1
@@ -306,7 +313,7 @@ class LyaVirtualMachine(object):
 #	(’idx’, k)
 
 	def execute_idx(self, instruction):
-		self.M[self.sp-1] = self.M[self.sp-1] + self.M[self.sp]*instruction[1]
+		self.M[self.sp-1] = self.M[self.sp-1] + (self.M[self.sp] * instruction[1])
 		self.sp -= 1
 		self.pc += 1
 
@@ -321,20 +328,22 @@ class LyaVirtualMachine(object):
 #	(’lmv’, k)
 
 	def execute_lmv(self, instruction):
+		k = instruction[1]
 		t = self.M[self.sp]
-		for i in range (0, instruction[1]):
-			self.M[self.sp + i] = self.M[t + i]
-		self.sp += instruction[1] - 1 
+		
+		self.M[self.sp : self.sp + k] = self.M[t : t + k]
+		self.sp += (k - 1)
 		self.pc += 1
 
 #	SMV: t = M[sp-k]; M[t:t+k] =M[sp-k+1:sp+1]; sp -= (k+1);
 #	(’smv’, k)
 
 	def execute_smv(self, instruction):
-		t = self.M[self.sp-instruction[1]]
-		for i in range (instruction[1],0):
-			self.M[t + i] = self.M[self.sp - i + 1]
-		self.sp -= instruction[1] + 1
+		k = instruction[1]
+		t = self.M[self.sp - k]
+		
+		self.M[t:t+k] = self.M[self.sp - k + 1 : self.sp + 1]
+		self.sp -= (k + 1)
 		self.pc += 1
 
 #	SMR: t1 = M[sp-1]; t2 = M[sp]; M[t1:t1+k] = M[t2:t2+k]; sp -= 1;
@@ -343,9 +352,9 @@ class LyaVirtualMachine(object):
 	def execute_smr(self, instruction):
 		t1 = self.M[self.sp-1]
 		t2 = self.M[self.sp]
+		k = instruction[1]
 		
-		for i in range (0, instruction[1]):
-			self.M[t1 + i] = self.M[t2 + i]
+		M[t1:t1+k] = M[t2:t2+k]
 		self.sp -= 1
 		self.pc += 1
 
@@ -368,22 +377,42 @@ class LyaVirtualMachine(object):
 
 	def execute_rdv(self, instruction):
 		self.sp += 1
-		self.M[self.sp] = input()
-		try: 
-			int(self.M[self.sp])
-			self.M[self.sp] = int(self.M[self.sp])
+		read = input()
+		
+		# test for int
+		try:
+			val = int(read) 
+			self.M[self.sp] = val
+			self.pc += 1
+			return
 		except ValueError:
 			pass
+		
+		# test for bool
+		try:
+			if read == "true" or read == "True":
+				self.M[self.sp] = 1
+			elif read == "false" or read == "False":
+				self.M[self.sp] = 0
+				
+			self.pc += 1
+			return
+		except ValueError:
+			pass
+
+		# string
+		self.M[self.sp] = read
+		
 		self.pc += 1
 
 #	RDS: str=input(); adr=M[sp]; M[adr] = len(str); for k in str: adr=adr+1 M[adr]=k; sp=sp-1;
 #	(’rds’)
 
 	def execute_rds(self, instruction):
-		str = input() 
+		string = input() 
 		adr = self.M[self.sp]
-		self.M[adr] = len (str)
-		for k in str:
+		self.M[adr] = len (string)
+		for k in string:
 			adr += 1
 			self.M[adr] = k
 		self.sp -= 1
@@ -393,7 +422,7 @@ class LyaVirtualMachine(object):
 #	(’prv’)
 
 	def execute_prv(self, instruction):
-		print(self.M[self.sp])
+		print(self.M[self.sp], end="")
 		self.sp -= 1
 		self.pc += 1
 
@@ -401,9 +430,9 @@ class LyaVirtualMachine(object):
 #	('prt', k)
 
 	def execute_prt(self, instruction):
-		for i in range (instruction[1], 0):
-			print(self.M[self.sp - i + 1])
-		self.sp -= (instruction[1] - 1)
+		k = instruction[1]
+		print(self.M[self.sp - k + 1: self.sp + 1])
+		self.sp -= (k-1)
 		self.pc += 1
 
 #	PRC: print(H(i),end="")

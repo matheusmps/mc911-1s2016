@@ -428,7 +428,7 @@ class Boolean(NodeAst):
 		self.val = val
 
 class StrConst(NodeAst):
-	__slots__ = ('val')
+	__slots__ = ('val', 'position')
 	attr_names = ('val',)
 	
 	def __init__(self, val, coord):

@@ -75,6 +75,7 @@ class Environment(object):
 		self.offset.append(0)
 		self.labels = 0
 		self.formalParams = 0
+		self.constants = []
 		#self.root.update({
 		#	"int": IntType,
 		#	"char": CharType,
@@ -136,6 +137,10 @@ class Environment(object):
 			self.incrementOffset(val)
 		else:
 			self.incrementOffset(1)
+			
+	def add_constant(self, string):
+		self.constants.append(string)
+		return len(self.constants) - 1
 
 	def countAlocSizeForLocation(self, node):
 		if isinstance(node, ast.StringElement):
@@ -147,7 +152,7 @@ class Environment(object):
 			size = len(node.expressions)
 			return size
 		else:
-			sym = lookup(node.idName)
+			sym = self.lookup(node.idName)
 			mode = sym.mode
 			
 			if isinstance(mode, ast.ReferenceMode) or isinstance(mode, ast.DiscreteRangeMode):

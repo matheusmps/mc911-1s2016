@@ -65,7 +65,7 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 		sym = self.environment.lookup(node.idName)
 		mode = sym.mode
 
-		#print("===== NODE =====")
+		#print("===== NODE = %s =====" % node.idName)
 		#print(node)
 
 		#print("===== SYM =====")
@@ -82,10 +82,15 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 			self.addInstruction('ldr', base[0], base[1])
 			
 			if isinstance(node, ast.StringSlice) or isinstance(node, ast.ArraySlice) or isinstance(node, ast.StringElement):
+				print("loading slice location =  %s | left = %s" % (node.idName, left_side))
+				print("node = %s" % node)
 				self.loadSliceLocations(node, left_side)
 			elif isinstance(node, ast.ArrayElement):
 				## TODO
 				pass
+			elif isinstance(node, ast.Location) and not left_side:
+				aloc = self.environment.countAlocSizeForLocation(node)
+				self.addInstruction('lmv', aloc, None)
 		
 		elif not left_side:
 			if isinstance(node, ast.DereferencedLocation) or ( isinstance(sym, ast.FormalParameter) and sym.parameter_specs.attr is not None ):
@@ -118,6 +123,10 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 				self.addInstruction('lmv', aloc, None)
 
 	def saveLocation(self, node):
+		if isinstance(node, ast.ProcedureCall):
+			self.addInstruction('smv', 1, None)
+			return
+		
 		if isinstance(node, ast.StringElement) or isinstance(node, ast.StringSlice) or isinstance(node, ast.ArraySlice) or isinstance(node, ast.ArrayElement):
 			## FIX
 			size = self.environment.countAlocSizeForLocation(node)
@@ -248,7 +257,9 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 			auxNode.checkType = node.location.checkType
 			self.visit(auxNode)
 		else:
-			self.loadLocation(node.location, True)
+			if not isinstance(node.location, ast.ProcedureCall):
+				self.loadLocation(node.location, True)
+				
 			self.visit(node.expression)
 			self.saveLocation(node.location)
 
@@ -539,7 +550,12 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 		self.addInstruction('dlc', aloc_size, None)
 
 		## ADD RETURN INSTRUCTION
-		self.addInstruction('ret', 1, 2)
+		nparams = 0
+		for formalParam in node.procedure_definition.formal_parameter_list:
+			for idName in formalParam.idList:
+				nparams += 1
+		
+		self.addInstruction('ret', node.start_label, nparams)
 		
 		# label out
 		self.addInstruction('lbl', node.end_label, None)
@@ -558,13 +574,19 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 
 	def visit_ProcedureCall(self, node):
 		proc = self.environment.lookup(node.name)
+		
+		hasResult = False
 		if proc.procedure_definition.result_spec is not None:
 			self.addInstruction('alc', 1, None)
+			hasResult = True
 		
 		if node.params is not None:
 			for param in reversed(node.params):
 				self.visit(param)
 		self.addInstruction('cfu', proc.start_label, None)
+		
+		if hasResult and proc.procedure_definition.result_spec.attr is not None:
+			self.addInstruction('grc', None, None)
 
 	def visit_Parameter(self, node):
 		print(node.call_arg)
@@ -607,21 +629,31 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 				print("===== PRINT =====")
 				print(location)
 				
-				if isinstance(location, ast.IntConst) or isinstance(location, ast.CharConst) or isinstance(location, ast.StrConst) or isinstance(location, ast.EmptyConst):
+				if isinstance(location, ast.IntConst) or isinstance(location, ast.CharConst):
 					self.visit(location)
 					self.addInstruction('prv', None, None)
+				elif isinstance(location, ast.StrConst):
+					self.addInstruction('prc', location.position, None)
 				elif isinstance(location, ast.StringSlice) or isinstance(location, ast.ArraySlice) or isinstance(location, ast.StringElement) or isinstance(location, ast.ArrayElement) or isinstance(location, ast.Location) or isinstance(location, ast.ReferencedLocation) or isinstance(location, ast.DereferencedLocation):
 					self.loadLocation(location)
 					self.handlePrint(location)
 				else:
 					self.visit(location)
 					self.addInstruction('prv', None, None)
+		if node.name == "length":
+			sym = self.environment.lookup(node.params[0].expr.idName)
+			size = self.environment.countAlocSizeForMode(sym.mode)
+			self.addInstruction('ldc', size, None)
 			
 	def handlePrint(self, location):
-		if isinstance(location, ast.StringSlice) or isinstance(location, ast.ArraySlice) or isinstance(location, ast.StringElement) or isinstance(location, ast.ArrayElement):
+		if isinstance(location, ast.StringSlice) or isinstance(location, ast.ArraySlice):
 			size = self.environment.countAlocSizeForLocation(location)
-			self.addInstruction('lmv', size, None)
+			#self.addInstruction('lmv', size, None)
 			self.addInstruction('prt', size, None)
+		
+		elif isinstance(location, ast.StringElement) or isinstance(location, ast.ArrayElement):
+			self.addInstruction('prv', None, None)
+			
 		elif hasattr(location, "idName"):
 			mode = self.environment.lookup(location.idName).mode
 			if isinstance(mode, ast.ReferenceMode) or isinstance(mode, ast.DiscreteRangeMode):
@@ -629,7 +661,7 @@ class CodeGenerator(nodeVisitor.NodeVisitor):
 		
 			if isinstance(mode, ast.StringMode) or isinstance(mode, ast.ArrayMode):
 				size = self.environment.countAlocSizeForMode(mode)
-				self.addInstruction('lmv', size, None)
+				#self.addInstruction('lmv', size, None)
 				self.addInstruction('prt', size, None)
 			else:
 				#sym = self.getSymbolInformation(location.idName)

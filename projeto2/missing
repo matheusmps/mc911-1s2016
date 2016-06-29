@@ -2,27 +2,35 @@ Email:
 
 - Decorated AST and LVM code example
 	- projeto 2: OK 
+	- projeto 3: OK
 
 - New LVM code Example
-	- projeto 2: OK 
+	- projeto 2: OK
+	- projeto 3: OK 
 
 - Example with "do while", labeled and exit actions
 	- projeto 2: OK
+	- projeto 3: OK
 
 - Example with "do for"
 	- projeto 2: OK
+	- projeto 3: OK
 
 - for and while combined
 	- projeto 2: OK
+	- projeto 3: +-
 
 - Example with references
 	- projeto 2: OK
+	- projeto 3: Ok
 
 - Example with locs:
-	- projeto 2: 'grc'
+	- projeto 2: OK
+	- projeto 3: OK
 
 - Simple example using array and array indexing:
 	- projeto 2: OK
+	- projeto 3: OK
 
 - New example with arrays
 	- projeto 2: new modes
@@ -31,7 +39,8 @@ Email:
 	- projeto 2: 2-dim array
 
 - Example with slices & built-ins
-	- ERRO
+	- projeto 2: OK
+	- projeto 3: OK
 
 - Example returning a location
 	- ERRO

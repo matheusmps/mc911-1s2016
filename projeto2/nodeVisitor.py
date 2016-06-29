@@ -245,7 +245,12 @@ class Visitor(NodeVisitor):
 
 	def visit_Assignment(self, node):
 		self.visit(node.location)
-		symbol = self.environment.lookup(node.location.idName)
+		
+		if isinstance(node.location, ast.ProcedureCall):
+			symbol = self.environment.lookup(node.location.name)
+		else:
+			symbol = self.environment.lookup(node.location.idName)
+
 		if not symbol:
 			self.newError("Cannot find previous declaration of '%s'" % node.location.idName )
 		elif isinstance(symbol, ast.SynDef):
@@ -299,6 +304,7 @@ class Visitor(NodeVisitor):
 		node.checkType = environment.BoolType
 
 	def visit_StrConst(self, node):
+		node.position = self.environment.add_constant(node.val.replace('"', ''))
 		node.checkType = environment.StringType
 
 	def visit_EmptyConst(self, node):
@@ -472,7 +478,8 @@ class Visitor(NodeVisitor):
 
 	def visit_Parameter(self, node):
 		self.visit(node.expr)
-		node.checkType = node.expr.checkType
+		if node.expr.checkType is not None:
+			node.checkType = node.expr.checkType
 
 	def visit_ExitAction(self, node):
 		self.environment.printStack()
@@ -489,5 +496,9 @@ class Visitor(NodeVisitor):
 	# def visit_ResultAction(self, node):
 	# generic
 	
-	#def visit_BuiltinCall(self, node):
-	# generic
+	def visit_BuiltinCall(self, node):
+		if node.name == "length" or node.name == "lower" or node.name == "upper":
+			node.checkType = environment.IntType
+		
+		for param in node.params:
+			self.visit(param)
