@@ -422,7 +422,7 @@ class LyaVirtualMachine(object):
 #	(’prv’)
 
 	def execute_prv(self, instruction):
-		print(self.M[self.sp], end="")
+		print("%s " % self.M[self.sp], end="")
 		self.sp -= 1
 		self.pc += 1
 
@@ -439,7 +439,9 @@ class LyaVirtualMachine(object):
 #	(’prc’, i)
 
 	def execute_prc(self, instruction):
-		print(self.H[instruction[1]], end="")
+		string = self.H[instruction[1]]
+		newString = string.replace("\\n", "\n")
+		print(newString, end="")
 		self.pc += 1
 
 #	PRS: adr = M[sp]; len = M[adr]; for i in range(0,len): adr = adr + 1 print(M(adr),end=""); sp=sp-1;
